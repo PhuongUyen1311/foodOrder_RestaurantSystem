@@ -1,69 +1,103 @@
-import { 
+import React, { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+
+import {
     FaSearch,
     FaBell,
+    FaUserAlt,
     FaUser,
     FaRunning,
-    FaUserAlt
+    FaHome
 } from "react-icons/fa";
 
-import './header.scss';
+import "./header.scss";
 
-function Header(props) {
+function Header() {
+
     const user = JSON.parse(sessionStorage.getItem("user"));
-    
-    const handleClickLogOut = (event)=>{
-        event.preventDefault();
+    const location = useLocation();
 
-        sessionStorage.setItem('user', JSON.stringify(null));
-        sessionStorage.setItem('accessToken', JSON.stringify(''));
-        window.location.href = '/staff';
-    }
+    const [openProfile, setOpenProfile] = useState(false);
+
+    const handleLogout = () => {
+
+        sessionStorage.removeItem("user");
+        sessionStorage.removeItem("accessToken");
+
+        window.location.href = "/staff";
+    };
 
     return (
+
         <div className="header-staff">
-            <div className="col-2">
-                {/* <img src={listImg} className="slider__header-showicon" /> */}
-            </div>
-            <div className="header__search">
-                <span className="search-icon">
-                <FaSearch color="#8B4513" />
-                </span>
-                <input type="text" className="form-search" placeholder="Search" />
+
+            {/* LEFT */}
+            <div className="header-left">
+
+                <div className="header-search">
+
+                    <FaSearch className="search-icon" />
+
+                    <input
+                        type="text"
+                        placeholder="Tìm kiếm..."
+                    />
+
+                </div>
+
             </div>
 
-            <div className="header__user">
-                <div className="header__notifi">
+            {/* RIGHT */}
+            <div className="header-right">
+
+                {/* NOTIFICATION */}
+                <Link
+                    to="/staff/notification"
+                    className={`header-icon ${location.pathname === "/staff/notification" ? "active" : ""}`}
+                >
                     <FaBell />
-                </div>
+                </Link>
 
-                <div className="header__user-avatar">
-                    {/* <img src={userImg} alt="" className="user-img" /> */}
+                {/* PROFILE */}
+                <div
+                    className="header-avatar"
+                    onClick={() => setOpenProfile(!openProfile)}
+                >
+
                     <FaUserAlt />
-                    <div className="header__user-profile">
-                        <div className="user-profile-name">
-                            <h4>{user && user.firstName}</h4>
-                        </div>
 
-                        <ul className="profile-list">
-                            <li className="profile-item">
-                                <a href="" className="profile-item-link">
-                                    <FaUser />
-                                    Thông tin cá nhân
-                                </a>
-                            </li>
-                        </ul>
+                    {openProfile && (
 
-                        <div className="user-logout">
-                            <FaRunning />
-                            <a onClick={(event) => handleClickLogOut(event)} href="" className="profile-item-link">
+                        <div className="profile-dropdown">
+
+                            <div className="profile-name">
+                                {user?.firstName} {user?.lastName}
+                            </div>
+
+                            <Link
+                                to="/staff/profile"
+                                className="dropdown-item"
+                            >
+                                <FaUser />
+                                Hồ sơ cá nhân
+                            </Link>
+
+                            <div
+                                className="dropdown-item logout"
+                                onClick={handleLogout}
+                            >
+                                <FaRunning />
                                 Đăng xuất
-                            </a>
+                            </div>
+
                         </div>
-                    </div>
+
+                    )}
+
                 </div>
 
-                {/* <p>{user && user.firstName}</p> */}
             </div>
+
         </div>
     );
 }

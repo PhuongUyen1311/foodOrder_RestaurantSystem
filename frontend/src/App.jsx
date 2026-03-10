@@ -32,6 +32,7 @@ import LoginStaff from './pages/Staff/Login/Login';
 import Order from './pages/Staff/Order/Order';
 import OrderDetail from './pages/Staff/Order/OrderDetail';
 import Table from './pages/Staff/Table/Table';
+import ProfileAdmin from './pages/Staff/Profile/Profile';
 
 import { RequireAuth } from './middleware/AuthMiddleware';
 
@@ -77,6 +78,7 @@ function App() {
               <Route path='/staff/revenue' element={<Charts />}/>
               <Route path='/staff/register' element={<RegisterStaff />}/>
               <Route path='/staff/table' element={<Table />}/>
+              <Route path='/staff/profile' element={<ProfileAdmin />}/>
             </Routes>
           </div>
         </div>

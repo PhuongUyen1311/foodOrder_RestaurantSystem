@@ -9,7 +9,7 @@ import Contact from '../../../components/Customer/Contact/Contact';
 import Category from '../../../components/Customer/Category/Category';
 import Cart from '../../../components/Customer/Cart/Cart';
 import { getCategoryId, setDisplayToast } from '../../../actions/user';
-
+import MenuContent from '../../../components/Customer/MenuContent/MenuContent';
 import './home.scss';
 
 function Home(props) {
@@ -55,30 +55,11 @@ function Home(props) {
             /> 
             <Cart accessToken={accessToken}/>
             <Container className='block-product'>
-                {
-                    accessToken && (
-                        <>
-                            <h2>Gợi ý cho bạn</h2>
-                            <ProductRecommender accessToken={accessToken}/>
-                        </>
-                    )
-                }
-
-                <h2>Menu </h2>
-                <Category categories={categories}/>
-                <ProductList />
-
-                {/* <div className='btn-see-more'>
-                    <svg width="11" height="10" viewBox="0 0 11 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M5.5 9.5V5M5.5 5V0.5M5.5 5H10M5.5 5H1" stroke="#929292" strokeLinecap="round"/>
-                    </svg>
-                    <span>
-                        Xem thêm...
-                    </span>
-                </div> */}
-
-                <Contact />
-            </Container>
+    <MenuContent
+        accessToken={accessToken}
+        categories={categories}
+    />
+</Container>
         </>
     );
 }

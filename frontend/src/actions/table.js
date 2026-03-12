@@ -175,3 +175,8 @@ export const checkTableAvailability = async (tableId) => {
     throw error;
   }
 };
+
+export const getReservationByUser = async (userId) => {
+  const response = await fetch(`/api/reservation/user/${userId}`);
+  return await response.json();
+};

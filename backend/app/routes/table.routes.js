@@ -9,5 +9,6 @@ module.exports = app => {
     router.get('/', table.getAllTables);
     router.put('/:id/start-using', table.startUsingTable);
     router.get('/:tableNumber/availability', reservation.checkTableAvailability);
+
     app.use('/api/tables', router);
 };

@@ -16,3 +16,4 @@
 16. tìm kiếm thêm combobox: mã, thông tin
 17. lỗi trang menu?table
 18. lỗi huỷ đơn hàng 
+19. lỗi hiển thị Danh sách bàn

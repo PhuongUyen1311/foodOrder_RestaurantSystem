@@ -14,6 +14,6 @@
 14. lỗi mỗi lần chuyển sang detail khác, số lượng sản phẩm phải =1
 15. không hiện thông báo đã thêm giỏ hàng cho các sản phẩm bên dưới detail
 16. tìm kiếm thêm combobox: mã, thông tin
-17. lỗi trang menu?table
-18. lỗi huỷ đơn hàng 
+17. 
+18. lỗi huỷ đơn hàng (sửa socket)
 19. lỗi hiển thị Danh sách bàn

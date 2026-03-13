@@ -5,10 +5,9 @@ const CartItem = db.cartItem;
 const Order = db.order;
 const OrderItem = db.orderItem;
 const convertHelper = require("../helpers/convert.helper.js");
-const listSocket = require("../socket");
-const UpdateOrder = listSocket.updateOrder;
 const Customer = db.customer;
 const Admin = db.admin;
+const { sendOrderStatus, sendListOrder } = require("../socket/order.socket");
 
 exports.createCashOrder = async (req, res) => {
     try {
@@ -86,10 +85,12 @@ exports.getOrder = async (req, res) => {
 
 exports.updateStatusOrder = async (req, res) => {
     try {
+
         const auth = await middlewares.checkAuth(req);
         if (!auth) {
             return res.status(401).json({ message: "Authentication failed" });
         }
+
         if (!req.body.orderId || !req.body.status) {
             return res.status(400).send({ message: "No order ID provided or Status." });
         }
@@ -98,26 +99,38 @@ exports.updateStatusOrder = async (req, res) => {
         if (!order) {
             return res.status(404).json({ message: "Order not found" });
         }
-        if (req.body.status == "canceled" && (order.status == "processing" || order.status == "completed")) {
+
+        if (
+            req.body.status === "canceled" &&
+            (order.status === "processing" || order.status === "completed")
+        ) {
             return res.status(400).send({ message: "Can't cancel." });
         }
+
+        // update status
         order.status = req.body.status;
         await order.save();
 
         const userId = order.customer_id;
-
         const customer = await Customer.findById(userId);
-        if (customer.socket_id) {
-            UpdateOrder.to(customer.socket_id).emit('sendStatusOrder', order);
+
+        // realtime cho customer
+        if (customer?.socket_id) {
+            sendOrderStatus(customer.socket_id, order);
         }
+
+        // realtime cho admin
         const listOrder = await Order.find({});
         const admin = await Admin.find({});
-        for (const ad of admin ) {
-            if (ad.socket_id) {
-                UpdateOrder.to(ad.socket_id).emit('sendListOrder', listOrder);
+
+        for (const ad of admin) {
+            if (ad?.socket_id) {
+                sendListOrder(ad.socket_id, listOrder);
             }
         }
+
         res.status(200).json({ message: "Updated status." });
+
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "An error occurred while processing your request." });

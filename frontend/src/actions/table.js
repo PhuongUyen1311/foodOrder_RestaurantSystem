@@ -11,7 +11,7 @@ export const getAllTables = async () => {
   }
 };
 
-export const createReservation = async (accessToken, tableId, specialRequests) => {
+export const createReservation = async (accessToken, tableId, use_date, use_time, specialRequests) => {
   try {
     const response = await fetch('/api/reservations', {
       method: 'post',
@@ -21,6 +21,8 @@ export const createReservation = async (accessToken, tableId, specialRequests) =
       },
       body: JSON.stringify({
         tableId,
+        use_date,
+        use_time,
         specialRequests
       })
     });

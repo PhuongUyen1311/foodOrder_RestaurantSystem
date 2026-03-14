@@ -13,6 +13,8 @@ const TableReservation = () => {
   const [selectedTable, setSelectedTable] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
+    use_date: '',
+    use_time: '',
     specialRequests: ''
   });
 
@@ -59,14 +61,20 @@ const TableReservation = () => {
       const result = await createReservation(
         accessToken,
         selectedTable._id,
+        formData.use_date,
+        formData.use_time,
         formData.specialRequests
       );
 
       if (result) {
         setShowModal(false);
-        setFormData({ specialRequests: '' });
+        setFormData({
+          use_date: '',
+          use_time: '',
+          specialRequests: ''
+        });
         toast.success('Đặt bàn thành công!');
-        
+
         // Refresh danh sách bàn
         const updatedTables = await getAllTables();
         setTables(updatedTables);
@@ -104,8 +112,8 @@ const TableReservation = () => {
               <td>{table.seatingCapacity} người</td>
               <td>{table.location}</td>
               <td>
-                <Button 
-                  variant="primary" 
+                <Button
+                  variant="primary"
                   onClick={() => handleReservation(table)}
                   disabled={!table.isAvailable}
                 >
@@ -156,6 +164,28 @@ const TableReservation = () => {
               />
             </Form.Group>
             <Form.Group className="mb-3">
+              <Form.Label>Ngày sử dụng</Form.Label>
+              <Form.Control
+                type="date"
+                name="use_date"
+                min={new Date().toISOString().split("T")[0]}
+                value={formData.use_date}
+                onChange={handleInputChange}
+                required
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Giờ sử dụng</Form.Label>
+              <Form.Control
+                type="time"
+                name="use_time"
+                value={formData.use_time}
+                onChange={handleInputChange}
+                required
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
               <Form.Label>Yêu cầu đặc biệt</Form.Label>
               <Form.Control
                 as="textarea"
@@ -165,9 +195,9 @@ const TableReservation = () => {
                 rows={3}
               />
             </Form.Group>
-            <Button 
-              variant="primary" 
-              type="submit" 
+            <Button
+              variant="primary"
+              type="submit"
               disabled={isLoading}
               className="w-100"
             >

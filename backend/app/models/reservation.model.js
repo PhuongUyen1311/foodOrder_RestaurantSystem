@@ -71,6 +71,10 @@ module.exports = mongoose => {
         throw new Error('Bàn không tồn tại');
       }
 
+      if (!table.isAvailable) {
+        throw new Error('Bàn đã được đặt');
+      }
+
       next();
     } catch (error) {
       next(error);
@@ -86,6 +90,11 @@ module.exports = mongoose => {
         throw new Error('Không tìm thấy thông tin đặt bàn');
       }
 
+      // Cập nhật trạng thái bàn thành available
+      await Table.findByIdAndUpdate(reservation.tableId, {
+        isAvailable: true,
+        status: 'Trống'
+      });
       // Xóa thông tin đặt bàn
       await this.deleteOne({ tableId: tableId });
 

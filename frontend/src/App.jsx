@@ -101,7 +101,11 @@ function App() {
             <Route path='/login' element={<Login />} />
             <Route path='/register' element={<Register />} />
             <Route path='/' element={<Home />} />
-            <Route path='/checkout' element={<Checkout />} />
+            <Route path='/checkout' element={
+              <RequireAuth>
+                <Checkout />
+              </RequireAuth>
+            } />
             <Route path='/detail/:id' element={<Detail />} />
             <Route path='/history-order' element={
               <RequireAuth>

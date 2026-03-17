@@ -1,0 +1,473 @@
+﻿commit 2e36b4fefc9e25c08b8974d41708b9a66dea2ccc
+Author: UyN <uyenn6374@gmail.com>
+Date:   Tue Mar 24 15:22:49 2026 +0700
+
+    delete unused images
+
+M	package-lock.json
+
+commit 42ff83d56fd501e22db692dda5ce4cbf4413891f
+Author: UyN <uyenn6374@gmail.com>
+Date:   Tue Mar 24 14:42:16 2026 +0700
+
+    update
+
+M	README.md
+R100	error_img/Screenshot 2026-03-10 104041.png	Screenshot 2026-03-10 104041.png
+R100	error_img/Screenshot 2026-03-10 110611.png	Screenshot 2026-03-10 110611.png
+M	backend/app/controllers/ingredient.controller.js
+M	backend/app/controllers/order.controller.js
+M	backend/app/controllers/payment.controller.js
+M	backend/app/controllers/productBom.controller.js
+M	backend/app/controllers/reservation.controller.js
+M	backend/app/controllers/revenue.controller.js
+M	backend/app/controllers/table.controller.js
+M	backend/app/helpers/convert.helper.js
+M	backend/app/models/customer.model.js
+M	backend/app/models/index.js
+M	backend/app/models/ingredient.model.js
+M	backend/app/models/order.item.model.js
+M	backend/app/models/productBom.model.js
+M	backend/app/models/reservation.model.js
+M	backend/app/models/table.model.js
+M	backend/app/routes/ingredient.routes.js
+M	backend/app/routes/order.routes.js
+M	backend/app/routes/paymnet.routes.js
+M	backend/app/routes/product.routes.js
+M	backend/app/routes/productBom.routes.js
+M	backend/app/routes/reservation.routes.js
+M	backend/app/socket/index.js
+D	backend/app/socket/order.socket.js
+D	backend/app/socket/table.socket.js
+M	backend/package-lock.json
+M	backend/package.json
+M	backend/server.js
+D	data/food_order.products.json
+D	data/food_order.tables.json
+D	error_img/image.png
+R100	data/food_order.categories.json	food_order.categories.json
+D	food_order.customers.json
+R088	data/food_order.ingredients.json	food_order.ingredients.json
+D	food_order.order_items.json
+D	food_order.orders.json
+R100	data/food_order.product_boms.json	food_order.product_boms.json
+A	food_order.products.json
+A	food_order.tables.json
+M	frontend/package.json
+D	frontend/socket/socket.js
+M	frontend/src/App.jsx
+M	frontend/src/App.scss
+M	frontend/src/actions/order.js
+M	frontend/src/actions/table.js
+M	frontend/src/actions/user.js
+M	frontend/src/components/Customer/Banner/Banner.jsx
+M	frontend/src/components/Customer/Banner/banner.scss
+M	frontend/src/components/Customer/Cart/Cart.jsx
+M	frontend/src/components/Customer/Cart/cart.scss
+M	frontend/src/components/Customer/Category/Category.jsx
+M	frontend/src/components/Customer/Contact/Contact.jsx
+M	frontend/src/components/Customer/Header/Header.jsx
+M	frontend/src/components/Customer/Header/header.scss
+D	frontend/src/components/Customer/MenuContent/MenuContent.jsx
+M	frontend/src/components/Customer/PopupOrderSuccess/PopupOrderSuccess.jsx
+M	frontend/src/components/Customer/PopupUpdateCart/PopupUpdateCart.jsx
+M	frontend/src/components/Customer/PopupUpdateCart/popupUpdateCart.scss
+M	frontend/src/components/Customer/Product-Card/ProductCard.jsx
+M	frontend/src/components/Customer/Product-Card/productCard.scss
+M	frontend/src/components/Customer/Product-List/ProductList.jsx
+M	frontend/src/components/Customer/Table-product/TableProduct.jsx
+M	frontend/src/components/Customer/Table-product/tableProduct.scss
+M	frontend/src/components/Staff/Header/Header.jsx
+M	frontend/src/components/Staff/Header/header.scss
+M	frontend/src/main.jsx
+M	frontend/src/middleware/AuthMiddleware.jsx
+M	frontend/src/pages/Customer/Checkout/Checkout.jsx
+M	frontend/src/pages/Customer/Detail/Detail.jsx
+M	frontend/src/pages/Customer/Detail/detail.scss
+M	frontend/src/pages/Customer/HistoryOrder/HistoryOrder.jsx
+M	frontend/src/pages/Customer/HistoryOrder/history-order.scss
+M	frontend/src/pages/Customer/HistoryReservation/HistoryReservation.jsx
+M	frontend/src/pages/Customer/HistoryReservation/HistoryReservation.scss
+M	frontend/src/pages/Customer/Home/Home.jsx
+M	frontend/src/pages/Customer/Login/Login.jsx
+M	frontend/src/pages/Customer/Menu/Menu.jsx
+M	frontend/src/pages/Customer/Menu/menu.scss
+M	frontend/src/pages/Customer/Profile/Profile.jsx
+M	frontend/src/pages/Customer/Profile/profile.scss
+M	frontend/src/pages/Customer/Register/Register.jsx
+D	frontend/src/pages/Customer/ReservationHistory/ReservationHistory.jsx
+M	frontend/src/pages/Customer/Search/Search.jsx
+M	frontend/src/pages/Customer/Search/search.scss
+M	frontend/src/pages/Customer/Table/TableCheckin.jsx
+M	frontend/src/pages/Customer/Table/TableReservation.jsx
+M	frontend/src/pages/Staff/Category/Category.jsx
+M	frontend/src/pages/Staff/Charts/Charts.jsx
+M	frontend/src/pages/Staff/Charts/chart.scss
+M	frontend/src/pages/Staff/Home/HomeStaff.jsx
+M	frontend/src/pages/Staff/Home/homeStaff.scss
+M	frontend/src/pages/Staff/Login/Login.jsx
+M	frontend/src/pages/Staff/Order/Order.jsx
+M	frontend/src/pages/Staff/Order/OrderDetail.jsx
+M	frontend/src/pages/Staff/Product/Product.jsx
+M	frontend/src/pages/Staff/Profile/Profile.jsx
+M	frontend/src/pages/Staff/Resgiter/Resgister.jsx
+M	frontend/src/pages/Staff/Table/Table.jsx
+M	frontend/src/pages/Staff/Table/table.scss
+M	frontend/src/reducers/users.js
+M	frontend/src/scss/_variable.scss
+M	frontend/vite.config.js
+D	noteError.md
+M	package-lock.json
+D	package.json
+
+commit a0738ce320500de9d5780a54ade0b8c316bddc30
+Author: UyN <uyenn6374@gmail.com>
+Date:   Sat Mar 14 15:10:09 2026 +0700
+
+    local work
+
+A	backend/app/controllers/chatbot.controller.js
+A	backend/app/controllers/dashboard.controller.js
+A	backend/app/helpers/dashboard.helper.js
+A	backend/app/routes/chatbot.routes.js
+A	backend/app/routes/dashboard.routes.js
+A	backend/models.json
+A	backend/test_models.js
+A	food_order.customers.json
+A	food_order.order_items.json
+A	food_order.orders.json
+A	frontend/src/assets/img/chatbox_v2.png
+A	frontend/src/assets/img/chatbox_v3.png
+A	frontend/src/assets/img/chatbox_v4.png
+A	frontend/src/components/Customer/Chatbot/Chatbot.jsx
+A	frontend/src/components/Customer/Chatbot/chatbot.scss
+A	frontend/src/components/Customer/OrderedList/OrderedList.jsx
+A	frontend/src/components/Customer/OrderedList/orderedList.scss
+A	frontend/src/components/Customer/PopupReserveSuccess/PopupReserveSuccess.jsx
+A	frontend/src/components/Customer/PopupReserveSuccess/PopupReserveSuccess.scss
+A	frontend/src/pages/Customer/HistoryReservation/HistoryReservation.jsx
+A	frontend/src/pages/Customer/HistoryReservation/HistoryReservation.scss
+
+commit d8ed5848b0cedbfb6dd9727f3e04a231fb04e74c
+Author: Khanh Van <kvan18052004@gmail.com>
+Date:   Sat Mar 14 12:18:48 2026 +0700
+
+    update reservation
+
+M	backend/app/routes/reservation.routes.js
+M	frontend/src/pages/Staff/Order/Order.jsx
+M	frontend/src/pages/Staff/Table/Table.jsx
+
+commit 9337068a96c7b6686677a9ea729403cd9d0dfb64
+Author: Khanh Van <kvan18052004@gmail.com>
+Date:   Sat Mar 14 12:04:25 2026 +0700
+
+    update reservation
+
+M	frontend/src/actions/table.js
+M	frontend/src/pages/Customer/Table/TableReservation.jsx
+
+commit ac9e3aac247d872606f46a5af28ca2f87a5a8db3
+Author: Khanh Van <kvan18052004@gmail.com>
+Date:   Sat Mar 14 11:54:24 2026 +0700
+
+    update reservation
+
+M	backend/app/controllers/reservation.controller.js
+M	backend/app/controllers/table.controller.js
+M	backend/app/models/reservation.model.js
+M	backend/app/models/table.model.js
+M	backend/app/routes/reservation.routes.js
+M	backend/app/routes/table.routes.js
+M	backend/server.js
+M	data/food_order.tables.json
+M	frontend/src/App.jsx
+M	frontend/src/components/Customer/Header/Header.jsx
+A	frontend/src/pages/Customer/ReservationHistory/ReservationHistory.jsx
+M	frontend/src/pages/Staff/Table/Table.jsx
+M	noteError.md
+
+commit 38e3a8231d40fcc10c9caea1e8ac55d72a243924
+Author: Khanh Van <kvan18052004@gmail.com>
+Date:   Sat Mar 14 08:42:06 2026 +0700
+
+    update socket
+
+M	backend/app/models/customer.model.js
+M	backend/app/socket/index.js
+M	frontend/socket/socket.js
+M	frontend/src/App.jsx
+M	frontend/src/pages/Customer/HistoryOrder/HistoryOrder.jsx
+M	noteError.md
+M	package-lock.json
+A	package.json
+
+commit af317fc58a6e384e386c1ed5e2ef2d044c44a2cb
+Author: Khanh Van <kvan18052004@gmail.com>
+Date:   Fri Mar 13 17:58:46 2026 +0700
+
+    update socket v1
+
+M	backend/app/controllers/order.controller.js
+M	backend/app/socket/index.js
+A	backend/app/socket/order.socket.js
+A	backend/app/socket/table.socket.js
+M	backend/server.js
+R100	food_order.categories.json	data/food_order.categories.json
+R100	food_order.ingredients.json	data/food_order.ingredients.json
+R100	food_order.product_boms.json	data/food_order.product_boms.json
+R100	food_order.products.json	data/food_order.products.json
+R100	food_order.tables.json	data/food_order.tables.json
+R100	Screenshot 2026-03-10 104041.png	error_img/Screenshot 2026-03-10 104041.png
+R100	Screenshot 2026-03-10 110611.png	error_img/Screenshot 2026-03-10 110611.png
+R100	image.png	error_img/image.png
+A	frontend/socket/socket.js
+M	frontend/src/pages/Customer/HistoryOrder/HistoryOrder.jsx
+R095	noteError.txt	noteError.md
+
+commit 8002fda0e9a54f13ac6a0eeb10d2dc4d1e9aa98a
+Author: Khanh Van <kvan18052004@gmail.com>
+Date:   Thu Mar 12 11:25:06 2026 +0700
+
+    Fix image menu?table
+
+M	backend/app/controllers/table.controller.js
+A	frontend/src/components/Customer/MenuContent/MenuContent.jsx
+M	frontend/src/components/Customer/Product-List/ProductList.jsx
+M	frontend/src/pages/Customer/Home/Home.jsx
+M	frontend/src/pages/Customer/Menu/Menu.jsx
+
+commit 316b90a4cb242704d1cf6b8e28356bed79cab050
+Author: Khanh Van <kvan18052004@gmail.com>
+Date:   Thu Mar 12 08:55:08 2026 +0700
+
+    table
+
+M	backend/app/controllers/ingredient.controller.js
+M	backend/app/controllers/productBom.controller.js
+M	backend/app/helpers/convert.helper.js
+M	backend/app/models/ingredient.model.js
+M	backend/app/models/productBom.model.js
+M	backend/app/routes/ingredient.routes.js
+M	backend/app/routes/product.routes.js
+M	backend/app/routes/productBom.routes.js
+M	backend/app/routes/table.routes.js
+M	backend/server.js
+M	frontend/src/actions/table.js
+A	image.png
+M	noteError.txt
+
+commit 50b6f44995c222fa42b398f170bf63cc150a7d3f
+Author: Khanh Van <kvan18052004@gmail.com>
+Date:   Tue Mar 10 14:11:57 2026 +0700
+
+    update 10/03/2026
+
+M	backend/app/routes/productBom.routes.js
+M	backend/server.js
+R100	data/food_order.categories.json	food_order.categories.json
+R100	data/food_order.ingredients.json	food_order.ingredients.json
+R100	data/food_order.product_boms.json	food_order.product_boms.json
+R100	data/food_order.products.json	food_order.products.json
+R100	data/food_order.tables.json	food_order.tables.json
+
+commit c51f0968232e91702233411ce018f8f209562fec
+Author: Khanh Van <kvan18052004@gmail.com>
+Date:   Tue Mar 10 11:07:44 2026 +0700
+
+    â
+
+A	Screenshot 2026-03-10 104041.png
+A	Screenshot 2026-03-10 110611.png
+A	backend/static/images/1c82b2df-e9eb-459a-9435-0dc414ac68ed-a.drawio.png
+R100	food_order.categories.json	data/food_order.categories.json
+R100	food_order.ingredients.json	data/food_order.ingredients.json
+R100	food_order.product_boms.json	data/food_order.product_boms.json
+R100	food_order.products.json	data/food_order.products.json
+R100	food_order.tables.json	data/food_order.tables.json
+M	frontend/src/App.jsx
+M	frontend/src/components/Staff/Header/Header.jsx
+M	frontend/src/components/Staff/Header/header.scss
+A	frontend/src/pages/Staff/Notification/Notification.jsx
+A	frontend/src/pages/Staff/Notification/notification.scss
+A	frontend/src/pages/Staff/Profile/Profile.jsx
+A	frontend/src/pages/Staff/Profile/profile.scss
+M	noteError.txt
+
+commit 8a61a38597a81b58bf41d2bee64be98b6eedf348
+Author: Khanh Van <kvan18052004@gmail.com>
+Date:   Tue Mar 10 08:42:19 2026 +0700
+
+    Update Home Admin
+
+M	frontend/src/pages/Staff/Home/HomeStaff.jsx
+M	noteError.txt
+
+commit 5f70cd67444f03764cddb6a961618aa87803ea9b
+Author: Khanh Van <kvan18052004@gmail.com>
+Date:   Sun Mar 8 23:09:25 2026 +0700
+
+    Fix add to cart
+
+M	README.md
+M	backend/app/controllers/auth.method.js
+M	backend/app/controllers/cart.controller.js
+M	backend/app/controllers/category.controller.js
+A	backend/app/controllers/ingredient.controller.js
+M	backend/app/controllers/product.controller.js
+A	backend/app/controllers/productBom.controller.js
+A	backend/app/helpers/findCategoryFolder.js
+A	backend/app/helpers/generateImageName.js
+A	backend/app/helpers/generateSlug.js
+A	backend/app/helpers/slugifyVietnamese.js
+A	backend/app/models/ingredient.model.js
+A	backend/app/models/productBom.model.js
+A	backend/app/routes/ingredient.routes.js
+A	backend/app/routes/productBom.routes.js
+M	backend/app/socket/index.js
+M	backend/server.js
+D	backend/static/images/15c60cfc-ac3c-44f0-ab2d-343e7f1a423a-xfof_bb.png.pagespeed.ic.x358sc8trh.png
+D	backend/static/images/26f3f764-a2a8-479d-a2ea-9980aa67109c-xoreo_mcflurry.png.pagespeed.ic.x74srjja1s.png
+D	backend/static/images/3168490d-10d2-43c8-98f4-96aba7a12cc9-xmcd-food-beverages-soft-drinks-coke.png.pagespeed.ic.dnhv1b1e6d.png
+D	backend/static/images/359a20ea-16e0-4017-9091-ae56df8d8164-xdasani_water.png.pagespeed.ic.9dioxb9nfk.png
+A	backend/static/images/572acfad-9e94-4abb-bdb3-27368dc74b2a-1f0d7ab53095b426b5a5ba5cf42a16c8.jpg
+D	backend/static/images/7227320e-35f3-40e5-82c4-0a66309ee9ed-xsausagebg_bb.png.pagespeed.ic.hviz0h1bpe.png
+D	backend/static/images/89c40d97-bf84-4cc0-bc10-b996b396e182-xmcchickendlx_bb.png.pagespeed.ic.xwrimj_enc.png
+A	backend/static/images/8ab2d842-3ce8-413b-bec4-8bbc1262e57c-1f0d7ab53095b426b5a5ba5cf42a16c8.jpg
+D	backend/static/images/8d49654a-2e5e-4aae-8cd8-68c356dbb04e-xchickbg.png.pagespeed.ic.vcptk7cser.png
+D	backend/static/images/8de0d525-2782-4e58-93a6-dc5a01872a51-xproduct_thumb_sprite.png.pagespeed.ic.jesrsw7hgq.png
+D	backend/static/images/9400454e-e885-47e3-a343-8dc88e2c2689-xbigmac_bb.png.pagespeed.ic.t-4l-nzxfn.png
+D	backend/static/images/ad616cfe-82a1-4024-8eb9-c6671c962036-xhero-pdt-fanta-201703_0.png.pagespeed.ic.vtcouwwjr9.png
+D	backend/static/images/b11ce2d0-6404-4615-a06c-6365b9af9a15-xcso1589.png.pagespeed.ic.s2121cfp8x.png
+D	backend/static/images/c24848a6-5ac0-4ba9-80e6-1b9f4c4d009f-.png
+D	backend/static/images/d077261a-2217-4144-923d-5ece38b0ef17-xhotfudge_mcsundae.png.pagespeed.ic.aziwlx7dt-.png
+D	backend/static/images/d8c958ad-3e90-4607-99e3-0c9b291685cf-xcheesedlx_bb.png.pagespeed.ic.t9fdyoxrfn.png
+A	backend/static/images/do_uong_6752d60ec50b10fa72808006/nuoc_ep_cam_ca_rot.jpg
+A	backend/static/images/do_uong_6752d60ec50b10fa72808006/rau_ma_dau_xanh.jpg
+A	backend/static/images/do_uong_6752d60ec50b10fa72808006/sinh_to_bo_chuoi.jpg
+A	backend/static/images/do_uong_6752d60ec50b10fa72808006/sinh_to_dau.jpg
+A	backend/static/images/do_uong_6752d60ec50b10fa72808006/sinh_to_kiwi.jpg
+A	backend/static/images/do_uong_6752d60ec50b10fa72808006/sinh_to_xoai_sua_chua.jpg
+D	backend/static/images/e0a72ab5-2f8d-478e-a4a4-e3cd060abfc5-xcso_1851combo_gabo.png.pagespeed.ic.kdtndzxnqz.png
+D	backend/static/images/e5c4b59e-97ed-4055-b21b-7a2fc47c19ca-xmcroyaldlx_bb.png.pagespeed.ic.qwzwgunriy.png
+D	backend/static/images/ec7f241c-2bfd-49f2-ad87-920b4689d388-xmcroyal_bb.png.pagespeed.ic.x_bth4ptjp.png
+A	backend/static/images/mon_dam_6752d60ec50b10fa72808002/ca_basa_hap_gung.jpg
+A	backend/static/images/mon_dam_6752d60ec50b10fa72808002/ca_hoi_ap_chao_sot_chanh.jpg
+A	backend/static/images/mon_dam_6752d60ec50b10fa72808002/dau_hu_non_hap_nam.jpg
+A	backend/static/images/mon_dam_6752d60ec50b10fa72808002/trung_hap_rau_cu.jpg
+A	backend/static/images/mon_dam_6752d60ec50b10fa72808002/uc_ga_ap_chao_khong_dau.jpg
+A	backend/static/images/salad_rau_cu_6752d60ec50b10fa72808001/salad_ca_ngu_dau_oliu.jpg
+A	backend/static/images/salad_rau_cu_6752d60ec50b10fa72808001/salad_quinoa_rau_cu.jpg
+A	backend/static/images/salad_rau_cu_6752d60ec50b10fa72808001/salad_tom_trung.jpg
+A	backend/static/images/salad_rau_cu_6752d60ec50b10fa72808001/salad_trung_bo.jpg
+A	backend/static/images/salad_rau_cu_6752d60ec50b10fa72808001/salad_uc_ga_sot_me_rang.jpg
+A	backend/static/images/sup_canh_6752d60ec50b10fa72808004/canh_Bi_do_ham_xuong.jpg
+A	backend/static/images/sup_canh_6752d60ec50b10fa72808004/canh_ca_chua_trung.jpg
+A	backend/static/images/sup_canh_6752d60ec50b10fa72808004/canh_rau_cu_thap_cam.jpg
+A	backend/static/images/sup_canh_6752d60ec50b10fa72808004/canh_rong_bien.jpg
+A	backend/static/images/sup_canh_6752d60ec50b10fa72808004/canh_sup_lo.jpg
+A	backend/static/images/tinh_bot_6752d60ec50b10fa72808003/bun_gao_lut_tron_rau.webp
+A	backend/static/images/tinh_bot_6752d60ec50b10fa72808003/com_gao_lut.jpg
+A	backend/static/images/tinh_bot_6752d60ec50b10fa72808003/khoai_lang_nuong.jpg
+A	backend/static/images/tinh_bot_6752d60ec50b10fa72808003/mi_gao_lut_tron_uc_ga.jpg
+A	backend/static/images/tinh_bot_6752d60ec50b10fa72808003/yen_mach_nau_sua_hat.jpg
+A	backend/static/images/trang_mieng_6752d60ec50b10fa72808005/banh_tao_que.jpg
+A	backend/static/images/trang_mieng_6752d60ec50b10fa72808005/che_hat_sen_long_nhan.jpg
+A	backend/static/images/trang_mieng_6752d60ec50b10fa72808005/pudding_hat_chia_sua_hanh_nhan.jpg
+A	backend/static/images/trang_mieng_6752d60ec50b10fa72808005/sua_chua_Hy_Lap_trai_cay.jpg
+A	backend/static/images/trang_mieng_6752d60ec50b10fa72808005/trai_cay_tuoi.jpg
+M	food_order.categories.json
+A	food_order.ingredients.json
+A	food_order.product_boms.json
+M	food_order.products.json
+A	frontend/src/assets/img/account.png
+M	frontend/src/assets/img/banner.png
+A	frontend/src/assets/img/banner1.png
+M	frontend/src/assets/img/banner2.png
+A	frontend/src/assets/img/chatbox.png
+M	frontend/src/assets/img/contact.png
+D	frontend/src/assets/img/contact2.png
+D	frontend/src/assets/img/delivery-service-illustrated_23-2148505081.avif
+A	frontend/src/assets/img/home.png
+M	frontend/src/assets/img/logo.png
+A	frontend/src/assets/img/menu.png
+D	frontend/src/assets/img/pizza.jpg
+A	frontend/src/assets/img/qrcode.png
+M	frontend/src/components/Customer/Cart/Cart.jsx
+M	frontend/src/components/Customer/Category/Category.jsx
+M	frontend/src/components/Customer/Category/category.scss
+M	frontend/src/components/Customer/Contact/contact.scss
+M	frontend/src/components/Customer/Footer/Footer.jsx
+M	frontend/src/components/Customer/Footer/footer.scss
+M	frontend/src/components/Customer/Header/Header.jsx
+M	frontend/src/components/Customer/Header/header.scss
+M	frontend/src/components/Customer/PopupUpdateCart/PopupUpdateCart.jsx
+M	frontend/src/components/Customer/Product-Card/ProductCard.jsx
+M	frontend/src/components/Customer/Product-Card/productCard.scss
+M	frontend/src/components/Customer/Product-List/ProductList.jsx
+M	frontend/src/components/Customer/Table-product/TableProduct.jsx
+M	frontend/src/components/Staff/Header/Header.jsx
+M	frontend/src/components/Staff/Menus/Menus.jsx
+M	frontend/src/components/Staff/Menus/menus.scss
+M	frontend/src/pages/Customer/Detail/Detail.jsx
+M	frontend/src/pages/Customer/Detail/detail.scss
+M	frontend/src/pages/Customer/HistoryOrder/HistoryOrder.jsx
+M	frontend/src/pages/Customer/Home/Home.jsx
+M	frontend/src/pages/Customer/Home/home.scss
+M	frontend/src/pages/Customer/Profile/Profile.jsx
+M	frontend/src/pages/Customer/Profile/profile.scss
+M	frontend/src/scss/_variable.scss
+M	noteError.txt
+A	package-lock.json
+
+commit 5db8217aed2bb48a19c3f36fe13ed30de1f758b7
+Author: Khanh Van <kvan18052004@gmail.com>
+Date:   Wed Mar 4 10:17:26 2026 +0700
+
+    Update gitignore
+
+M	.gitignore
+M	backend/.envexample
+M	backend/server.js
+
+commit d827bb03143059a2fcee609e002a6274d2fa7608
+Author: Khanh Van <kvan18052004@gmail.com>
+Date:   Fri Feb 6 17:56:55 2026 +0700
+
+    update
+
+M	.gitignore
+
+commit b85a2c99850f59bb4d749195334e3019078285de
+Merge: dd867b2 556c790
+Author: Khanh Van <kvan18052004@gmail.com>
+Date:   Fri Feb 6 17:50:10 2026 +0700
+
+    Resolve env conflict, keep envexample and ignore env
+
+commit dd867b2c853a9537baed39e1e4743bfe84fdad87
+Author: Khanh Van <kvan18052004@gmail.com>
+Date:   Fri Feb 6 17:45:25 2026 +0700
+
+    Rmove
+
+M	.gitignore
+D	backend/.env
+
+commit 556c790456ced91fb68738501ccb33e00d9bbcca
+Author: Khánh Văn <148089786+kvan185@users.noreply.github.com>
+Date:   Fri Feb 6 17:34:38 2026 +0700
+
+    Rename .env to .envexample
+
+R090	backend/.env	backend/.envexample
+
+commit 297a2977fcffa81e2a439636c337ef2f86c46a67
+Author: Khanh Van <kvan18052004@gmail.com>
+Date:   Fri Feb 6 17:24:07 2026 +0700
+
+    update
+
+M	backend/app/controllers/cart.controller.js
+M	backend/app/controllers/category.controller.js
+M	backend/app/controllers/product.controller.js

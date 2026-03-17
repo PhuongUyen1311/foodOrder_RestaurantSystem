@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import { getAllTables, createReservation, getReservationByTableId } from '../../../actions/table';
 import PopupReserveSuccess from '../../../components/Customer/PopupReserveSuccess/PopupReserveSuccess';
 
-const TableReservation = () => {
+  const TableReservation = () => {
   const navigate = useNavigate();
   const accessToken = sessionStorage.getItem("accessToken");
   const user = JSON.parse(sessionStorage.getItem("user"));
@@ -69,8 +69,8 @@ const TableReservation = () => {
       [name]: value
     }));
   };
-
-  const handleSubmit = async (e) => {
+  
+const handleSubmit = async (e) => {
     e.preventDefault();
 
     const selectedDateStr = formData.use_date;
@@ -154,6 +154,11 @@ const TableReservation = () => {
             <tr key={table._id}>
               <td>{table.tableNumber}</td>
 
+              <td>
+                <span className={`badge ${table.isAvailable ? 'bg-success' : 'bg-danger'}`}>
+                  {table.isAvailable ? 'Trống' : 'Đã đặt'}
+                </span>
+              </td>
               <td>{table.seatingCapacity} người</td>
 
               <td>{table.location}</td>
@@ -329,7 +334,6 @@ const TableReservation = () => {
                 </div>
               </Col>
             </Row>
-
           </Form>
         </Modal.Body>
       </Modal>

@@ -109,13 +109,29 @@ exports.createReservation = async (req, res) => {
       });
     }
 
-    // 4. Kiểm tra trùng ngày
-    console.log("Đang kiểm tra trùng lịch đặt ngày: ", use_date);
+    // 3b. Kiểm tra bàn có trống không
+    if (!table.isAvailable) {
+      console.log("❌ Bàn đang không khả dụng");
+      return res.status(400).json({
+        message: "Bàn hiện không khả dụng"
+      });
+    }
+
+    // 4. Kiểm tra trùng lịch đặt
+    console.log("Đang kiểm tra trùng lịch đặt...");
 
     const existingReservation = await Reservation.findOne({
       tableId: tableId,
-      use_date: new Date(use_date).toISOString().split('T')[0] + "T00:00:00.000Z",
-      status: { $nin: ['Đã hủy', 'Hoàn thành'] }
+      $or: [
+        {
+          use_date: new Date(use_date).toISOString().split('T')[0] + "T00:00:00.000Z",
+          status: { $nin: ['Đã hủy', 'Hoàn thành'] }
+        },
+        {
+          use_date: use_date,
+          use_time: use_time
+        }
+      ]
     });
 
     if (existingReservation) {
@@ -143,9 +159,15 @@ exports.createReservation = async (req, res) => {
       status: "Đã đặt"
     });
 
+    // 7. Lưu reservation
     const savedReservation = await reservation.save();
     
     // Khách hàng có thể đặt bàn ngày khác nên ta không update table.isAvailable = false nữa.
+    // 8. Cập nhật trạng thái bàn
+    table.isAvailable = false;
+    table.status = "Đã đặt";
+
+    await table.save();
     // 9. Gửi email xác nhận
     try {
       await sendConfirmationEmail(
@@ -363,6 +385,11 @@ exports.cancelReservation = async (req, res) => {
     reservation.status = "Đã hủy";
     await reservation.save();
 
+    // Giải phóng bàn
+    await Table.findByIdAndUpdate(reservation.tableId, {
+      isAvailable: true,
+      status: "Trống"
+    });
     res.status(200).json({
       message: "Hủy bàn thành công"
     });

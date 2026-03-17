@@ -1,0 +1,117 @@
+﻿commit 7d3bdceaf1edf4b012e57324340a9927e543ae7b
+Author: UyN <uyenn6374@gmail.com>
+Date:   Tue Mar 24 16:22:05 2026 +0700
+
+    an lam
+
+M	backend/app/controllers/productBom.controller.js
+M	backend/app/models/productBom.model.js
+M	backend/app/routes/productBom.routes.js
+M	backend/app/services/productBom.service.js
+M	data/food_order.product_boms.json
+M	frontend/src/pages/Staff/Ingredient/Ingredient.jsx
+M	frontend/src/pages/Staff/Ingredient/ingredient.scss
+
+commit 42ff83d56fd501e22db692dda5ce4cbf4413891f
+Author: UyN <uyenn6374@gmail.com>
+Date:   Tue Mar 24 14:42:16 2026 +0700
+
+    update
+
+M	backend/app/controllers/productBom.controller.js
+M	backend/app/models/productBom.model.js
+M	backend/app/routes/productBom.routes.js
+R100	data/food_order.product_boms.json	food_order.product_boms.json
+
+commit a64a5fc23ed3ae533c46b0e034609c1ea9624f0e
+Author: Khanh Van <kvan18052004@gmail.com>
+Date:   Fri Mar 20 22:59:36 2026 +0700
+
+    service
+
+M	backend/app/controllers/productBom.controller.js
+A	backend/app/services/productBom.service.js
+
+commit 907a3e4178367df91f1918facd941c2dd3675c44
+Author: Khanh Van <kvan18052004@gmail.com>
+Date:   Fri Mar 20 22:02:34 2026 +0700
+
+    add to cart
+
+M	backend/app/controllers/productBom.controller.js
+
+commit 427d37a9666abcbeab47bdf6615a8b8ccc282e2b
+Author: Khanh Van <kvan18052004@gmail.com>
+Date:   Wed Mar 18 17:14:32 2026 +0700
+
+    Code productBom & ingredient
+
+M	backend/app/controllers/productBom.controller.js
+M	backend/app/models/productBom.model.js
+M	backend/app/routes/productBom.routes.js
+A	data/food_order.product_boms.json
+D	food_order.product_boms.json
+A	frontend/src/pages/Staff/Ingredient/Ingredient.jsx
+A	frontend/src/pages/Staff/Ingredient/ingredient.scss
+
+commit af317fc58a6e384e386c1ed5e2ef2d044c44a2cb
+Author: Khanh Van <kvan18052004@gmail.com>
+Date:   Fri Mar 13 17:58:46 2026 +0700
+
+    update socket v1
+
+R100	food_order.product_boms.json	data/food_order.product_boms.json
+
+commit 316b90a4cb242704d1cf6b8e28356bed79cab050
+Author: Khanh Van <kvan18052004@gmail.com>
+Date:   Thu Mar 12 08:55:08 2026 +0700
+
+    table
+
+M	backend/app/controllers/productBom.controller.js
+M	backend/app/models/productBom.model.js
+M	backend/app/routes/productBom.routes.js
+
+commit 50b6f44995c222fa42b398f170bf63cc150a7d3f
+Author: Khanh Van <kvan18052004@gmail.com>
+Date:   Tue Mar 10 14:11:57 2026 +0700
+
+    update 10/03/2026
+
+M	backend/app/routes/productBom.routes.js
+R100	data/food_order.product_boms.json	food_order.product_boms.json
+
+commit c51f0968232e91702233411ce018f8f209562fec
+Author: Khanh Van <kvan18052004@gmail.com>
+Date:   Tue Mar 10 11:07:44 2026 +0700
+
+    â
+
+R100	food_order.product_boms.json	data/food_order.product_boms.json
+
+commit 5f70cd67444f03764cddb6a961618aa87803ea9b
+Author: Khanh Van <kvan18052004@gmail.com>
+Date:   Sun Mar 8 23:09:25 2026 +0700
+
+    Fix add to cart
+
+A	backend/app/controllers/productBom.controller.js
+A	backend/app/models/productBom.model.js
+A	backend/app/routes/productBom.routes.js
+A	food_order.product_boms.json
+
+commit 906c010186d8eca18894f8a4ee54089f4dcfaa16
+Author: Khánh Văn <148089786+kvan185@users.noreply.github.com>
+Date:   Sun Jan 25 11:24:49 2026 +0000
+
+    Update middleware
+
+D	backend/node_modules/iconv-lite/lib/bom-handling.js
+
+commit 2b3dfb5f0de7da47da6d54cb06722bc7e816c676
+Author: Khanh Van <kvan18052004@gmail.com>
+Date:   Wed Jan 21 11:04:45 2026 +0700
+
+    BE FE version 1
+
+A	backend/node_modules/iconv-lite/lib/bom-handling.js

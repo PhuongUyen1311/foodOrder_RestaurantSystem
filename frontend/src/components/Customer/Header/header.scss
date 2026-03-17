@@ -87,6 +87,7 @@
             cursor: pointer;
             transition: opacity 0.25s ease, transform 0.25s ease;
 
+
             svg {
                 path {
                     stroke: $color-text-light;
@@ -273,6 +274,7 @@
                 visibility: hidden;
                 transform: translateY(-10px);
                 transition: all 0.3s ease;
+                border: none;
 
                 &::before {
                     content: '';

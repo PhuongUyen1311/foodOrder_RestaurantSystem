@@ -1,0 +1,66 @@
+﻿[detached HEAD c822be1] Code productBom & ingredient
+ Author: Khanh Van <kvan18052004@gmail.com>
+ 28 files changed, 2061 insertions(+), 993 deletions(-)
+ rename food_order.categories.json => data/food_order.categories.json (100%)
+ create mode 100644 data/food_order.ingredients.json
+ create mode 100644 data/food_order.product_boms.json
+ rename food_order.products.json => data/food_order.products.json (100%)
+ rename food_order.tables.json => data/food_order.tables.json (100%)
+ rename Screenshot 2026-03-10 104041.png => error/Screenshot 2026-03-10 104041.png (100%)
+ rename Screenshot 2026-03-10 110611.png => error/Screenshot 2026-03-10 110611.png (100%)
+ create mode 100644 error/noteError.txt
+ delete mode 100644 food_order.ingredients.json
+ delete mode 100644 food_order.product_boms.json
+ create mode 100644 frontend/src/actions/ingredient.js
+ create mode 100644 frontend/src/pages/Staff/Ingredient/Ingredient.jsx
+ create mode 100644 frontend/src/pages/Staff/Ingredient/ingredient.scss
+ create mode 100644 package.json
+ create mode 100644 rebase_status.txt
+ create mode 100644 rebase_status2.txt
+Auto-merging frontend/src/pages/Customer/Detail/Detail.jsx
+CONFLICT (content): Merge conflict in frontend/src/pages/Customer/Detail/Detail.jsx
+git : Rebasing (4/8)
+At line:1 char:103
++ ... it add . ; $env:G
+IT_EDITOR="true"; git 
+rebase --continue 2>&1 
+| Out-F ...
++                      
+                  ~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: (Rebasing (4/8   
+ ):String) [], Remo    
+teException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+error: could not apply 
+c6310a0... Code 
+productBom & ingredient
+hint: Resolve all 
+conflicts manually, 
+mark them as resolved 
+with
+hint: "git add/rm 
+<conflicted_files>", 
+then run "git rebase 
+--continue".
+hint: You can instead 
+skip this commit: run 
+"git rebase --skip".
+hint: To abort and get 
+back to the state 
+before "git rebase", 
+run "git rebase 
+--abort".
+hint: Disable this 
+message with "git 
+config set 
+advice.mergeConflict 
+false"
+Could not apply 
+c6310a0... Code 
+productBom & ingredient

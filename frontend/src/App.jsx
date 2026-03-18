@@ -5,8 +5,6 @@ import './App.scss';
 import Header from './components/Customer/Header/Header';
 import Footer from './components/Customer/Footer/Footer';
 import Banner from './components/Customer/Banner/Banner';
-import Slider from './components/Staff/Slider/Slider';
-import HeaderStaff from './components/Staff/Header/Header';
 import Login from './pages/Customer/Login/Login';
 import Register from './pages/Customer/Register/Register';
 import Home from './pages/Customer/Home/Home';
@@ -21,6 +19,8 @@ import TableCheckin from './pages/Customer/Table/TableCheckin';
 import Menu from './pages/Customer/Menu/Menu';
 import Cart from './components/Customer/Cart/Cart';
 import OrderedList from './components/Customer/OrderedList/OrderedList';
+import Slider from './components/Staff/Slider/Slider';
+import HeaderStaff from './components/Staff/Header/Header';
 import RegisterStaff from './pages/Staff/Resgiter/Resgister';
 import Staff from './pages/Staff/Home/HomeStaff';
 import Charts from './pages/Staff/Charts/Charts';
@@ -36,6 +36,7 @@ import OrderDetail from './pages/Staff/Order/OrderDetail';
 import Table from './pages/Staff/Table/Table';
 import ProfileAdmin from './pages/Staff/Profile/Profile';
 import { ToastContainer } from 'react-toastify';
+import Ingredient from './pages/Staff/Ingredient/Ingredient';
 import 'react-toastify/dist/ReactToastify.css';
 import { RequireAuth } from './middleware/AuthMiddleware';
 
@@ -76,6 +77,7 @@ function App() {
               <Route path='/staff/product' element={<Product />} />
               <Route path='/staff/product/add' element={<ProductAdd />} />
               <Route path='/staff/product/update/:id' element={<ProductUpdate />} />
+              <Route path='/staff/ingredient' element={<Ingredient />} />
               <Route path='/staff/order' element={<Order />} />
               <Route path='/staff/order/detail/:orderId' element={<OrderDetail />} />
               <Route path='/staff/revenue' element={<Charts />} />

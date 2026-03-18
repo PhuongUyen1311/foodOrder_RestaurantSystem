@@ -1,0 +1,52 @@
+﻿Auto-merging backend/server.js
+CONFLICT (rename/delete): noteError.txt renamed to error/noteError.txt in 427d37a (Code productBom & ingredient), but deleted in HEAD.
+CONFLICT (modify/delete): error/noteError.txt deleted in HEAD and modified in 427d37a (Code productBom & ingredient).  Version 427d37a (Code productBom & ingredient) of error/noteError.txt left in tree.
+Auto-merging frontend/src/App.jsx
+CONFLICT (content): Merge conflict in frontend/src/App.jsx
+Auto-merging frontend/src/pages/Staff/Table/Table.jsx
+CONFLICT (content): Merge conflict in frontend/src/pages/Staff/Table/Table.jsx
+git : Rebasing (3/8)
+At line:1 char:48
++ ... rror.txt ; $env:G
+IT_EDITOR="true"; git 
+rebase --continue 2>&1 
+| Out-F ...
++                      
+                  ~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: (Rebasing (3/8   
+ ):String) [], Remo    
+teException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+error: could not apply 
+427d37a... Code 
+productBom & ingredient
+hint: Resolve all 
+conflicts manually, 
+mark them as resolved 
+with
+hint: "git add/rm 
+<conflicted_files>", 
+then run "git rebase 
+--continue".
+hint: You can instead 
+skip this commit: run 
+"git rebase --skip".
+hint: To abort and get 
+back to the state 
+before "git rebase", 
+run "git rebase 
+--abort".
+hint: Disable this 
+message with "git 
+config set 
+advice.mergeConflict 
+false"
+Could not apply 
+427d37a... Code 
+productBom & ingredient

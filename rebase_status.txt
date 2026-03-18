@@ -1,0 +1,56 @@
+﻿[detached HEAD 5164121] v1.2
+ Author: Khanh Van <kvan18052004@gmail.com>
+ 16 files changed, 921 insertions(+), 90 deletions(-)
+ create mode 100644 branch.txt
+ create mode 100644 branch_utf8.txt
+ create mode 100644 deleted_files.txt
+ create mode 100644 frontend/.envexample
+ create mode 100644 git_log.txt
+ create mode 100644 log.txt
+ create mode 100644 status.txt
+CONFLICT (modify/delete): noteError.txt deleted in HEAD and modified in 008e357 (update note error).  Version 008e357 (update note error) of noteError.txt left in tree.
+git : Rebasing (2/8)
+At line:1 char:37
++ ... it add . ; $env:G
+IT_EDITOR="true"; git 
+rebase --continue 2>&1 
+| Out-F ...
++                      
+                  ~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: (Rebasing (2/8   
+ ):String) [], Remo    
+teException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+error: could not apply 
+008e357... update note 
+error
+hint: Resolve all 
+conflicts manually, 
+mark them as resolved 
+with
+hint: "git add/rm 
+<conflicted_files>", 
+then run "git rebase 
+--continue".
+hint: You can instead 
+skip this commit: run 
+"git rebase --skip".
+hint: To abort and get 
+back to the state 
+before "git rebase", 
+run "git rebase 
+--abort".
+hint: Disable this 
+message with "git 
+config set 
+advice.mergeConflict 
+false"
+Could not apply 
+008e357... update note 
+error

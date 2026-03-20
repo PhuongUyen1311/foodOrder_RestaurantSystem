@@ -8,6 +8,10 @@ const convertHelper = require("../helpers/convert.helper.js");
 const listSocket = require("../socket");
 const Customer = db.customer;
 const Admin = db.admin;
+const ProductBOM = require("../models/productBom.model");
+const Ingredient = db.ingredient;
+const Product = db.product;
+const { checkManyProducts } = require("../services/product.service");
 
 exports.createCashOrder = async (req, res) => {
     try {
@@ -119,6 +123,36 @@ exports.updateStatusOrder = async (req, res) => {
         if (req.body.status == "canceled" && (order.status == "processing" || order.status == "completed")) {
             return res.status(400).send({ message: "Can't cancel." });
         }
+
+        if (req.body.status === "COMPLETED") {
+            const orderItems = await OrderItem.find({ order_id: req.body.orderId });
+
+            for (const item of orderItems) {
+                const productId = item.product_id;
+                const qtyOrder = item.qty;
+
+                const boms = await ProductBOM.find({ product_id: productId });
+
+                for (const bom of boms) {
+                    const ingredient = await Ingredient.findById(bom.ingredient_id);
+
+                    if (!ingredient) continue;
+
+                    const totalNeed = bom.quantity * qtyOrder;
+
+                    if (ingredient.qty < totalNeed) {
+                        await Product.findByIdAndUpdate(productId, {
+                            is_active: false
+                        });
+                        continue;
+                    }
+
+                    ingredient.qty -= totalNeed;
+                    await ingredient.save();
+                }
+            }
+        }
+
         order.status = req.body.status;
         await order.save();
 

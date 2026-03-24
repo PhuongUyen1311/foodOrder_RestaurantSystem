@@ -1,0 +1,145 @@
+﻿[detached HEAD bc01c31] service
+ Author: Khanh Van <kvan18052004@gmail.com>
+ 25 files changed, 1718 insertions(+), 1503 deletions(-)
+ delete mode 100644 backend/app/controllers/auth.method.js
+ create mode 100644 backend/app/middlewares/auth.method.js
+ create mode 100644 backend/app/services/cart.service.js
+ create mode 100644 backend/app/services/category.service.js
+ create mode 100644 backend/app/services/customer.service.js
+ create mode 100644 backend/app/services/dashboard.service.js
+ create mode 100644 backend/app/services/ingredient.service.js
+ create mode 100644 backend/app/services/order.service.js
+ create mode 100644 backend/app/services/payment.service.js
+ create mode 100644 backend/app/services/productBom.service.js
+ create mode 100644 backend/app/services/reservation.service.js
+ create mode 100644 backend/app/services/table.service.js
+ create mode 100644 rebase_status6.txt
+Auto-merging README.md
+CONFLICT (content): Merge conflict in README.md
+Auto-merging backend/app/controllers/order.controller.js
+CONFLICT (content): Merge conflict in backend/app/controllers/order.controller.js
+Auto-merging backend/app/controllers/payment.controller.js
+CONFLICT (content): Merge conflict in backend/app/controllers/payment.controller.js
+Auto-merging backend/app/controllers/reservation.controller.js
+CONFLICT (content): Merge conflict in backend/app/controllers/reservation.controller.js
+Auto-merging backend/app/controllers/revenue.controller.js
+CONFLICT (content): Merge conflict in backend/app/controllers/revenue.controller.js
+Auto-merging backend/app/controllers/table.controller.js
+CONFLICT (content): Merge conflict in backend/app/controllers/table.controller.js
+Auto-merging backend/app/helpers/convert.helper.js
+CONFLICT (content): Merge conflict in backend/app/helpers/convert.helper.js
+Auto-merging backend/app/models/reservation.model.js
+CONFLICT (content): Merge conflict in backend/app/models/reservation.model.js
+Auto-merging backend/app/routes/order.routes.js
+CONFLICT (content): Merge conflict in backend/app/routes/order.routes.js
+Auto-merging backend/app/routes/paymnet.routes.js
+CONFLICT (content): Merge conflict in backend/app/routes/paymnet.routes.js
+Auto-merging backend/app/socket/index.js
+CONFLICT (content): Merge conflict in backend/app/socket/index.js
+Auto-merging backend/package-lock.json
+CONFLICT (content): Merge conflict in backend/package-lock.json
+Auto-merging backend/package.json
+CONFLICT (content): Merge conflict in backend/package.json
+Auto-merging backend/server.js
+CONFLICT (content): Merge conflict in backend/server.js
+Auto-merging frontend/package.json
+CONFLICT (content): Merge conflict in frontend/package.json
+Auto-merging frontend/src/App.jsx
+CONFLICT (content): Merge conflict in frontend/src/App.jsx
+Auto-merging frontend/src/App.scss
+CONFLICT (content): Merge conflict in frontend/src/App.scss
+Auto-merging frontend/src/actions/order.js
+CONFLICT (content): Merge conflict in frontend/src/actions/order.js
+Auto-merging frontend/src/actions/table.js
+CONFLICT (content): Merge conflict in frontend/src/actions/table.js
+Auto-merging frontend/src/actions/user.js
+CONFLICT (content): Merge conflict in frontend/src/actions/user.js
+Auto-merging frontend/src/components/Customer/Cart/Cart.jsx
+CONFLICT (content): Merge conflict in frontend/src/components/Customer/Cart/Cart.jsx
+Auto-merging frontend/src/components/Customer/Cart/cart.scss
+CONFLICT (content): Merge conflict in frontend/src/components/Customer/Cart/cart.scss
+Auto-merging frontend/src/components/Customer/Contact/Contact.jsx
+CONFLICT (content): Merge conflict in frontend/src/components/Customer/Contact/Contact.jsx
+Auto-merging frontend/src/components/Customer/Header/Header.jsx
+CONFLICT (content): Merge conflict in frontend/src/components/Customer/Header/Header.jsx
+Auto-merging frontend/src/components/Customer/Header/header.scss
+CONFLICT (content): Merge conflict in frontend/src/components/Customer/Header/header.scss
+Auto-merging frontend/src/components/Customer/PopupOrderSuccess/PopupOrderSuccess.jsx
+CONFLICT (content): Merge conflict in frontend/src/components/Customer/PopupOrderSuccess/PopupOrderSuccess.jsx
+Auto-merging frontend/src/components/Customer/PopupUpdateCart/PopupUpdateCart.jsx
+CONFLICT (content): Merge conflict in frontend/src/components/Customer/PopupUpdateCart/PopupUpdateCart.jsx
+Auto-merging frontend/src/components/Customer/Product-Card/ProductCard.jsx
+CONFLICT (content): Merge conflict in frontend/src/components/Customer/Product-Card/ProductCard.jsx
+Auto-merging frontend/src/components/Customer/Table-product/TableProduct.jsx
+CONFLICT (content): Merge conflict in frontend/src/components/Customer/Table-product/TableProduct.jsx
+Auto-merging frontend/src/components/Customer/Table-product/tableProduct.scss
+CONFLICT (content): Merge conflict in frontend/src/components/Customer/Table-product/tableProduct.scss
+Auto-merging frontend/src/middleware/AuthMiddleware.jsx
+CONFLICT (content): Merge conflict in frontend/src/middleware/AuthMiddleware.jsx
+Auto-merging frontend/src/pages/Customer/Checkout/Checkout.jsx
+CONFLICT (content): Merge conflict in frontend/src/pages/Customer/Checkout/Checkout.jsx
+Auto-merging frontend/src/pages/Customer/Detail/Detail.jsx
+CONFLICT (content): Merge conflict in frontend/src/pages/Customer/Detail/Detail.jsx
+Auto-merging frontend/src/pages/Customer/HistoryOrder/HistoryOrder.jsx
+CONFLICT (content): Merge conflict in frontend/src/pages/Customer/HistoryOrder/HistoryOrder.jsx
+Auto-merging frontend/src/pages/Customer/Home/Home.jsx
+CONFLICT (content): Merge conflict in frontend/src/pages/Customer/Home/Home.jsx
+Auto-merging frontend/src/pages/Customer/Menu/Menu.jsx
+CONFLICT (content): Merge conflict in frontend/src/pages/Customer/Menu/Menu.jsx
+Auto-merging frontend/src/pages/Customer/Table/TableReservation.jsx
+CONFLICT (content): Merge conflict in frontend/src/pages/Customer/Table/TableReservation.jsx
+Auto-merging frontend/src/pages/Staff/Charts/Charts.jsx
+CONFLICT (content): Merge conflict in frontend/src/pages/Staff/Charts/Charts.jsx
+Auto-merging frontend/src/pages/Staff/Charts/chart.scss
+CONFLICT (content): Merge conflict in frontend/src/pages/Staff/Charts/chart.scss
+Auto-merging frontend/src/pages/Staff/Home/homeStaff.scss
+CONFLICT (content): Merge conflict in frontend/src/pages/Staff/Home/homeStaff.scss
+Auto-merging frontend/src/pages/Staff/Table/Table.jsx
+CONFLICT (content): Merge conflict in frontend/src/pages/Staff/Table/Table.jsx
+Auto-merging frontend/src/pages/Staff/Table/table.scss
+CONFLICT (content): Merge conflict in frontend/src/pages/Staff/Table/table.scss
+Auto-merging frontend/src/reducers/users.js
+CONFLICT (content): Merge conflict in frontend/src/reducers/users.js
+git : Rebasing (8/8)
+At line:1 char:246
++ ... it add . ; $env:G
+IT_EDITOR="true"; git 
+rebase --continue 2>&1 
+| Out-F ...
++                      
+                  ~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: (Rebasing (8/8   
+ ):String) [], Remo    
+teException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+error: could not apply 
+7d3bdce... ?an lam
+hint: Resolve all 
+conflicts manually, 
+mark them as resolved 
+with
+hint: "git add/rm 
+<conflicted_files>", 
+then run "git rebase 
+--continue".
+hint: You can instead 
+skip this commit: run 
+"git rebase --skip".
+hint: To abort and get 
+back to the state 
+before "git rebase", 
+run "git rebase 
+--abort".
+hint: Disable this 
+message with "git 
+config set 
+advice.mergeConflict 
+false"
+Could not apply 
+7d3bdce... an lam

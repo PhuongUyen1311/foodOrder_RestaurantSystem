@@ -1,5 +1,5 @@
-export const fetchInitCart = async (accessToken) =>{
-    
+export const fetchInitCart = async (accessToken) => {
+
     const response = await fetch('/api/cart', {
         method: 'post',
         headers: {
@@ -11,8 +11,8 @@ export const fetchInitCart = async (accessToken) =>{
     return data;
 }
 
-export const fetchAddProductToCart = async (accessToken, listItem) =>{
-    
+export const fetchAddProductToCart = async (accessToken, listItem) => {
+
     const response = await fetch('/api/cart/add', {
         method: 'post',
         headers: {
@@ -26,7 +26,7 @@ export const fetchAddProductToCart = async (accessToken, listItem) =>{
     return data;
 }
 
-export const fetchUpdateCartItem = async (accessToken, listItem) =>{
+export const fetchUpdateCartItem = async (accessToken, listItem) => {
 
     const response = await fetch('/api/cart/update', {
         method: 'post',
@@ -42,8 +42,8 @@ export const fetchUpdateCartItem = async (accessToken, listItem) =>{
     return data;
 }
 
-export const fetchGetCart= (accessToken) =>{
-    
+export const fetchGetCart = (accessToken) => {
+
     const response = fetch('/api/cart', {
         method: 'get',
         headers: {
@@ -53,8 +53,8 @@ export const fetchGetCart= (accessToken) =>{
     return response;
 }
 
-export const fetchDeleteCart= async (accessToken, cartItemId) =>{
-    
+export const fetchDeleteCart = async (accessToken, cartItemId) => {
+
     const response = await fetch(`/api/cart/${cartItemId}`, {
         method: 'delete',
         headers: {
@@ -65,3 +65,21 @@ export const fetchDeleteCart= async (accessToken, cartItemId) =>{
     const data = await response.json();
     return data;
 }
+
+export const updateCartItem = async (accessToken, item) => {
+    try {
+        const response = await fetch(`/api/cart/update`, {
+            method: 'PUT', // hoặc PATCH tùy backend
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${accessToken}`
+            },
+            body: JSON.stringify(item)
+        });
+
+        return response;
+    } catch (err) {
+        console.error("updateCartItem error:", err);
+        throw err;
+    }
+};

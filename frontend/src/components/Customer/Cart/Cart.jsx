@@ -52,10 +52,17 @@ function Cart({ accessToken }) {
                 const remaingItems = cartItems.filter(item => !selectedItems.includes(item.id));
                 localStorage.setItem('guestCart', JSON.stringify(remaingItems));
 
+                // Nếu có đăng nhập, ta cũng nên clear backend cart (giả sử có API hoặc ghi chú)
+                if (accessToken) {
+                    // Cố gắng gửi qty=0 hoặc tương tự nếu API hỗ trợ, 
+                    // hoặc đơn giản là để backend xử lý khi chuyển sang order.
+                    // Ở đây ta tập trung vào UI guest-first
+                }
+
                 // Cập nhật redux store
                 dispatch(setCartItems(remaingItems));
                 dispatch(setCartStore({
-                    id: 'guest',
+                    id: accessToken ? cart.id : 'guest',
                     total_item: remaingItems.reduce((sum, i) => sum + i.qty, 0),
                     total_price: remaingItems.reduce((sum, i) => sum + i.total_price, 0)
                 }));
@@ -110,6 +117,8 @@ function Cart({ accessToken }) {
             .reduce((sum, item) => sum + item.total_price, 0)
         : 0;
 
+
+
     return (
         <>
             <div className={`bg-gradient ${isCart ? 'show' : ''}`}
@@ -143,7 +152,7 @@ function Cart({ accessToken }) {
                                 </span>
                             </div>
 
-                            {orderSource === 'table' && !accessToken && isOrderingPage ? (
+                            {orderSource === 'table' && isOrderingPage ? (
                                 <div className='guest-order-actions'>
                                     <button
                                         onClick={handleGuestOrder}

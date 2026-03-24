@@ -4,8 +4,15 @@ import { Link } from 'react-router-dom';
 
 import './popupOrderSuccess.scss';
 
-function PopupOrderSuccess({ isPayment, ...props }) {
+function PopupOrderSuccess({ isPayment, tableNumber, ...props }) {
     const accessToken = sessionStorage.getItem("accessToken");
+
+    const getRedirectLink = () => {
+        if (isPayment) {
+            return tableNumber ? `/menu?table=${tableNumber}` : '/menu';
+        }
+        return '/';
+    }
 
     return (
         <>
@@ -53,7 +60,7 @@ function PopupOrderSuccess({ isPayment, ...props }) {
                     {accessToken && (
                         <Link to='/history-order' className='btn-success-follow'>Theo dõi đơn hàng</Link>
                     )}
-                    <Link to={isPayment ? '/menu' : '/'} className='btn-success-continue'>
+                    <Link to={getRedirectLink()} className='btn-success-continue'>
                         {isPayment ? 'Trở về màn hình gọi món' : 'Tiếp tục mua hàng'}
                     </Link>
                 </Modal.Footer>

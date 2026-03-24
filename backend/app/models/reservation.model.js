@@ -71,9 +71,9 @@ module.exports = mongoose => {
         throw new Error('Bàn không tồn tại');
       }
 
-      if (!table.isAvailable) {
-        throw new Error('Bàn đã được đặt');
-      }
+      // if (!table.isAvailable) {
+      //   throw new Error('Bàn đã được đặt');
+      // }
 
       next();
     } catch (error) {

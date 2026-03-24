@@ -152,17 +152,9 @@ const handleSubmit = async (e) => {
         <tbody>
           {tables.map((table) => (
             <tr key={table._id}>
-              <td>{table.tableNumber}</td>
-
-              <td>
-                <span className={`badge ${table.isAvailable ? 'bg-success' : 'bg-danger'}`}>
-                  {table.isAvailable ? 'Trống' : 'Đã đặt'}
-                </span>
-              </td>
+              <td>Bàn {table.tableNumber}</td>
               <td>{table.seatingCapacity} người</td>
-
               <td>{table.location}</td>
-
               <td>
                 <Button
                   variant="primary"
@@ -177,21 +169,34 @@ const handleSubmit = async (e) => {
       </BootstrapTable>
 
       {/* Modal đặt bàn */}
-      <Modal show={showModal} onHide={() => !isLoading && setShowModal(false)} size="lg">
+      <Modal 
+        show={showModal} 
+        onHide={() => !isLoading && setShowModal(false)} 
+        size="lg" 
+        centered
+        contentClassName="reservation-modal-content"
+      >
         <Modal.Header closeButton={!isLoading}>
           <Modal.Title>Đặt bàn {selectedTable?.tableNumber}</Modal.Title>
         </Modal.Header>
 
-        <Modal.Body>
+        <Modal.Body style={{ overflowY: 'hidden', padding: '1.5rem' }}>
           <Form onSubmit={handleSubmit}>
             <Row>
               {/* Lịch bên trái */}
               <Col md={5}>
-
                 <div className="mb-3">
-                  <Form.Label>(Đỏ = Đã đặt, Xanh = Trống)</Form.Label>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '5px', marginBottom: '15px' }}>
-                    {['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'].map(d => <div key={d} style={{ textAlign: 'center', fontWeight: 'bold' }}>{d}</div>)}
+                  <Form.Label className="fw-bold" style={{ fontSize: '13px' }}>(Đỏ = Đã đặt, Xanh = Trống)</Form.Label>
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(7, 1fr)', 
+                    gap: '4px', 
+                    marginBottom: '10px',
+                    padding: '8px',
+                    backgroundColor: '#f8f9fa',
+                    borderRadius: '8px'
+                  }}>
+                    {['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'].map(d => <div key={d} style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '11px' }}>{d}</div>)}
 
                     {Array.from({ length: (new Date()).getDay() }).map((_, i) => <div key={`empty-${i}`}></div>)}
 
@@ -207,13 +212,14 @@ const handleSubmit = async (e) => {
                         <div
                           key={localISOTime}
                           style={{
-                            padding: '5px',
+                            padding: '6px 2px',
                             textAlign: 'center',
                             backgroundColor: isBooked ? '#dc3545' : '#5ab56fff',
                             color: 'white',
-                            borderRadius: '4px',
+                            borderRadius: '3px',
                             opacity: isBooked ? 0.6 : 1,
-                            fontSize: '12px'
+                            fontSize: '10px',
+                            fontWeight: '500'
                           }}
                         >
                           {d.getDate()}/{d.getMonth() + 1}
@@ -228,22 +234,24 @@ const handleSubmit = async (e) => {
               <Col md={7}>
                 <Row>
                   <Col sm={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Số bàn</Form.Label>
+                    <Form.Group className="mb-2">
+                      <Form.Label style={{ fontSize: '14px' }}>Số bàn</Form.Label>
                       <Form.Control
                         type="text"
                         value={selectedTable?.tableNumber || ''}
                         disabled
+                        size="sm"
                       />
                     </Form.Group>
                   </Col>
                   <Col sm={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Họ và tên</Form.Label>
+                    <Form.Group className="mb-2">
+                      <Form.Label style={{ fontSize: '14px' }}>Họ và tên</Form.Label>
                       <Form.Control
                         type="text"
                         value={`${user?.first_name || ''} ${user?.last_name || ''}`}
                         disabled
+                        size="sm"
                       />
                     </Form.Group>
                   </Col>
@@ -251,30 +259,32 @@ const handleSubmit = async (e) => {
 
                 <Row>
                   <Col sm={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Số điện thoại</Form.Label>
+                    <Form.Group className="mb-2">
+                      <Form.Label style={{ fontSize: '14px' }}>Số điện thoại</Form.Label>
                       <Form.Control
                         type="tel"
                         value={user?.phone || ''}
                         disabled
+                        size="sm"
                       />
                     </Form.Group>
                   </Col>
                   <Col sm={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Email</Form.Label>
+                    <Form.Group className="mb-2">
+                      <Form.Label style={{ fontSize: '14px' }}>Email</Form.Label>
                       <Form.Control
                         type="email"
                         value={user?.email || ''}
                         disabled
+                        size="sm"
                       />
                     </Form.Group>
                   </Col>
                 </Row>
                 <Row>
                   <Col sm={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Ngày sử dụng bàn</Form.Label>
+                    <Form.Group className="mb-2">
+                      <Form.Label style={{ fontSize: '14px' }}>Ngày sử dụng</Form.Label>
                       <Form.Control
                         type="date"
                         name="use_date"
@@ -282,40 +292,44 @@ const handleSubmit = async (e) => {
                         value={formData.use_date}
                         onChange={handleInputChange}
                         required
+                        size="sm"
                       />
                     </Form.Group>
                   </Col>
                   <Col sm={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Giờ sử dụng bàn</Form.Label>
+                    <Form.Group className="mb-2">
+                      <Form.Label style={{ fontSize: '14px' }}>Giờ sử dụng</Form.Label>
                       <Form.Control
                         type="time"
                         name="use_time"
                         value={formData.use_time}
                         onChange={handleInputChange}
                         required
+                        size="sm"
                       />
                     </Form.Group>
                   </Col>
                 </Row>
 
                 <Form.Group className="mb-3">
-                  <Form.Label>Yêu cầu đặc biệt</Form.Label>
+                  <Form.Label style={{ fontSize: '14px' }}>Yêu cầu đặc biệt</Form.Label>
                   <Form.Control
                     as="textarea"
                     name="specialRequests"
                     value={formData.specialRequests}
                     onChange={handleInputChange}
                     rows={2}
+                    size="sm"
                   />
                 </Form.Group>
 
-                <div className="d-flex justify-content-end mt-4">
+                <div className="d-flex justify-content-end mt-2">
                   <Button
                     variant="primary"
                     type="submit"
                     disabled={isLoading}
-                    style={{ minWidth: "432px" }}
+                    className="w-100"
+                    style={{ height: '40px', fontSize: '16px', fontWeight: 'bold' }}
                   >
                     {isLoading ? (
                       <>

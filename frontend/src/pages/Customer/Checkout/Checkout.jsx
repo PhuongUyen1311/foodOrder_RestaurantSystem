@@ -120,13 +120,11 @@ function Checkout(props) {
 
             if (data && data.success) {
                 if (orderSource === 'table') {
+                    // Xóa cart và flag nhưng giữ tableNumber trong state để popup sử dụng
                     localStorage.removeItem('guestCart');
                     localStorage.removeItem('tableNumber');
                     localStorage.removeItem('orderSource');
                     localStorage.removeItem('guestHasOrdered');
-                }
-                if (isFullTablePayment) {
-                    return navigate(`/menu?table=${tableNumber}`, { state: { showPaymentSuccess: true } });
                 }
                 return setShowPopup(true);
             }
@@ -159,6 +157,8 @@ function Checkout(props) {
             fetchUpdateIsPayment(arrOId[1], true);
 
             const savedOrderSource = localStorage.getItem('orderSource');
+            const savedTableNumber = localStorage.getItem('tableNumber');
+
             if (savedOrderSource === 'table') {
                 localStorage.removeItem('guestCart');
                 localStorage.removeItem('tableNumber');
@@ -170,7 +170,8 @@ function Checkout(props) {
         }
     }, []);
 
-    if (!accessToken && orderSource !== 'table' && !isFullTablePayment) {
+    const currentOrderSource = passedOrderSource || localStorage.getItem('orderSource') || orderSource;
+    if (!accessToken && currentOrderSource !== 'table' && !isFullTablePayment) {
         navigate(`/login?returnUrl=${encodeURIComponent(location.pathname + location.search)}`);
     }
 
@@ -185,7 +186,8 @@ function Checkout(props) {
             <PopupOrderSuccess
                 show={showPopup}
                 backdrop="static"
-                isPayment={isFullTablePayment}
+                isPayment={isFullTablePayment || (orderSource === 'table')}
+                tableNumber={tableNumber}
             />
             <Container className='block-checkout'>
                 <div className="checkout-title">

@@ -109,13 +109,15 @@ exports.createReservation = async (req, res) => {
       });
     }
 
-    // 3b. Kiểm tra bàn có trống không
+    /* 
+    // 3b. Kiểm tra bàn có trống không - Bỏ qua để cho phép đặt trước ngày khác
     if (!table.isAvailable) {
       console.log("❌ Bàn đang không khả dụng");
       return res.status(400).json({
         message: "Bàn hiện không khả dụng"
       });
     }
+    */
 
     // 4. Kiểm tra trùng lịch đặt
     console.log("Đang kiểm tra trùng lịch đặt...");
@@ -163,11 +165,10 @@ exports.createReservation = async (req, res) => {
     const savedReservation = await reservation.save();
     
     // Khách hàng có thể đặt bàn ngày khác nên ta không update table.isAvailable = false nữa.
-    // 8. Cập nhật trạng thái bàn
-    table.isAvailable = false;
-    table.status = "Đã đặt";
-
-    await table.save();
+    // Trạng thái bàn sẽ được tính toán động dựa trên lịch đặt
+    // table.isAvailable = false;
+    // table.status = "Đã đặt";
+    // await table.save();
     // 9. Gửi email xác nhận
     try {
       await sendConfirmationEmail(

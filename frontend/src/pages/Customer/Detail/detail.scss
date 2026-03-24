@@ -197,10 +197,11 @@
     background: #fff;
     border-radius: 16px;
     padding: 25px;
-    width: 500px;
+    width: 700px;
     max-width: 90%;
-    max-height: 80vh;
-    overflow-y: auto;
+    min-height: 400px;
+    max-height: 95vh;
+    overflow-y: visible;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     animation: scaleUp 0.3s ease;
 }

@@ -22,6 +22,14 @@ const TableManagement = () => {
         location: 'Tầng 1 trong nhà',
         isAvailable: true
     });
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = parseInt(import.meta.env.VITE_ITEMS_PER_PAGE) || 10;
+
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentTables = tables.slice(indexOfFirstItem, indexOfLastItem);
+
+    const totalPages = Math.ceil(tables.length / itemsPerPage);
     const [showViewModal, setShowViewModal] = useState(false);
     const [viewTable, setViewTable] = useState(null);
     const [reservationInfo, setReservationInfo] = useState(null);
@@ -29,8 +37,14 @@ const TableManagement = () => {
     const [socketTables, setSocketTables] = useState([]);
     const socketRef = useRef();
     const user = JSON.parse(sessionStorage.getItem("user"));
+    const [now, setNow] = useState(new Date());
     const SOCKET_SERVER_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
     const CLIENT_URL = window.location.origin;
+
+    useEffect(() => {
+        const timer = setInterval(() => setNow(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
 
     useEffect(() => {
         socketRef.current = socketIOClient.connect(SOCKET_SERVER_URL);
@@ -265,6 +279,19 @@ const TableManagement = () => {
         }
     };
 
+    const renderCountdown = (targetTime) => {
+        const diff = new Date(targetTime) - now;
+        if (diff <= 0) return <span className="text-danger fw-bold">Hết giờ!</span>;
+        const hours = Math.floor(diff / 3600000);
+        const minutes = Math.floor((diff % 3600000) / 60000);
+        const seconds = Math.floor((diff % 60000) / 1000);
+        return (
+            <span className="countdown-timer text-danger fw-bold">
+                {hours > 0 ? `${hours}:` : ''}{minutes < 10 ? '0' : ''}{minutes}:{seconds < 10 ? '0' : ''}{seconds}
+            </span>
+        );
+    };
+
     if (error) {
         return <div className="alert alert-danger">{error}</div>;
     }
@@ -372,13 +399,15 @@ const TableManagement = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {tables.map((table) => (
+                    {currentTables.map((table) => (
                         <tr key={table._id}>
                             <td>Bàn {table.tableNumber}</td>
                             <td>
-                                <span className={`badge ${getStatusBadgeClass(table.status)}`}>
-                                    {table.status}
-                                </span>
+                                <div className="d-flex flex-column align-items-center">
+                                    <span className={`badge ${getStatusBadgeClass(table.status)}`}>
+                                        {table.status}
+                                    </span>
+                                </div>
                             </td>
                             <td>{table.seatingCapacity}</td>
                             <td>
@@ -432,11 +461,49 @@ const TableManagement = () => {
                                     </Button>
                                 )}
                             </td>
-                            <td>{table.note}</td>
+                            <td>
+                                <div className="d-flex flex-column">
+                                    <span style={{ color: '#6c757d', fontSize: '14px' }}>
+                                        {table.note}
+                                    </span>
+                                    {table.nextReservationTime && (
+                                        <div className="mt-1" style={{ fontSize: '14px' }}>
+                                            {renderCountdown(table.note === 'Bàn đang giữ chỗ' ? table.holdExpiryTime : table.nextReservationTime)}
+                                        </div>
+                                    )}
+                                </div>
+                            </td>
                         </tr>
                     ))}
                 </tbody>
             </Table>
+            <div className="pagination d-flex justify-content-center mt-3 gap-2">
+                <button
+                    className="btn btn-secondary"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                >
+                    Prev
+                </button>
+
+                {[...Array(totalPages)].map((_, i) => (
+                    <button
+                        key={i}
+                        className={`btn ${currentPage === i + 1 ? 'btn-primary' : 'btn-outline-primary'}`}
+                        onClick={() => setCurrentPage(i + 1)}
+                    >
+                        {i + 1}
+                    </button>
+                ))}
+
+                <button
+                    className="btn btn-secondary"
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                >
+                    Next
+                </button>
+            </div>
 
             {/* Modal Sửa */}
             <Modal show={showEditModal} onHide={handleCloseEditModal}>
@@ -540,7 +607,12 @@ const TableManagement = () => {
                                 </div>
 
                                 <div className="modal-actions mt-auto pt-3 d-flex justify-content-center gap-2">
-                                    <Button variant="secondary" className="flex-fill" onClick={handleCloseViewModal}>
+                                    <Button
+                                        variant="secondary"
+                                        className="flex-fill"
+                                        onClick={handleCloseViewModal}
+                                        style={{ height: '38px', fontSize: '14px' }}
+                                    >
                                         Đóng
                                     </Button>
                                     <Button
@@ -550,6 +622,7 @@ const TableManagement = () => {
                                             handleDeleteTable(viewTable._id);
                                             handleCloseViewModal();
                                         }}
+                                        style={{ height: '38px', fontSize: '14px' }}
                                     >
                                         Xóa bàn
                                     </Button>
@@ -559,7 +632,7 @@ const TableManagement = () => {
                             <Col md={7}>
                                 <div className="reservation-schedule">
                                     <h5>Lịch đặt bàn</h5>
-                                    <div className="schedule-list-wrapper">
+                                    <div className="schedule-list-wrapper" style={{ minHeight: '150px', maxHeight: '150px', overflowY: 'auto' }}>
                                         <table className="schedule-table">
                                             <thead>
                                                 <tr>

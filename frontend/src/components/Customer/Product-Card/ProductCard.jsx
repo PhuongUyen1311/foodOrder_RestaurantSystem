@@ -32,10 +32,9 @@ function ProductCard({ items, fullCol }) {
 
   const addProductInCart = async (idProduct) => {
     const orderSource = localStorage.getItem('orderSource');
-    const isMenuPage = window.location.pathname === '/menu';
 
     if (!user || !accessToken) {
-      if (orderSource === 'table' && isMenuPage) {
+      if (orderSource === 'table') {
         let guestCart = JSON.parse(localStorage.getItem('guestCart')) || [];
         const existingItemIndex = guestCart.findIndex(item => item.id === idProduct);
 
@@ -103,39 +102,76 @@ function ProductCard({ items, fullCol }) {
     }
   };
 
-return (
-<Col xs={6} sm={6} md={4} lg={3}>
-  <Link to={`/detail/${id}`} className="product-card">
-    <div className="product-img">
-      <img src={imageSrc} alt={name} />
-    </div>
+  const orderSource = localStorage.getItem('orderSource');
 
-    <div className="product-info">
+  if (orderSource === 'table') {
+    return (
+      <Col xs={6} sm={6} md={4} lg={3}>
+        <div className="product-card">
+          <div className="product-img">
+            <img src={imageSrc} alt={name} />
+          </div>
 
-      <span className="product-name">
-        {name}
-      </span>
+          <div className="product-info">
+            <span className="product-name">
+              {name}
+            </span>
 
-      <span className="product-price">
-        {price?.toLocaleString('vi', {
-          style: 'currency',
-          currency: 'VND'
-        })}
-      </span>
+            <span className="product-price">
+              {price?.toLocaleString('vi', {
+                style: 'currency',
+                currency: 'VND'
+              })}
+            </span>
 
-      <button
-        className="btn btn-add-cart"
-        onClick={(e) => {
-          e.preventDefault();     // không chuyển sang detail
-          e.stopPropagation();    // chặn click lan ra Link
-          addProductInCart(id);
-        }}
-      >
-        <i className="fa-solid fa-cart-plus"></i>
-      </button>
-    </div>
-  </Link>
-</Col>
+            <button
+              className="btn btn-add-cart"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                addProductInCart(id);
+              }}
+            >
+              <i className="fa-solid fa-cart-plus"></i>
+            </button>
+          </div>
+        </div>
+      </Col>
+    );
+  }
+
+  return (
+    <Col xs={6} sm={6} md={4} lg={3}>
+      <Link to={`/detail/${id}`} className="product-card">
+        <div className="product-img">
+          <img src={imageSrc} alt={name} />
+        </div>
+
+        <div className="product-info">
+          <span className="product-name">
+            {name}
+          </span>
+
+          <span className="product-price">
+            {price?.toLocaleString('vi', {
+              style: 'currency',
+              currency: 'VND'
+            })}
+          </span>
+
+          <button
+            className="btn btn-add-cart"
+            onClick={(e) => {
+              e.preventDefault();     // không chuyển sang detail
+              e.stopPropagation();    // chặn click lan ra Link
+              addProductInCart(id);
+            }}
+          >
+            <i className="fa-solid fa-cart-plus"></i>
+          </button>
+        </div>
+      </Link>
+    </Col>
   );
 }
 

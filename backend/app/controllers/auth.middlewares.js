@@ -1,7 +1,7 @@
 const jwtVariable = require('../../variables/jwt');
 const db = require("../models");
 const Customer = db.customer;
-const authMethod = require('./auth.method');
+const authMethod = require('../middlewares/auth.method');
 
 exports.isAuth = async (req, res, next) => {
 	try {

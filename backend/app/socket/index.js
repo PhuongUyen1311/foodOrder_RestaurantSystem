@@ -1,6 +1,5 @@
 const { Server } = require("socket.io");
 const actionHelper = require("../helpers/action.helper.js");
-const Table = require("../models/table.model.js");
 const tableController = require("../controllers/table.controller.js");
 
 module.exports = (server) => {
@@ -23,7 +22,7 @@ module.exports = (server) => {
 
     socket.on("tableChange", async () => {
       try {
-        const tables = await Table.find().sort({ tableNumber: 1 });
+        const tables = await tableController.getTablesListInternal();
         io.emit("tableUpdated", tables);
       } catch (error) {
         console.error("Error fetching tables:", error);

@@ -98,9 +98,9 @@ exports.getTablesListInternal = async () => {
   const todayDateQuery = new Date(localISO + "T00:00:00.000Z");
 
   const now = new Date();
-  const expiryLimit = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+  const expiryLimit = new Date(now.getTime() - 2 * 60 * 60 * 1000); // Giữ bàn trong 2 tiếng
 
-  // Tự động hủy các đơn đặt bàn quá 3 tiếng
+  // Tự động hủy các đơn đặt bàn quá 2 tiếng
   await db.reservation.updateMany(
     {
       use_date: todayDateQuery,
@@ -120,6 +120,7 @@ exports.getTablesListInternal = async () => {
   return tables.map(table => {
     const t = table.toObject();
     t.note = ""; // Khởi tạo ghi chú trống
+    t.nextReservationTime = null;
 
     // Tìm reservation của bàn này trong hôm nay (không bao gồm 'Đã hủy', 'Hoàn thành')
     const res = todayReservations.find(r => r.tableId.toString() === t._id.toString());
@@ -129,17 +130,18 @@ exports.getTablesListInternal = async () => {
       const diffMs = resTime - now;
       const diffMinutes = Math.floor(diffMs / 60000);
 
-        if (resTime <= oneHourFromNow) {
-          // Trong khoảng 1 tiếng trước giờ đặt
-          if (t.status === 'Đang sử dụng') {
-            t.note = ""; // Xóa ghi chú khi nhân viên đã xác nhận sử dụng
-          } else {
-            // Nếu không đang sử dụng, bàn chuyển sang 'Đã đặt' để giữ chỗ
-            t.status = 'Đã đặt';
-            t.isAvailable = false;
-            t.note = "Bàn đang giữ chỗ";
-          }
+      if (resTime <= oneHourFromNow) {
+        t.nextReservationTime = res.reservationTime; 
+        t.holdExpiryTime = new Date(resTime.getTime() + 2 * 60 * 60 * 1000); 
+
+        if (t.status === 'Đang sử dụng') {
+          t.note = "Sắp đến giờ đặt bàn của khách, mau chóng xử lý!"; 
         } else {
+          t.status = 'Đã đặt';
+          t.isAvailable = false;
+          t.note = "Bàn đang giữ chỗ";
+        }
+      } else {
         // Ngoài khoảng 1 tiếng, nếu không đang sử dụng thì là Trống
         if (t.status !== 'Đang sử dụng') {
           t.status = 'Trống';
@@ -187,7 +189,7 @@ exports.startUsingTable = async (req, res) => {
 
     if (reservation) {
       const now = new Date();
-      const expiryTime = new Date(reservation.reservationTime.getTime() + 3 * 60 * 60 * 1000);
+      const expiryTime = new Date(reservation.reservationTime.getTime() + 2 * 60 * 60 * 1000);
 
       if (now > expiryTime) {
         reservation.status = 'Đã hủy';

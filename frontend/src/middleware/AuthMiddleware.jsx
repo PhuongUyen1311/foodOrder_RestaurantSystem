@@ -5,7 +5,10 @@ export const RequireAuth = ({ children }) => {
     const accessToken = sessionStorage.getItem("accessToken");
 
 
-    if (!accessToken) {
+    const isTableOrder = location.state?.orderSource === 'table' || localStorage.getItem('orderSource') === 'table';
+    const isFullTablePayment = location.state?.isFullTablePayment;
+
+    if (!accessToken && !isTableOrder && !isFullTablePayment) {
         // Lưu lại đường dẫn hiện tại để quay lại sau khi đăng nhập
         return <Navigate to={`/login?returnUrl=${encodeURIComponent(location.pathname + location.search)}`} />;
     }

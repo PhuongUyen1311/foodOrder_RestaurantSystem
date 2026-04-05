@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Table, Modal, Form, Button } from 'react-bootstrap';
-import { FaRegEdit } from 'react-icons/fa';
-import { MdLock, MdLockOpen } from 'react-icons/md';
+import { Table, Modal, Form, Button, InputGroup } from 'react-bootstrap';
+import { FaRegEdit, FaSearch, FaPlus } from 'react-icons/fa';
+import { MdLock, MdLockOpen, MdDelete } from 'react-icons/md';
+import { IoMdClose } from "react-icons/io";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './customer.scss';
@@ -28,7 +29,7 @@ function Customer() {
         confirm_password: ''
     });
 
-    const itemsPerPage = import.meta.env.VITE_ITEMS_PER_PAGE || 10;
+    const itemsPerPage = import.meta.env.VITE_ITEMS_PER_PAGE || 5;
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentCustomers = customerList.slice(indexOfFirstItem, indexOfLastItem);
@@ -46,7 +47,7 @@ function Customer() {
             const url = searchQuery ? `/api/admin/customer?search=${encodeURIComponent(searchQuery)}` : '/api/admin/customer';
             const res = await fetch(url);
             const data = await res.json();
-            
+
             if (Array.isArray(data)) {
                 setCustomerList(data);
             } else if (data.customers && Array.isArray(data.customers)) {
@@ -56,7 +57,7 @@ function Customer() {
             } else {
                 setCustomerList([]);
             }
-            if (searchQuery) setCurrentPage(1);
+            setCurrentPage(1);
         } catch (error) {
             console.error('Error fetching customers:', error);
             setCustomerList([]);
@@ -164,7 +165,7 @@ function Customer() {
         if (!formData.first_name.trim() || !formData.last_name.trim()) {
             return toast.error('Vui lòng nhập họ và tên');
         }
-        
+
         if (!isEditMode) {
             if (!formData.password || formData.password.length < 6) {
                 return toast.error('Mật khẩu phải ít nhất 6 ký tự');
@@ -208,56 +209,54 @@ function Customer() {
 
     if (loading && customerList.length === 0 && !isSearching) {
         return (
-            <section className="block-customer-admin">
-                <h3 className="title-admin">Danh sách khách hàng</h3>
-                <div className="customer-container background-radius">
-                    <div style={{ textAlign: 'center', padding: '50px' }}>
-                        <div className="spinner-border text-success" role="status"></div>
-                    </div>
+        <div className="staff-management block-customer ps-0 pt-0">
+            <h2 className="title-admin mb-4 mt-4" style={{ fontSize: '24px', fontWeight: '600', color: '#2d3748' }}>Quản lý Khách hàng
+                <style>{`.title-admin::after { display: none !important; }`}</style> </h2>
+            <div className="customer-container background-radius">
+                <div style={{ textAlign: 'center', padding: '50px' }}>
+                    <div className="spinner-border text-success" role="status"></div>
                 </div>
-            </section>
+            </div>
+        </div>
         );
     }
 
     return (
-        <section className="block-customer-admin">
+        <section className="staff-management block-customer ps-0 pt-0">
             <ToastContainer position="top-right" autoClose={2000} />
-            <h3 className="title-admin">Danh sách khách hàng</h3>
 
-            <div className="customer-container background-radius">
-                <div className="d-flex justify-content-between align-items-center mb-4 mt-3">
-                    <div className="product-add mb-0">
-                        <Button variant="success" onClick={handleShowAddModal}>
-                            + Thêm mới
-                        </Button>
-                    </div>
-
+            <div className="staff-management__header d-flex justify-content-between align-items-center mb-4 mt-4 px-0">
+                <h2 className="title-admin mb-0" style={{ fontSize: '24px', fontWeight: '600', color: '#2d3748', marginLeft: '0', paddingLeft: '0' }}>Quản lý Khách hàng
+                    <style>{`.title-admin::after { display: none !important; }`}</style> </h2>
+                <div className="d-flex align-items-center gap-2">
                     <div className="search-container" style={{ width: '380px' }}>
-                        <div className="input-group">
-                            <span className="input-group-text bg-white border-end-0">
-                                <i className="fa fa-search text-muted"></i>
-                            </span>
-                            <input
+                        <InputGroup>
+                            <InputGroup.Text className="bg-white border-end-0 border-secondary-subtle">
+                                <FaSearch className="text-muted" />
+                            </InputGroup.Text>
+                            <Form.Control
                                 type="text"
                                 placeholder="Tìm kiếm theo Tên, Email hoặc Số điện thoại..."
                                 value={searchTerm}
                                 onChange={handleSearchChange}
-                                className="form-control border-start-0 border-end-0 shadow-none"
+                                className="border-start-0 border-secondary-subtle ps-1 shadow-none"
                             />
                             {searchTerm && (
-                                <span 
-                                    className="input-group-text bg-white border-start-0" 
+                                <InputGroup.Text
+                                    className="bg-white border-start-0 cursor-pointer border-secondary-subtle"
                                     onClick={handleClearSearch}
-                                    style={{ cursor: 'pointer' }}
                                 >
-                                    <i className="fa fa-times text-secondary"></i>
-                                </span>
+                                    <IoMdClose className="text-secondary" />
+                                </InputGroup.Text>
                             )}
-                        </div>
+                        </InputGroup>
                     </div>
+                    <button className="btn btn-success ms-3 d-flex align-items-center gap-2" onClick={handleShowAddModal} style={{ padding: '10px 22px', borderRadius: '8px', fontWeight: '500' }}> <FaPlus /> Thêm khách hàng</button>
                 </div>
+            </div>
 
-                <Table striped bordered hover className="customer-table text-center align-middle" responsive>
+            <div className="pt-0 mt-0">
+                <Table striped bordered hover className="mt-3 text-center align-middle">
                     <thead className="table-success">
                         <tr>
                             <th>STT</th>
@@ -285,7 +284,7 @@ function Customer() {
 
                                 const fullName = `${cus.first_name || ''} ${cus.last_name || ''}`.trim();
                                 // is_active can be true/false. If undefined, we assume true because of default: true
-                                const isActive = cus.is_active !== false; 
+                                const isActive = cus.is_active !== false;
                                 const isLocked = !isActive;
                                 const isUpdating = updatingId === customerId;
 
@@ -303,27 +302,29 @@ function Customer() {
                                                 {isActive ? 'Hoạt động' : 'Đã khóa'}
                                             </span>
                                         </td>
-                                        <td>
-                                            <Button 
-                                                variant="primary" 
-                                                size="sm" 
-                                                className="me-2"
+                                        <td className="text-center">
+                                            <button
+                                                className="btn btn-sm btn-link p-1"
+                                                title="Sửa thông tin"
                                                 onClick={() => handleShowEditModal(cus)}
                                             >
-                                                Sửa
-                                            </Button>
+                                                <FaRegEdit className='icon-update fs-5 text-success' />
+                                            </button>
 
                                             {isUpdating ? (
-                                                <Button variant="secondary" size="sm" disabled>...</Button>
+                                                <span className="spinner-border spinner-border-sm text-secondary mx-2" role="status"></span>
                                             ) : (
-                                                <Button
-                                                    variant={isLocked ? "success" : "danger"}
-                                                    size="sm"
+                                                <button
+                                                    className="btn btn-sm btn-link p-1"
+                                                    title={isLocked ? "Mở khóa tài khoản" : "Khóa tài khoản"}
                                                     onClick={() => handleToggleLock(customerId, isActive)}
                                                 >
-                                                    {isLocked ? <MdLockOpen /> : <MdLock />}
-                                                    {isLocked ? ' Mở khóa' : ' Khóa'}
-                                                </Button>
+                                                    {isLocked ? (
+                                                        <MdLockOpen className='icon-unlock fs-5 text-primary' />
+                                                    ) : (
+                                                        <MdLock className='icon-lock fs-5 text-warning' />
+                                                    )}
+                                                </button>
                                             )}
                                         </td>
                                     </tr>
@@ -335,32 +336,34 @@ function Customer() {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                    <div className="pagination d-flex justify-content-center mt-3 gap-2">
-                        <Button
-                            variant="outline-secondary"
+                    <div className="admin-pagination">
+                        <button
                             disabled={currentPage === 1}
                             onClick={() => setCurrentPage(currentPage - 1)}
                         >
                             Prev
-                        </Button>
+                        </button>
 
-                        {[...Array(totalPages)].map((_, i) => (
-                            <Button
-                                key={i}
-                                variant={currentPage === i + 1 ? 'success' : 'outline-success'}
-                                onClick={() => setCurrentPage(i + 1)}
-                            >
-                                {i + 1}
-                            </Button>
-                        ))}
+                        {(() => {
+                            const maxVisiblePages = 5;
+                            const currentGroup = Math.ceil(currentPage / maxVisiblePages);
+                            const startPage = (currentGroup - 1) * maxVisiblePages + 1;
+                            const endPage = Math.min(startPage + maxVisiblePages - 1, totalPages);
+                            const pageNumbers = [];
+                            for (let i = startPage; i <= endPage; i++) {
+                                pageNumbers.push(
+                                    <button key={i} className={currentPage === i ? 'active' : ''} onClick={() => setCurrentPage(i)}>{i}</button>
+                                );
+                            }
+                            return pageNumbers;
+                        })()}
 
-                        <Button
-                            variant="outline-secondary"
+                        <button
                             disabled={currentPage === totalPages}
                             onClick={() => setCurrentPage(currentPage + 1)}
                         >
                             Next
-                        </Button>
+                        </button>
                     </div>
                 )}
             </div>
@@ -370,7 +373,7 @@ function Customer() {
                 <Modal.Header closeButton>
                     <Modal.Title>{isEditMode ? 'Cập nhật khách hàng' : 'Thêm khách hàng mới'}</Modal.Title>
                 </Modal.Header>
-                
+
                 <Modal.Body>
                     <Form onSubmit={handleSubmit}>
                         <div className="row">

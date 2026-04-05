@@ -14,7 +14,7 @@ import {
     BarController,
 } from 'chart.js';
 import { Chart } from 'react-chartjs-2';
-  
+
 ChartJS.register(
     LinearScale,
     CategoryScale,
@@ -29,7 +29,7 @@ ChartJS.register(
 import './chart.scss';
 
 function Charts(props) {
-    const [timerRequest, setTimerRequest] = useState({startDate: '', endDate: '', typeRevenue: ''});
+    const [timerRequest, setTimerRequest] = useState({ startDate: '', endDate: '', typeRevenue: '' });
     const [timer, setTimer] = useState([]);
     const [totalRevenue, setTotalRevenue] = useState([]);
     const [summary, setSummary] = useState(null);
@@ -85,8 +85,8 @@ function Charts(props) {
             },
         },
     };
-    
-    const fetchStatistical = async(event)=>{
+
+    const fetchStatistical = async (event) => {
         event.preventDefault();
 
         const response = await fetch('/api/revenue/calc', {
@@ -98,14 +98,14 @@ function Charts(props) {
         })
         const data = await response.json();
 
-        if(data && data.result.length > 0){
+        if (data && data.result.length > 0) {
             const timerNew = data.result.map((item) => {
                 let timeUnit;
-                if(data.typeRevenue === 'Date'){
+                if (data.typeRevenue === 'Date') {
                     timeUnit = new Date(item[0]).getDate();
                     const month = new Date(item[0]).getMonth() + 1;
                     return `${timeUnit}/${month}`;
-                } else if(data.typeRevenue === 'Month') {
+                } else if (data.typeRevenue === 'Month') {
                     timeUnit = new Date(item[0]).getMonth() + 1;
                     return 'Tháng ' + timeUnit;
                 } else {
@@ -120,59 +120,59 @@ function Charts(props) {
             setSummary(data.summary);
         }
     }
-    const fetchExportFile = async () => {      
+    const fetchExportFile = async () => {
         try {
-          const response = await fetch('/api/revenue/exportCSV', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ startDate: timerRequest.startDate, endDate: timerRequest.endDate })
-          });
-      
-          if (response.ok) {
-            const blob = await response.blob();
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'export.csv';
-            a.click();
-            URL.revokeObjectURL(url);
-          } else {
-            console.error('Error:', response.status);
-          }
+            const response = await fetch('/api/revenue/exportCSV', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ startDate: timerRequest.startDate, endDate: timerRequest.endDate })
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'export.csv';
+                a.click();
+                URL.revokeObjectURL(url);
+            } else {
+                console.error('Error:', response.status);
+            }
         } catch (error) {
-          console.error('Error:', error);
+            console.error('Error:', error);
         }
-      };
+    };
 
     return (
         <>
             <div className='revenue-page'>
-                <h3 className="title-admin">Quản lý doanh thu</h3>
-
+                <h2 className="title-admin mb-0" style={{ fontSize: '24px', fontWeight: '600', color: '#2d3748', marginLeft: '0', paddingLeft: '0', marginBottom: '30px', paddingBottom: '20px' }}>Quản lý Doanh thu
+                    <style>{`.title-admin::after { display: none !important; }`}</style> </h2>
                 <div className='revenue-container'>
                     <div className='filter-box'>
-                        <form onSubmit={(event)=>fetchStatistical(event)}>
+                        <form onSubmit={(event) => fetchStatistical(event)}>
                             <div className='filter-grid'>
                                 <Form.Group className='form-group'>
                                     <Form.Label>Từ ngày</Form.Label>
-                                    <Form.Control onChange={(event)=>setTimerRequest({...timerRequest, startDate: event.target.value})} 
-                                        type="date" name='startDate' 
+                                    <Form.Control onChange={(event) => setTimerRequest({ ...timerRequest, startDate: event.target.value })}
+                                        type="date" name='startDate'
                                         required
                                     />
                                 </Form.Group>
 
                                 <Form.Group className='form-group'>
                                     <Form.Label>Đến ngày</Form.Label>
-                                    <Form.Control onChange={(event)=>setTimerRequest({...timerRequest, endDate: event.target.value})} 
+                                    <Form.Control onChange={(event) => setTimerRequest({ ...timerRequest, endDate: event.target.value })}
                                         type="date" name='endDate' required
                                     />
                                 </Form.Group>
 
                                 <Form.Group className='form-group'>
                                     <Form.Label>Loại thống kê</Form.Label>
-                                    <Form.Select onChange={(event)=>setTimerRequest({...timerRequest, typeRevenue: event.target.value})} 
+                                    <Form.Select onChange={(event) => setTimerRequest({ ...timerRequest, typeRevenue: event.target.value })}
                                         name="typeTime" required>
                                         <option value="">Chọn loại</option>
                                         <option value="Date">Theo ngày</option>
@@ -180,7 +180,7 @@ function Charts(props) {
                                         <option value="Year">Theo năm</option>
                                     </Form.Select>
                                 </Form.Group>
-                                
+
                                 <div className='filter-actions'>
                                     <button className='btn btn-revenue'>Thống kê</button>
                                     <button type="button" className='btn btn-export' onClick={fetchExportFile}>Xuất Excel</button>

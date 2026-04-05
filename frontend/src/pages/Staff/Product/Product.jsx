@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Table, InputGroup, Form } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { FaRegEdit, FaSearch } from 'react-icons/fa';
+import { FaRegEdit, FaSearch, FaEye } from 'react-icons/fa';
 import { MdDelete } from 'react-icons/md';
 import { IoMdClose } from "react-icons/io";
 import { toast } from 'react-toastify';
@@ -13,17 +13,17 @@ function Product(props) {
     const [productList, setProductList] = useState([]);
     const [categories, setCategories] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    
+
     // Search properties
     const [searchTerm, setSearchTerm] = useState('');
     const [isSearching, setIsSearching] = useState(false);
     const debounceTimeoutRef = useRef(null);
 
-    const itemsPerPage = import.meta.env.VITE_ITEMS_PER_PAGE || 10;
+    const itemsPerPage = import.meta.env.VITE_ITEMS_PER_PAGE || 5;
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentProducts = productList.slice(indexOfFirstItem, indexOfLastItem);
-    
+
     // Ingredient Modal States
     const [showIngredientModal, setShowIngredientModal] = useState(false);
     const [ingredients, setIngredients] = useState([]);
@@ -67,7 +67,7 @@ function Product(props) {
     };
 
     const totalPages = Math.ceil(productList.length / itemsPerPage);
-    
+
     const fetchListProduct = async (searchQuery = '') => {
         setIsSearching(true);
         try {
@@ -75,7 +75,7 @@ function Product(props) {
             const response = await fetch(url);
             const data = await response.json();
             setProductList(data || []);
-            if (searchQuery) setCurrentPage(1);
+            setCurrentPage(1);
         } catch (error) {
             console.error('Fetch products error:', error);
         } finally {
@@ -195,7 +195,7 @@ function Product(props) {
 
     const handleActionSubmit = async (e) => {
         e.preventDefault();
-        
+
         if (actionType === 'ADD' && !formData.image) {
             toast.warn('Vui lòng chọn hình ảnh sản phẩm');
             return;
@@ -207,7 +207,7 @@ function Product(props) {
         formDataObj.append('price', formData.price);
         formDataObj.append('detail', formData.detail);
         formDataObj.append('is_active', formData.is_active);
-        
+
         if (formData.image) {
             formDataObj.append('image', formData.image);
         }
@@ -239,48 +239,45 @@ function Product(props) {
     };
 
     return (
-        <section className="block-product-staff">
-            <h3 className="title-admin">Danh sách sản phẩm</h3>
-            <div className="product-container background-radius">
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                    <div className="product-add mb-0">
-                        <button className="btn-add-modal" onClick={openAddModal}> + Thêm mới</button>
-                    </div>
-
-                    <div className="search-container" style={{ width: '380px' }}>
-                        <InputGroup>
-                            <InputGroup.Text className="bg-white border-end-0">
-                                <FaSearch className="text-muted" />
+        <div className="staff-management block-product ps-0 pt-0" style={{ backgroundColor: 'transparent' }}>            <div className="staff-management__header d-flex justify-content-between align-items-center mb-4 mt-4 px-0">
+            <h2 className="title-admin mb-0" style={{ fontSize: '24px', fontWeight: '600', color: '#2d3748', marginLeft: '0', paddingLeft: '0' }}>Quản lý Sản phẩm
+                <style>{`.title-admin::after { display: none !important; }`}</style> </h2>
+            <div className="d-flex align-items-center gap-2">
+                <div className="search-container" style={{ width: '380px' }}>
+                    <InputGroup>
+                        <InputGroup.Text className="bg-white border-end-0 border-secondary-subtle">
+                            <FaSearch className="text-muted" />
+                        </InputGroup.Text>
+                        <Form.Control
+                            type="text"
+                            placeholder="Tìm kiếm theo Tên hoặc Mã sản phẩm..."
+                            value={searchTerm}
+                            onChange={handleSearchChange}
+                            className="border-start-0 border-secondary-subtle ps-1 shadow-none"
+                        />
+                        {searchTerm && (
+                            <InputGroup.Text
+                                className="bg-white border-start-0 cursor-pointer border-secondary-subtle"
+                                onClick={handleClearSearch}
+                            >
+                                <IoMdClose className="text-secondary" />
                             </InputGroup.Text>
-                            <Form.Control
-                                type="text"
-                                placeholder="Tìm kiếm theo Tên hoặc Mã sản phẩm..."
-                                value={searchTerm}
-                                onChange={handleSearchChange}
-                                className="border-start-0 border-end-0 shadow-none"
-                            />
-                            {searchTerm && (
-                                <InputGroup.Text 
-                                    className="bg-white border-start-0 cursor-pointer" 
-                                    onClick={handleClearSearch}
-                                    style={{ cursor: 'pointer' }}
-                                >
-                                    <IoMdClose className="text-secondary" />
-                                </InputGroup.Text>
-                            )}
-                        </InputGroup>
-                    </div>
+                        )}
+                    </InputGroup>
                 </div>
-
-                <Table className='product-table'>
-                    <thead>
+                <button className="btn btn-success ms-3 d-flex align-items-center gap-2" onClick={openAddModal} style={{ padding: '10px 22px', borderRadius: '8px', fontWeight: '500' }}> + Thêm mới</button>
+            </div>
+        </div>
+            <div className="pt-0 mt-0">
+                <Table striped bordered hover className="mt-3 text-center align-middle">
+                    <thead className="table-success">
                         <tr>
                             <th>STT</th>
                             <th>Tên sản phẩm</th>
                             <th>Hình ảnh</th>
                             <th>Giá sản phẩm</th>
                             <th>Trạng thái</th>
-                            <th>Xem thành phần</th>
+                            <th>Thành phần</th>
                             <th>Hành động</th>
                         </tr>
                     </thead>
@@ -309,23 +306,24 @@ function Product(props) {
                                                 {is_active ? 'Hoạt động' : 'Đã khóa'}
                                             </span>
                                         </td>
-                                        <td>
+                                        <td className="text-center">
                                             <button
-                                                className="btn btn-info btn-sm text-white"
+                                                className="btn btn-sm btn-link p-1"
+                                                title="Xem thành phần"
                                                 onClick={() => {
                                                     setShowIngredientModal(true);
                                                     fetchIngredientsByProduct(productId);
                                                 }}
                                             >
-                                                Xem
+                                                <FaEye className='icon-view fs-5 text-info' />
                                             </button>
                                         </td>
                                         <td>
-                                            <button className="btn-icon" onClick={() => openUpdateModal(proItem)}>
-                                                <FaRegEdit className='icon-update text-success' />
+                                            <button className="btn btn-sm btn-link" onClick={() => openUpdateModal(proItem)}>
+                                                <FaRegEdit className='icon-update fs-5 text-success' />
                                             </button>
-                                            <button className="btn-icon" onClick={() => handleDeleteProItem(productId)}>
-                                                <MdDelete className='icon-delete text-danger' />
+                                            <button className="btn btn-sm btn-link" onClick={() => handleDeleteProItem(productId)}>
+                                                <MdDelete className='icon-delete fs-5 text-danger' />
                                             </button>
                                         </td>
                                     </tr>
@@ -338,7 +336,7 @@ function Product(props) {
                         )}
                     </tbody>
                 </Table>
-                
+
                 {/* Ingredient Modal */}
                 {showIngredientModal && createPortal(
                     <div className="custom-global-modal-overlay" onMouseDown={(e) => handleBackdropClick(e, () => setShowIngredientModal(false))}>
@@ -412,7 +410,7 @@ function Product(props) {
                                         <div className="status-toggle d-flex align-items-center justify-content-between">
                                             <span className="text-muted">{formData.is_active ? 'Đang hoạt động' : 'Tạm khóa'}</span>
                                             <div className="form-check form-switch fs-5 mb-0">
-                                                <input className="form-check-input pointer" type="checkbox" role="switch" name="is_active" checked={formData.is_active} onChange={(e) => setFormData({...formData, is_active: e.target.checked})} />
+                                                <input className="form-check-input pointer" type="checkbox" role="switch" name="is_active" checked={formData.is_active} onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })} />
                                             </div>
                                         </div>
                                     </div>
@@ -445,27 +443,29 @@ function Product(props) {
                     document.body
                 )}
 
-                <div className="pagination d-flex justify-content-center mt-3 gap-2">
+                <div className="admin-pagination">
                     <button
-                        className="btn btn-secondary"
                         disabled={currentPage === 1}
                         onClick={() => setCurrentPage(currentPage - 1)}
                     >
                         Prev
                     </button>
 
-                    {totalPages > 0 && [...Array(totalPages)].map((_, i) => (
-                        <button
-                            key={i}
-                            className={`btn ${currentPage === i + 1 ? 'btn-primary' : 'btn-outline-primary'}`}
-                            onClick={() => setCurrentPage(i + 1)}
-                        >
-                            {i + 1}
-                        </button>
-                    ))}
+                    {totalPages > 0 && (() => {
+                        const maxVisiblePages = 5;
+                        const currentGroup = Math.ceil(currentPage / maxVisiblePages);
+                        const startPage = (currentGroup - 1) * maxVisiblePages + 1;
+                        const endPage = Math.min(startPage + maxVisiblePages - 1, totalPages);
+                        const pageNumbers = [];
+                        for (let i = startPage; i <= endPage; i++) {
+                            pageNumbers.push(
+                                <button key={i} className={currentPage === i ? 'active' : ''} onClick={() => setCurrentPage(i)}>{i}</button>
+                            );
+                        }
+                        return pageNumbers;
+                    })()}
 
                     <button
-                        className="btn btn-secondary"
                         disabled={currentPage >= totalPages || totalPages === 0}
                         onClick={() => setCurrentPage(currentPage + 1)}
                     >
@@ -473,7 +473,7 @@ function Product(props) {
                     </button>
                 </div>
             </div>
-        </section>
+        </div>
     );
 }
 

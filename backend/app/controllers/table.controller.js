@@ -137,28 +137,35 @@ exports.getTablesListInternal = async () => {
     const res = todayReservations.find(r => r.tableId.toString() === t._id.toString());
 
     if (res) {
+      t.activeReservationId = res._id;
       t.confirmationCode = res.confirmationCode;
-      t.customerName = res.customerName; // optionally add customerName 
+      t.customerName = res.customerName;
       const resTime = new Date(res.reservationTime);
       const diffMs = resTime - now;
       const diffMinutes = Math.floor(diffMs / 60000);
 
-      if (resTime <= oneHourFromNow) {
-        t.nextReservationTime = res.reservationTime;
-        t.holdExpiryTime = new Date(resTime.getTime() + 2 * 60 * 60 * 1000);
-
-        if (t.status === 'Đang sử dụng') {
-          t.note = "Sắp đến giờ đặt bàn của khách, mau chóng xử lý!";
-        } else {
-          t.status = 'Đã đặt';
-          t.isAvailable = false;
-          t.note = "Bàn đang giữ chỗ";
-        }
+      if (res.status === 'Đang sử dụng') {
+        t.note = `"${t.customerName}" bắt đầu sử dụng bàn`;
+        t.status = 'Đang sử dụng';
+        t.isAvailable = false;
       } else {
-        // Ngoài khoảng 1 tiếng, nếu không đang sử dụng thì là Trống
-        if (t.status !== 'Đang sử dụng') {
-          t.status = 'Trống';
-          t.isAvailable = true;
+        if (resTime <= oneHourFromNow) {
+          t.nextReservationTime = res.reservationTime;
+          t.holdExpiryTime = new Date(resTime.getTime() + 2 * 60 * 60 * 1000);
+
+          if (t.status === 'Đang sử dụng') {
+            t.note = "Sắp đến giờ đặt bàn của khách, mau chóng xử lý!";
+          } else {
+            t.status = 'Đã đặt';
+            t.isAvailable = false;
+            t.note = "Bàn đang giữ chỗ";
+          }
+        } else {
+          // Ngoài khoảng 1 tiếng, nếu không đang sử dụng thì là Trống
+          if (t.status !== 'Đang sử dụng') {
+            t.status = 'Trống';
+            t.isAvailable = true;
+          }
         }
       }
     } else {

@@ -21,32 +21,32 @@ function Menu() {
     const categoryId = useSelector(state => state.user.categoryId);
     const [categories, setCategories] = useState([]);
 
-const fetchCategory = async () => {
-    const response = await fetch('/api/category/');
-    const data = await response.json();
-
-    const categoryActive = data.filter(item => item.is_active);
-    setCategories(categoryActive);
-
-    const categoryFirst = categoryActive[0];
-    if (categoryFirst) {
-        dispatch(getCategoryId(categoryFirst.id));
-        const res = await fetch(`/api/product/category/${categoryFirst.id}`);
-        const productsData = await res.json();
-        setProducts(productsData);
-    }
-};
-useEffect(() => {
-    fetchCategory();
-}, []);
-
-const fetchProducts = async () => {
-    if(categoryId){
-        const response = await fetch(`/api/product/category/${categoryId}`);
+    const fetchCategory = async () => {
+        const response = await fetch('/api/category/');
         const data = await response.json();
-        setProducts(data);
-    }
-};
+
+        const categoryActive = data.filter(item => item.is_active);
+        setCategories(categoryActive);
+
+        const categoryFirst = categoryActive[0];
+        if (categoryFirst) {
+            dispatch(getCategoryId(categoryFirst.id));
+            const res = await fetch(`/api/product/category/${categoryFirst.id}`);
+            const productsData = await res.json();
+            setProducts(productsData);
+        }
+    };
+    useEffect(() => {
+        fetchCategory();
+    }, []);
+
+    const fetchProducts = async () => {
+        if (categoryId) {
+            const response = await fetch(`/api/product/category/${categoryId}`);
+            const data = await response.json();
+            setProducts(data);
+        }
+    };
     useEffect(() => {
         fetchProducts();
     }, [categoryId]);
@@ -68,7 +68,7 @@ const fetchProducts = async () => {
     useEffect(() => {
         const savedOrderSource = localStorage.getItem('orderSource');
         const savedTableNumber = localStorage.getItem('tableNumber');
-        
+
         if (savedOrderSource) {
             setOrderSource(savedOrderSource);
             if (savedOrderSource === 'table' && savedTableNumber) {
@@ -108,7 +108,7 @@ const fetchProducts = async () => {
             <Cart accessToken={accessToken} />
             <Container className='block-menu'>
                 <div className="menu-products">
-                    <h2>Thực Đơn</h2>
+                    {/* <h2>Thực Đơn</h2> */}
                     <div className="order-info">
                         {orderSource === 'table' ? (
                             <div className="table-info">
@@ -120,20 +120,24 @@ const fetchProducts = async () => {
                             </div>
                         )}
                     </div>
-                    <CategoryList categories={categories} />
+                    <div className="mb-2"> {/* mb-5 tạo khoảng cách lớn phía dưới category */}
+                        <CategoryList categories={categories} />
+                    </div>
                     <Row>
                         {products
-                        .filter(product => {
-                            if (!categoryId) return false; 
-                            return product.category_id === categoryId;})
+                            .filter(product => {
+                                if (!categoryId) return false;
+                                return product.category_id === categoryId;
+                            })
                             .map((product, index) => (
-                            <ProductCard 
-                            key={index} 
-                            items={product}
-                            orderSource={orderSource}/>))}
-                            </Row>
-                    </div>
-                </Container>
+                                <ProductCard
+                                    key={index}
+                                    items={product}
+                                    orderSource={orderSource}
+                                    className="m-2" />))}
+                    </Row>
+                </div>
+            </Container>
         </>
     );
 }

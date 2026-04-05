@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Form, Button, Table, Modal } from 'react-bootstrap';
+import { Form, Button, Table, Modal, InputGroup } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
-import { FaUser, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaUser, FaEye, FaEyeSlash, FaSearch, FaRegEdit } from 'react-icons/fa';
+import { MdDelete } from 'react-icons/md';
+import { IoMdClose } from "react-icons/io";
 import 'react-toastify/dist/ReactToastify.css';
 import './stafflist.scss';
 
@@ -16,7 +18,7 @@ const StaffList = () => {
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const itemsPerPage = 10;
+    const itemsPerPage = 5;
 
     // Modal state
     const [showModal, setShowModal] = useState(false);
@@ -56,6 +58,11 @@ const StaffList = () => {
     useEffect(() => {
         fetchStaffs();
     }, [currentPage, debouncedSearch, selectedRole]);
+
+    // Reset pagination when search or filter changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [debouncedSearch, selectedRole]);
 
     const fetchStaffs = async () => {
         setLoading(true);
@@ -231,33 +238,52 @@ const StaffList = () => {
     };
 
     return (
-        <div className="staff-management">
+        <div className="staff-management block-staff ps-0 pt-0">
             <ToastContainer position="top-right" autoClose={1500} />
-            <div className="staff-management__header d-flex justify-content-between align-items-center mb-4">
-                <h2>Quản lý tài khoản Admin / Nhân viên</h2>
+            <div className="staff-management__header d-flex justify-content-between align-items-center mb-4 mt-4 px-0">
+                <h2 className="title-admin mb-0" style={{ fontSize: '24px', fontWeight: '600', color: '#2d3748', marginLeft: '0', paddingLeft: '0' }}>Quản lý Nhân viên
+                    <style>{`.title-admin::after { display: none !important; }`}</style> </h2>
                 <div className="d-flex align-items-center gap-2">
-                    {/* Role Filter Combobox */}
                     <Form.Select
                         value={selectedRole}
                         onChange={(e) => {
                             setSelectedRole(e.target.value);
-                            setCurrentPage(1); // Reset page on filter
+                            setCurrentPage(1);
                         }}
                         style={{ width: '150px' }}
+                        className="bg-white border-secondary-subtle shadow-none"
                     >
                         <option value="All">Tất cả quyền</option>
                         <option value="ADMIN">Quản lý (ADMIN)</option>
                         <option value="STAFF">Nhân viên (STAFF)</option>
                     </Form.Select>
 
-                    <Form.Control
-                        type="text"
-                        placeholder="Tìm theo tên, email..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        style={{ width: '280px' }}
-                    />
-                    <Button className="btn btn-success ms-3" onClick={handleShowAddModal}>Thêm tài khoản</Button>
+                    <div className="search-container" style={{ width: '380px' }}>
+                        <InputGroup>
+                            <InputGroup.Text className="bg-white border-end-0 border-secondary-subtle">
+                                <FaSearch className="text-muted" />
+                            </InputGroup.Text>
+                            <Form.Control
+                                type="text"
+                                placeholder="Tìm theo tên, email..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="border-start-0 border-secondary-subtle ps-1 shadow-none"
+                            />
+                            {searchTerm && (
+                                <InputGroup.Text
+                                    className="bg-white border-start-0 cursor-pointer border-secondary-subtle"
+                                    onClick={() => {
+                                        setSearchTerm('');
+                                        setCurrentPage(1);
+                                    }}
+                                >
+                                    <IoMdClose className="text-secondary" />
+                                </InputGroup.Text>
+                            )}
+                        </InputGroup>
+                    </div>
+                    <Button className="btn btn-success ms-3 d-flex align-items-center gap-2" onClick={handleShowAddModal} style={{ padding: '10px 22px', borderRadius: '8px', fontWeight: '500' }}> + Thêm tài khoản</Button>
                 </div>
             </div>
 
@@ -307,8 +333,14 @@ const StaffList = () => {
                                     <td>{staff.phone}</td>
                                     <td>{staff.gender === 'male' ? 'Nam' : staff.gender === 'female' ? 'Nữ' : staff.gender}</td>
                                     <td>
-                                        <Button variant="primary" size="sm" onClick={() => handleShowEditModal(staff)} className="me-2">Sửa</Button>
-                                        <Button variant="danger" size="sm" onClick={() => handleDelete(staff.id || staff._id)}>Xóa</Button>
+                                        <div className="d-flex align-items-center justify-content-center gap-1">
+                                            <button className="btn btn-sm btn-link p-1" title="Sửa thông tin" onClick={() => handleShowEditModal(staff)}>
+                                                <FaRegEdit className='icon-update fs-5 text-success' />
+                                            </button>
+                                            <button className="btn btn-sm btn-link p-1" title="Xóa tài khoản" onClick={() => handleDelete(staff.id || staff._id)}>
+                                                <MdDelete className='icon-delete fs-5 text-danger' />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -316,26 +348,34 @@ const StaffList = () => {
                     </Table>
 
                     {totalPages > 1 && (
-                        <div className="pagination d-flex justify-content-center mt-3 gap-2">
+                        <div className="admin-pagination">
                             <button
-                                className="btn btn-secondary"
                                 disabled={currentPage === 1}
                                 onClick={() => setCurrentPage(prev => prev - 1)}
                             >
                                 Prev
                             </button>
-                            {[...Array(totalPages)].map((_, i) => (
-                                <button
-                                    key={i}
-                                    className={`btn ${currentPage === i + 1 ? 'btn-success' : 'btn-outline-success'}`}
-                                    onClick={() => setCurrentPage(i + 1)}
-                                >
-                                    {i + 1}
-                                </button>
-                            ))}
+                            {(() => {
+                                const maxVisiblePages = 5;
+                                const currentGroup = Math.ceil(currentPage / maxVisiblePages);
+                                const startPage = (currentGroup - 1) * maxVisiblePages + 1;
+                                const endPage = Math.min(startPage + maxVisiblePages - 1, totalPages);
+                                const pageNumbers = [];
+                                for (let i = startPage; i <= endPage; i++) {
+                                    pageNumbers.push(
+                                        <button
+                                            key={i}
+                                            className={currentPage === i ? 'active' : ''}
+                                            onClick={() => setCurrentPage(i)}
+                                        >
+                                            {i}
+                                        </button>
+                                    );
+                                }
+                                return pageNumbers;
+                            })()}
                             <button
-                                className="btn btn-secondary"
-                                disabled={currentPage === totalPages}
+                                disabled={currentPage >= totalPages || totalPages === 0}
                                 onClick={() => setCurrentPage(prev => prev + 1)}
                             >
                                 Next

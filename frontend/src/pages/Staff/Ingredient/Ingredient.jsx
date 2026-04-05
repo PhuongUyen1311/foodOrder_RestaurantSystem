@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Table } from 'react-bootstrap';
-import { FaRegEdit } from 'react-icons/fa';
+import { Table, InputGroup, Form } from 'react-bootstrap';
+import { FaRegEdit, FaSearch } from 'react-icons/fa';
 import { MdDelete } from 'react-icons/md';
+import { IoMdClose } from "react-icons/io";
 import { toast } from 'react-toastify';
 // import { fetchIngredients } from '../../../actions/ingredient';
 
@@ -12,7 +13,7 @@ function Ingredient() {
     const [ingredients, setIngredients] = useState([]);
     const [loading, setLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = import.meta.env.VITE_ITEMS_PER_PAGE || 10;
+    const itemsPerPage = import.meta.env.VITE_ITEMS_PER_PAGE || 5;
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = ingredients.slice(indexOfFirstItem, indexOfLastItem);
@@ -66,7 +67,7 @@ function Ingredient() {
             const res = await fetch(url);
             const data = await res.json();
             setIngredients(data || []);
-            if (searchQuery) setCurrentPage(1);
+            setCurrentPage(1);
         } catch (error) {
             console.error(error);
             toast.error('Lỗi khi tải danh sách nguyên liệu');
@@ -103,7 +104,7 @@ function Ingredient() {
                 if (response.ok) {
                     toast.success('Xóa nguyên liệu thành công');
                     await getData(searchTerm);
-                    
+
                     const newTotalItems = ingredients.length - 1;
                     const maxPage = Math.ceil(newTotalItems / itemsPerPage);
                     if (currentPage > maxPage && maxPage > 0) {
@@ -155,7 +156,7 @@ function Ingredient() {
 
     const handleActionSubmit = async (e) => {
         e.preventDefault();
-        
+
         const url = actionType === 'ADD' ? '/api/ingredient' : `/api/ingredient/${selectedIngredientId}`;
         const method = actionType === 'ADD' ? 'POST' : 'PUT';
 
@@ -189,48 +190,47 @@ function Ingredient() {
     };
 
     return (
-        <section className="block-ingredient-staff">
-            <h3 className="title-admin">Quản lý nguyên liệu</h3>
-            <div className="ingredient-container background-radius">
-                <div className="d-flex justify-content-between align-items-center mb-4 mt-3">
-                    <div className="ingredient-add mb-0">
-                        <button className="btn-add-modal border-0 px-3 py-2 text-white bg-success rounded-3 shadow-sm" onClick={openAddModal}> + Thêm nguyên liệu</button>
-                    </div>
-                
+        <div className="staff-management block-ingredient ps-0 pt-0">
+            <div className="staff-management__header d-flex justify-content-between align-items-center mb-4 mt-4 px-0">
+                <h2 className="title-admin mb-0" style={{ fontSize: '24px', fontWeight: '600', color: '#2d3748', marginLeft: '0', paddingLeft: '0' }}>Quản lý Nguyên liệu
+                    <style>{`.title-admin::after { display: none !important; }`}</style> </h2>
+                <div className="d-flex align-items-center gap-2">
                     <div className="search-container" style={{ width: '380px' }}>
-                        <div className="input-group">
-                            <span className="input-group-text bg-white border-end-0">
-                                <i className="fa fa-search text-muted"></i>
-                            </span>
-                            <input
+                        <InputGroup>
+                            <InputGroup.Text className="bg-white border-end-0 border-secondary-subtle">
+                                <FaSearch className="text-muted" />
+                            </InputGroup.Text>
+                            <Form.Control
                                 type="text"
                                 placeholder="Tìm kiếm nguyên liệu..."
                                 value={searchTerm}
                                 onChange={handleSearchChange}
-                                className="form-control border-start-0 border-end-0 shadow-none"
+                                className="border-start-0 border-secondary-subtle ps-1 shadow-none"
                             />
                             {searchTerm && (
-                                <span 
-                                    className="input-group-text bg-white border-start-0" 
+                                <InputGroup.Text
+                                    className="bg-white border-start-0 cursor-pointer border-secondary-subtle"
                                     onClick={handleClearSearch}
-                                    style={{ cursor: 'pointer' }}
                                 >
-                                    <i className="fa fa-times text-secondary"></i>
-                                </span>
+                                    <IoMdClose className="text-secondary" />
+                                </InputGroup.Text>
                             )}
-                        </div>
+                        </InputGroup>
                     </div>
+                    <button className="btn btn-success ms-3 d-flex align-items-center gap-2" onClick={openAddModal} style={{ padding: '10px 22px', borderRadius: '8px', fontWeight: '500' }}> + Thêm nguyên liệu</button>
                 </div>
-                
+            </div>
+            <div className="pt-0 mt-0">
+
                 {loading && ingredients.length === 0 && !isSearching ? (
                     <div className="text-center py-5">
-                       <span className="spinner-border text-success" role="status"></span>
-                       <p className="mt-2 text-muted">Đang tải dữ liệu...</p>
+                        <span className="spinner-border text-success" role="status"></span>
+                        <p className="mt-2 text-muted">Đang tải dữ liệu...</p>
                     </div>
                 ) : (
                     <>
-                        <Table className='ingredient-table'>
-                            <thead>
+                        <Table striped bordered hover className="mt-3 text-center align-middle">
+                            <thead className="table-success">
                                 <tr>
                                     <th>STT</th>
                                     <th>Tên nguyên liệu</th>
@@ -257,11 +257,11 @@ function Ingredient() {
                                                 </span>
                                             </td>
                                             <td>
-                                                <button className="btn-icon" onClick={() => openUpdateModal(item)}>
-                                                    <FaRegEdit className='icon-update' />
+                                                <button className="btn btn-sm btn-link" onClick={() => openUpdateModal(item)}>
+                                                    <FaRegEdit className='icon-update fs-5 text-success' />
                                                 </button>
-                                                <button className="btn-icon" onClick={() => handleDeleteItem(id)}>
-                                                    <MdDelete className='icon-delete' />
+                                                <button className="btn btn-sm btn-link" onClick={() => handleDeleteItem(id)}>
+                                                    <MdDelete className='icon-delete fs-5 text-danger' />
                                                 </button>
                                             </td>
                                         </tr>
@@ -274,27 +274,29 @@ function Ingredient() {
                             </tbody>
                         </Table>
 
-                        <div className="pagination d-flex justify-content-center mt-3 gap-2">
+                        <div className="admin-pagination">
                             <button
-                                className="btn btn-secondary"
                                 disabled={currentPage === 1}
                                 onClick={() => setCurrentPage(currentPage - 1)}
                             >
                                 Prev
                             </button>
 
-                            {totalPages > 0 && [...Array(totalPages)].map((_, i) => (
-                                <button
-                                    key={i}
-                                    className={`btn ${currentPage === i + 1 ? 'btn-primary' : 'btn-outline-primary'}`}
-                                    onClick={() => setCurrentPage(i + 1)}
-                                >
-                                    {i + 1}
-                                </button>
-                            ))}
+                            {totalPages > 0 && (() => {
+                                const maxVisiblePages = 5;
+                                const currentGroup = Math.ceil(currentPage / maxVisiblePages);
+                                const startPage = (currentGroup - 1) * maxVisiblePages + 1;
+                                const endPage = Math.min(startPage + maxVisiblePages - 1, totalPages);
+                                const pageNumbers = [];
+                                for (let i = startPage; i <= endPage; i++) {
+                                    pageNumbers.push(
+                                        <button key={i} className={currentPage === i ? 'active' : ''} onClick={() => setCurrentPage(i)}>{i}</button>
+                                    );
+                                }
+                                return pageNumbers;
+                            })()}
 
                             <button
-                                className="btn btn-secondary"
                                 disabled={currentPage >= totalPages || totalPages === 0}
                                 onClick={() => setCurrentPage(currentPage + 1)}
                             >
@@ -335,7 +337,7 @@ function Ingredient() {
                                         <div className="status-toggle d-flex align-items-center justify-content-between">
                                             <span className="text-muted">{formData.is_active ? 'Sẵn sàng sử dụng' : 'Đang tạm ngưng'}</span>
                                             <div className="form-check form-switch fs-5 mb-0">
-                                                <input className="form-check-input pointer" type="checkbox" role="switch" name="is_active" checked={formData.is_active} onChange={(e) => setFormData({...formData, is_active: e.target.checked})} />
+                                                <input className="form-check-input pointer" type="checkbox" role="switch" name="is_active" checked={formData.is_active} onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })} />
                                             </div>
                                         </div>
                                     </div>
@@ -354,7 +356,7 @@ function Ingredient() {
                     document.body
                 )}
             </div>
-        </section>
+        </div>
     );
 }
 

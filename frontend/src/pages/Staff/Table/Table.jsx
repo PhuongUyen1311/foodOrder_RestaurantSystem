@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Container, Row, Col, Button, Table, Modal, Form } from 'react-bootstrap';
+import { Container, Row, Col, Button, Table, Modal, Form, InputGroup } from 'react-bootstrap';
 import { QRCodeSVG } from 'qrcode.react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { FaRegEdit, FaSearch, FaUtensils, FaPlus, FaEye, FaEyeSlash, FaTimesCircle } from 'react-icons/fa';
+import { MdDelete, MdCancel } from 'react-icons/md';
+import { IoMdClose } from "react-icons/io";
 import { socket } from '../../../socket.js';
 import './table.scss';
-import { completeReservation } from '../../../actions/table.js';
+import { completeReservation, cancelReservation } from '../../../actions/table.js';
 import { Table as AntTable, Tag } from 'antd';
 
 const TableManagement = () => {
@@ -27,7 +30,7 @@ const TableManagement = () => {
         isAvailable: true
     });
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = parseInt(import.meta.env.VITE_ITEMS_PER_PAGE) || 10;
+    const itemsPerPage = parseInt(import.meta.env.VITE_ITEMS_PER_PAGE) || 5;
 
     useEffect(() => {
         const handler = setTimeout(() => {
@@ -96,6 +99,11 @@ const TableManagement = () => {
         const timer = setInterval(() => setNow(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
+
+    const handleClearSearch = () => {
+        setSearchTerm('');
+        setDebouncedSearch('');
+    };
 
     useEffect(() => {
         if (user && user.id) {
@@ -274,17 +282,26 @@ const TableManagement = () => {
         socketRef.current.emit('tableChange');
     };
 
-    const handleDeleteReservation = async (tableId) => {
-        if (window.confirm('Bạn có chắc chắn muốn xóa đặt bàn này?')) {
+    const handleCancelReservation = async (reservationId) => {
+        if (!reservationId) return;
+        if (window.confirm('Bạn có chắc chắn muốn hủy đặt bàn này? Bàn sẽ được giải phóng ngay lập tức.')) {
             try {
-                await completeReservation(accessToken, tableId);
-
+                await cancelReservation(accessToken, reservationId);
                 fetchTables();
                 emitTableChange();
-                toast.success('Cập nhật trạng thái bàn thành công!');
+                toast.success('Đã hủy đặt và giải phóng bàn thành công!');
+
+                // Cập nhật lại viewTable nếu đang mở modal
+                if (showViewModal && viewTable) {
+                    fetchReservationInfo(viewTable._id);
+                    // Cần fetch lại tables list để update status bàn trong viewTable
+                    const updatedTables = await (await fetch('/api/tables')).json();
+                    const currentView = updatedTables.find(t => t._id === viewTable._id);
+                    if (currentView) setViewTable(currentView);
+                }
             } catch (error) {
-                toast.error('Lỗi khi cập nhật trạng thái bàn: ' + error.message);
-                console.error("Error completing reservation:", error);
+                toast.error('Lỗi khi hủy đặt bàn: ' + error.message);
+                console.error("Error cancelling reservation:", error);
             }
         }
     };
@@ -292,8 +309,24 @@ const TableManagement = () => {
     const handleStartUsingTable = async (table) => {
         const tableId = table._id;
         let confirmMessage = 'Xác nhận chuyển trạng thái bàn sang đang sử dụng?';
+        let isReservationMatch = false;
 
-        if (table.status === 'Đã đặt' && table.note === 'Bàn đang giữ chỗ') {
+        // Nếu bàn có lịch đặt trong vòng 1 tiếng tới hoặc khách đến trễ (đã qua giờ đặt)
+        if (table.nextReservationTime) {
+            const now = new Date();
+            const resTime = new Date(table.nextReservationTime);
+            const diffMs = resTime - now;
+
+            // <= 1 tiếng (3600000 ms) hoặc đã qua giờ
+            if (diffMs <= 3600000) {
+                isReservationMatch = true;
+                const cusName = table.customerName || 'Khách';
+                confirmMessage = `"${cusName}" bắt đầu sử dụng bàn đúng không?`;
+            }
+        }
+
+        // Dự phòng cho trường hợp trạng thái Đã đặt mà không bắt được nextReservationTime rõ ràng
+        if (!isReservationMatch && table.status === 'Đã đặt' && table.note === 'Bàn đang giữ chỗ') {
             confirmMessage = 'Bàn này đang được giữ chỗ cho khách sắp đến. Bạn có chắc chắn muốn bắt đầu sử dụng không?';
         }
 
@@ -346,71 +379,90 @@ const TableManagement = () => {
         );
     };
 
+    const highlight = (text, isNumber = false) => {
+        if (!debouncedSearch) return text;
+        const lowerSearch = debouncedSearch.toLowerCase().trim();
+        const strText = String(text);
+        if (!strText.toLowerCase().includes(lowerSearch)) return text;
+
+        const parts = strText.split(new RegExp(`(${lowerSearch})`, 'gi'));
+        return parts.map((part, index) =>
+            part.toLowerCase() === lowerSearch ? (
+                <mark key={index} style={{ backgroundColor: '#ffef9ad1', padding: '0 2px', borderRadius: '2px' }}>{part}</mark>
+            ) : part
+        );
+    };
+
     if (error) {
         return <div className="alert alert-danger">{error}</div>;
     }
 
     return (
-        <div className="table-management">
-            <span className="date-text">
-                {new Date().toLocaleDateString('vi-VN')}
-            </span>
-            <div className="table-management__header d-flex justify-content-between align-items-center">
-                <h1>Quản lý bàn</h1>
+        <div className="staff-management block-category ps-0 pt-0">
+            <div className="staff-management__header d-flex justify-content-between align-items-center mb-4 mt-4 px-0">
+                <h2 className="title-admin mb-0" style={{ fontSize: '24px', fontWeight: '600', color: '#2d3748', marginLeft: '0', paddingLeft: '0' }}>Quản lý bàn
+                    <style>{`.title-admin::after { display: none !important; }`}</style> </h2>
                 <div className="d-flex align-items-center gap-2">
                     <Form.Select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
                         style={{ width: '160px' }}
+                        className="bg-white border-secondary-subtle shadow-none"
                     >
                         <option value="Tất cả">Tất cả trạng thái</option>
                         <option value="Trống">Trống</option>
                         <option value="Đã đặt">Đã đặt</option>
                         <option value="Đang sử dụng">Đang sử dụng</option>
                     </Form.Select>
-                    <Form.Control
-                        type="text"
-                        placeholder="Tìm theo số bàn, mã đặt bàn..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                e.preventDefault();
-                                setDebouncedSearch(searchTerm);
 
-                                // Nếu có search term thì mở modal kết quả đầu tiên ngay lập tức
-                                const lowerSearch = searchTerm.toLowerCase().trim();
-                                if (!lowerSearch) return;
-
-                                const isNumeric = /^\d+$/.test(lowerSearch);
-                                const instantMatch = tables.filter(table => {
-                                    if (statusFilter !== 'Tất cả' && table.status !== statusFilter) return false;
-
-                                    if (isNumeric) {
-                                        return String(table.tableNumber).includes(lowerSearch) ||
-                                            String(table.seatingCapacity).includes(lowerSearch);
-                                    } else {
-                                        const codes = (table.reservationList || []).map(r => (r.confirmationCode || '').toLowerCase());
-                                        if (table.confirmationCode) codes.push(table.confirmationCode.toLowerCase());
-                                        return codes.some(code => code.includes(lowerSearch));
+                    <div className="search-container" style={{ width: '350px' }}>
+                        <InputGroup className="shadow-sm rounded">
+                            <InputGroup.Text className="bg-white border-end-0 border-secondary-subtle">
+                                <FaSearch className="text-muted" />
+                            </InputGroup.Text>
+                            <Form.Control
+                                type="text"
+                                placeholder="Tìm số bàn, mã đặt bàn..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="border-start-0 border-secondary-subtle ps-1 shadow-none"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        setDebouncedSearch(searchTerm);
+                                        const lowerSearch = searchTerm.toLowerCase().trim();
+                                        if (!lowerSearch) return;
+                                        const instantMatch = tables.filter(table => {
+                                            if (statusFilter !== 'Tất cả' && table.status !== statusFilter) return false;
+                                            if (/^\d+$/.test(lowerSearch)) return String(table.tableNumber).includes(lowerSearch);
+                                            const codes = (table.reservationList || []).map(r => (r.confirmationCode || '').toLowerCase());
+                                            return codes.some(code => code.includes(lowerSearch));
+                                        });
+                                        if (instantMatch.length > 0) handleShowViewModal(instantMatch[0]);
                                     }
-                                });
-
-                                if (instantMatch.length > 0) {
-                                    handleShowViewModal(instantMatch[0]);
-                                }
-                            }
-                        }}
-                        style={{ width: '280px' }}
-                    />
-                    <Button className="btn-add ms-3" onClick={handleShowAddModal}>Thêm bàn</Button>
+                                }}
+                            />
+                            {searchTerm && (
+                                <InputGroup.Text
+                                    className="bg-white border-start-0 cursor-pointer border-secondary-subtle"
+                                    onClick={handleClearSearch}
+                                >
+                                    <IoMdClose className="text-secondary" />
+                                </InputGroup.Text>
+                            )}
+                        </InputGroup>
+                    </div>
+                    <Button
+                        className="btn-add d-flex align-items-center gap-2 ms-2"
+                        onClick={handleShowAddModal}
+                        style={{ backgroundColor: '#2d9e45ff', border: 'none', padding: '10px 22px', fontWeight: '500' }}
+                    >
+                        <FaPlus /> Thêm bàn mới
+                    </Button>
                 </div>
             </div>
 
-            <ToastContainer
-                position="top-right"
-                autoClose={1000}
-            />
+            <ToastContainer position="top-right" autoClose={1000} />
 
             {/* Modal Thêm */}
             <Modal show={showAddModal} onHide={handleCloseAddModal}>
@@ -499,144 +551,126 @@ const TableManagement = () => {
                 </div>
             ) : (
                 <>
-                    <Table striped bordered hover className="mt-3">
-                        <thead>
+                    <Table striped bordered hover className="mt-3 text-center align-middle">
+                        <thead className="table-success">
                             <tr>
                                 <th>Số bàn</th>
                                 <th>Trạng thái</th>
                                 <th>Sức chứa</th>
-                                <th>Hành động</th>
-                                <th>Ghi chú</th>
+                                <th style={{ width: '300px', textAlign: 'left' }}>Hành động</th>
+                                <th style={{ width: '300px', textAlign: 'left' }}>Ghi chú</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {currentTables.map((table) => {
-                                // Helper to highlight matched text safely
-                                const highlight = (text, isNumberField = false) => {
-                                    if (!text) return text;
-                                    const term = debouncedSearch.trim();
-                                    if (!term) return text;
+                            {currentTables.map((table) => (
+                                <tr key={table._id}>
+                                    <td>Bàn {highlight(table.tableNumber, true)}</td>
+                                    <td>
+                                        <div className="d-flex flex-column align-items-center">
+                                            <span className={`badge ${getStatusBadgeClass(table.status)}`}>
+                                                {table.status}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td>{highlight(table.seatingCapacity, true)}</td>
+                                    <td>
+                                        <div className="d-flex align-items-center justify-content-start gap-1">
+                                            <button className="btn btn-sm btn-link p-1" title="Xem chi tiết" onClick={() => handleShowViewModal(table)}>
+                                                <FaEye className='icon-view fs-5 text-info' />
+                                            </button>
+                                            <button className="btn btn-sm btn-link p-1" title="Sửa thông tin" onClick={() => handleShowEditModal(table)}>
+                                                <FaRegEdit className='icon-update fs-5 text-success' />
+                                            </button>
+                                            <button className="btn btn-sm btn-link p-1" title="Xóa bàn" onClick={() => handleDeleteTable(table._id)}>
+                                                <MdDelete className='icon-delete fs-5 text-danger' />
+                                            </button>
 
-                                    const searchIsNum = /^\d+$/.test(term);
-                                    if (isNumberField && !searchIsNum) return text;
-                                    if (!isNumberField && searchIsNum) return text;
-
-                                    const strText = String(text);
-                                    const regex = new RegExp(`(${term})`, 'gi');
-                                    const parts = strText.split(regex);
-                                    return parts.map((part, i) =>
-                                        part.toLowerCase() === term.toLowerCase()
-                                            ? <mark key={i} style={{ backgroundColor: '#ffc107', padding: 0 }}>{part}</mark>
-                                            : part
-                                    );
-                                };
-
-                                return (
-                                    <tr key={table._id}>
-                                        <td>Bàn {highlight(table.tableNumber, true)}</td>
-                                        <td>
-                                            <div className="d-flex flex-column align-items-center">
-                                                <span className={`badge ${getStatusBadgeClass(table.status)}`}>
-                                                    {table.status}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td>{highlight(table.seatingCapacity, true)}</td>
-                                        <td>
-                                            <Button
-                                                variant="info"
-                                                size="sm"
-                                                onClick={() => handleShowViewModal(table)}
-                                                className="me-2"
-                                            >
-                                                Xem
-                                            </Button>
-                                            <Button
-                                                variant="primary"
-                                                size="sm"
-                                                onClick={() => handleShowEditModal(table)}
-                                                className="me-2"
-                                            >
-                                                Sửa
-                                            </Button>
                                             {(table.status === 'Trống' || table.status === 'Đã đặt') && (
-                                                <>
-                                                    <Button
-                                                        variant="warning"
-                                                        size="sm"
-                                                        onClick={() => handleStartUsingTable(table)}
-                                                        className="me-2"
-                                                    >
-                                                        Bắt đầu sử dụng
-                                                    </Button>
-
-                                                </>
+                                                <Button
+                                                    variant="warning"
+                                                    size="sm"
+                                                    onClick={() => handleStartUsingTable(table)}
+                                                    className="ms-2 px-3 fw-500"
+                                                    style={{ fontSize: '12px', borderRadius: '20px' }}
+                                                >
+                                                    Sử dụng
+                                                </Button>
                                             )}
-                                            {(table.status === 'Đang sử dụng') && (
+                                            {table.status === 'Đang sử dụng' && (
                                                 <Button
                                                     variant="success"
                                                     size="sm"
                                                     onClick={() => handleCompleteReservation(table._id)}
-                                                    className="me-2"
+                                                    className="ms-2 px-3 fw-500"
+                                                    style={{ fontSize: '12px', borderRadius: '20px' }}
                                                 >
                                                     Hoàn thành
                                                 </Button>
                                             )}
-                                            {(table.status === 'Đã đặt') && (
+                                            {table.status === 'Đã đặt' && (
                                                 <Button
-                                                    variant="danger"
+                                                    variant="outline-danger"
                                                     size="sm"
-                                                    onClick={() => handleDeleteReservation(table._id)}
-                                                    className="me-2"
+                                                    onClick={() => handleCancelReservation(table.activeReservationId)}
+                                                    className="ms-1 fw-500"
+                                                    style={{ fontSize: '11px', borderRadius: '20px' }}
                                                 >
-                                                    Xóa đặt bàn
+                                                    Hủy đặt
                                                 </Button>
                                             )}
-                                        </td>
-                                        <td>
-                                            <div className="d-flex flex-column">
-                                                <span style={{ color: '#6c757d', fontSize: '14px' }}>
-                                                    {table.note}
-                                                    {table.confirmationCode && (
-                                                        <span className="d-block mt-1">
-                                                            Mã đặt: <strong>{highlight(table.confirmationCode, false)}</strong>
-                                                        </span>
-                                                    )}
-                                                </span>
-                                                {table.nextReservationTime && (
-                                                    <div className="mt-1" style={{ fontSize: '14px' }}>
-                                                        {renderCountdown(table.note === 'Bàn đang giữ chỗ' ? table.holdExpiryTime : table.nextReservationTime)}
-                                                    </div>
+                                        </div>
+                                    </td>
+                                    <td className="text-start">
+                                        <div className="d-flex flex-column">
+                                            <span style={{ color: '#6c757d', fontSize: '14px' }}>
+                                                {table.note}
+                                                {table.confirmationCode && (
+                                                    <span className="d-block mt-1">
+                                                        Mã đặt: <strong>{highlight(table.confirmationCode, false)}</strong>
+                                                    </span>
                                                 )}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
+                                            </span>
+                                            {table.nextReservationTime && (
+                                                <div className="mt-1" style={{ fontSize: '14px' }}>
+                                                    {renderCountdown(table.note === 'Bàn đang giữ chỗ' ? table.holdExpiryTime : table.nextReservationTime)}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
                         </tbody>
                     </Table>
                     {totalPages > 1 && (
-                        <div className="pagination d-flex justify-content-center mt-3 gap-2">
+                        <div className="admin-pagination">
                             <button
-                                className="btn btn-secondary"
                                 disabled={currentPage === 1}
                                 onClick={() => setCurrentPage(currentPage - 1)}
                             >
                                 Prev
                             </button>
 
-                            {[...Array(totalPages)].map((_, i) => (
-                                <button
-                                    key={i}
-                                    className={`btn ${currentPage === i + 1 ? 'btn-primary' : 'btn-outline-primary'}`}
-                                    onClick={() => setCurrentPage(i + 1)}
-                                >
-                                    {i + 1}
-                                </button>
-                            ))}
+                            {(() => {
+                                const maxVisiblePages = 5;
+                                const currentGroup = Math.ceil(currentPage / maxVisiblePages);
+                                const startPage = (currentGroup - 1) * maxVisiblePages + 1;
+                                const endPage = Math.min(startPage + maxVisiblePages - 1, totalPages);
+                                const pageNumbers = [];
+                                for (let i = startPage; i <= endPage; i++) {
+                                    pageNumbers.push(
+                                        <button
+                                            key={i}
+                                            className={currentPage === i ? 'active' : ''}
+                                            onClick={() => setCurrentPage(i)}
+                                        >
+                                            {i}
+                                        </button>
+                                    );
+                                }
+                                return pageNumbers;
+                            })()}
 
                             <button
-                                className="btn btn-secondary"
                                 disabled={currentPage === totalPages}
                                 onClick={() => setCurrentPage(currentPage + 1)}
                             >
@@ -721,150 +755,139 @@ const TableManagement = () => {
             </Modal>
 
             {/* Modal Xem Chi Tiết */}
-            <Modal show={showViewModal} onHide={handleCloseViewModal} size="xl">
+            <Modal show={showViewModal} onHide={handleCloseViewModal} size="xl" className="custom-detail-modal">
                 <Modal.Header closeButton>
-                    <Modal.Title>Chi tiết bàn</Modal.Title>
+                    <Modal.Title className="title-admin">Chi tiết bàn</Modal.Title>
                 </Modal.Header>
-                <Modal.Body>
+                <Modal.Body style={{ padding: '25px', paddingTop: 0 }}>
                     {viewTable && (
-                        <Row className="table-details">
-                            <Col md={5} className="d-flex flex-column">
-                                <div className="info-section">
-                                    <h5>Thông tin bàn</h5>
-                                    <p><strong>Số bàn:</strong> Bàn {viewTable.tableNumber}</p>
-                                    <p><strong>Trạng thái:</strong> {viewTable.status}</p>
-                                    <p><strong>Sức chứa:</strong> {viewTable.seatingCapacity} người</p>
-                                    <p><strong>Vị trí:</strong> {viewTable.location}</p>
+                        <Row>
+                            {/* Cột trái: Thông tin và QR Code */}
+                            <Col md={5} lg={4} className="border-end pl-0">
+                                <div className="info-section mb-4">
+                                    <h6 className="fw-bold mb-3 d-flex align-items-center text-success">
+                                        <FaUtensils className="me-2" /> Thông tin bàn
+                                    </h6>
+                                    <div className="bg-light p-3 rounded">
+                                        <div className="mb-2"><strong>Số bàn:</strong> Bàn {viewTable.tableNumber}</div>
+                                        <div className="mb-2"><strong>Trạng thái:</strong> <span className={`badge ${getStatusBadgeClass(viewTable.status)}`}>{viewTable.status}</span></div>
+                                        <div className="mb-2"><strong>Sức chứa:</strong> {viewTable.seatingCapacity} người</div>
+                                        <div className="mb-0"><strong>Vị trí:</strong> {viewTable.location}</div>
+                                    </div>
                                 </div>
 
-                                <div className="qr-section mt-1">
-                                    <h5>Mã QR</h5>
-                                    <div className="d-flex justify-content-center">
+                                <div className="qr-section text-center p-3 bg-light rounded shadow-sm">
+                                    <h6 className="fw-bold mb-3">Mã quét gọi món (QR Code)</h6>
+                                    <div className="d-flex justify-content-center py-2 bg-white rounded p-2 mb-2">
                                         <QRCodeSVG
                                             value={`${CLIENT_URL}/menu?table=${viewTable.tableNumber}`}
                                             size={180}
                                             level="H"
                                         />
                                     </div>
-                                </div>
-
-                                <div className="modal-actions mt-auto pt-3 d-flex justify-content-center gap-2">
-                                    <Button
-                                        variant="secondary"
-                                        className="flex-fill"
-                                        onClick={handleCloseViewModal}
-                                        style={{ height: '38px', fontSize: '14px' }}
-                                    >
-                                        Đóng
-                                    </Button>
-                                    <Button
-                                        variant="danger"
-                                        className="flex-fill"
-                                        onClick={() => {
-                                            handleDeleteTable(viewTable._id);
-                                            handleCloseViewModal();
-                                        }}
-                                        style={{ height: '38px', fontSize: '14px' }}
-                                    >
-                                        Xóa bàn
-                                    </Button>
+                                    <div className="mt-2 text-muted" style={{ fontSize: '13px' }}>Khách quét mã để xem menu và đặt món</div>
                                 </div>
                             </Col>
 
-                            <Col md={7}>
-                                <div className="reservation-schedule d-flex flex-column mt-3" style={{ minHeight: '200px', height: 'auto' }}>
-                                    <h5>Lịch đặt bàn</h5>
-                                    <AntTable
-                                        columns={[
-                                            {
-                                                title: 'Mã đặt',
-                                                dataIndex: 'confirmationCode',
-                                                key: 'confirmationCode',
-                                                align: 'center',
-                                                render: (text) => (
-                                                    <span style={{ fontWeight: '600', color: '#0d6efd', whiteSpace: 'nowrap' }}>
-                                                        {text}
-                                                    </span>
-                                                )
-                                            },
-                                            {
-                                                title: 'Khách hàng',
-                                                dataIndex: 'customerName',
-                                                key: 'customerName',
-                                                align: 'center'
-                                            },
-                                            {
-                                                title: 'Ngày',
-                                                dataIndex: 'use_date',
-                                                key: 'use_date',
-                                                align: 'center',
-                                                render: (text) => new Date(text).toLocaleDateString('vi-VN')
-                                            },
-                                            {
-                                                title: 'Giờ',
-                                                dataIndex: 'reservationTime',
-                                                key: 'reservationTime',
-                                                align: 'center',
-                                                render: (text) => new Date(text).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
-                                            },
-                                            {
-                                                title: 'Trạng thái',
-                                                dataIndex: 'status',
-                                                key: 'status',
-                                                align: 'center',
-                                                render: (status) => {
-                                                    if (status === 'Đã đặt') {
-                                                        return (
-                                                            <Tag style={{
-                                                                color: '#d97706',
-                                                                borderColor: '#f59e0b',
-                                                                background: '#fef3c7',
-                                                                borderRadius: '20px',
-                                                                padding: '4px 12px',
-                                                                fontWeight: '600',
-                                                                fontSize: '13px',
-                                                                margin: 0
-                                                            }}>
-                                                                Đã đặt
-                                                            </Tag>
-                                                        );
+                            {/* Cột phải: Lịch đặt bàn */}
+                            <Col md={7} lg={8} className="pr-0">
+                                <div className="reservation-schedule h-100">
+                                    <h6 className="fw-bold mb-3 d-flex align-items-center text-primary">
+                                        <FaSearch className="me-2" /> Lịch đặt bàn chuẩn bị tới
+                                    </h6>
+                                    <div className="table-responsive">
+                                        <AntTable
+                                            columns={[
+                                                {
+                                                    title: 'Mã đặt',
+                                                    dataIndex: 'confirmationCode',
+                                                    key: 'confirmationCode',
+                                                    align: 'center',
+                                                    render: (text) => <span className="fw-bold text-primary">{text}</span>
+                                                },
+                                                {
+                                                    title: 'Khách hàng',
+                                                    dataIndex: 'customerName',
+                                                    key: 'customerName',
+                                                    render: (text) => <span className="fw-bold">{text || 'Khách vãng lai'}</span>
+                                                },
+                                                {
+                                                    title: 'Thời gian',
+                                                    key: 'time',
+                                                    render: (_, record) => (
+                                                        <div className="small">
+                                                            <div className="fw-bold">{new Date(record.use_date).toLocaleDateString('vi-VN')}</div>
+                                                            <div className="text-muted">{new Date(record.reservationTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</div>
+                                                        </div>
+                                                    )
+                                                },
+                                                {
+                                                    title: 'Trạng thái',
+                                                    dataIndex: 'status',
+                                                    key: 'status',
+                                                    align: 'center',
+                                                    render: (status) => {
+                                                        let color = 'default';
+                                                        if (status === 'Đã đặt') color = 'warning';
+                                                        if (status === 'Đang sử dụng') color = 'error';
+                                                        if (status === 'Trống') color = 'success';
+                                                        if (status === 'Đã hủy') color = 'default';
+                                                        return <Tag color={color} style={{ borderRadius: '10px' }}>{status}</Tag>;
                                                     }
-                                                    if (status === 'Trống') return <Tag color="success" style={{ borderRadius: '20px', padding: '4px 12px', margin: 0 }}>Trống</Tag>;
-                                                    if (status === 'Đang sử dụng') return <Tag color="error" style={{ borderRadius: '20px', padding: '4px 12px', margin: 0 }}>Đang sử dụng</Tag>;
-                                                    return <Tag style={{ borderRadius: '20px', padding: '4px 12px', margin: 0 }}>{status}</Tag>;
+                                                },
+                                                {
+                                                    title: 'Hành động',
+                                                    key: 'actions',
+                                                    align: 'center',
+                                                    render: (_, record) => (
+                                                        record.status === 'Đã đặt' && (
+                                                            <button
+                                                                className="btn btn-sm btn-link p-0 text-danger"
+                                                                title="Hủy đặt bàn này"
+                                                                onClick={() => handleCancelReservation(record._id)}
+                                                            >
+                                                                <MdCancel className="fs-5" />
+                                                            </button>
+                                                        )
+                                                    )
                                                 }
-                                            }
-                                        ]}
-                                        dataSource={allReservations.map((res, index) => ({ ...res, key: res._id || index })).sort((a, b) => new Date(a.reservationTime) - new Date(b.reservationTime))}
-                                        pagination={false}
-                                        bordered={false}
-                                        size="large"
-                                        scroll={{ x: 'max-content', y: allReservations.length > 5 ? 400 : undefined }}
-                                        style={{ border: '1px solid #eee', borderRadius: '8px' }}
-                                        locale={{ emptyText: 'Chưa có lịch đặt' }}
-                                    />
-                                </div>
-
-                                {reservationInfo && (
-                                    <div className="reservation-section mt-2">
-                                        <h5>Thông tin khách (Hôm nay)</h5>
-                                        <p><strong>Khách hàng:</strong> {reservationInfo.customerName}</p>
-                                        <p><strong>Số điện thoại:</strong> {reservationInfo.phoneNumber}</p>
-                                        <p><strong>Email:</strong> {reservationInfo.email}</p>
-                                        <p><strong>Số người:</strong> {viewTable.seatingCapacity} người</p>
-                                        <p><strong>Giờ đặt:</strong> {new Date(reservationInfo.reservationTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</p>
-                                        <p><strong>Mã xác nhận:</strong> {reservationInfo.confirmationCode}</p>
-                                        {reservationInfo.specialRequests && (
-                                            <p><strong>Ghi chú:</strong> {reservationInfo.specialRequests}</p>
-                                        )}
-                                        <p>
-                                            <strong>Trạng thái:</strong>{' '}
-                                            <span className={`status-badge status-${reservationInfo.status.toLowerCase().replace(/\s+/g, '-')}`}>
-                                                {reservationInfo.status}
-                                            </span>
-                                        </p>
+                                            ]}
+                                            dataSource={(viewTable.reservationList || []).filter(r => {
+                                                const resDate = new Date(r.use_date);
+                                                const today = new Date();
+                                                today.setHours(0, 0, 0, 0);
+                                                return r.status === 'Đã đặt' && resDate >= today;
+                                            })}
+                                            rowKey="_id"
+                                            pagination={{ pageSize: 5, size: 'small' }}
+                                            size="small"
+                                            bordered
+                                            locale={{ emptyText: 'Chưa có lịch đặt sắp tới' }}
+                                        />
                                     </div>
-                                )}
+
+                                    <div className="modal-actions d-flex justify-content-end gap-3 mt-4 pt-3 border-top">
+                                        <Button
+                                            variant="outline-secondary"
+                                            onClick={handleCloseViewModal}
+                                            className="px-4 fw-bold btn-close-modal"
+                                        >
+                                            Đóng
+                                        </Button>
+                                        <Button
+                                            variant="danger"
+                                            onClick={() => {
+                                                if (window.confirm(`Bạn có chắc chắn muốn xóa bàn ${viewTable.tableNumber}?`)) {
+                                                    handleDeleteTable(viewTable._id);
+                                                    handleCloseViewModal();
+                                                }
+                                            }}
+                                            className="px-4 fw-bold btn-delete-modal"
+                                        >
+                                            Xóa bàn này
+                                        </Button>
+                                    </div>
+                                </div>
                             </Col>
                         </Row>
                     )}

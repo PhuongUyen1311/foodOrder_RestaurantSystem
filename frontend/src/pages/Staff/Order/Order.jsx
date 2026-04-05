@@ -1,6 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { socket } from '../../../socket.js';
 import { Link } from 'react-router-dom';
+import { Table, InputGroup, Form } from 'react-bootstrap';
+import { FaSearch, FaEye } from 'react-icons/fa';
+import { IoMdClose } from "react-icons/io";
 const host = import.meta.env.VITE_API_URL;
 
 import './order.scss';
@@ -11,7 +14,7 @@ import { statusOrder } from "../../../config/statusOrder.js";
 function Order(props) {
     const [orderList, setOrderList] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = import.meta.env.VITE_ITEMS_PER_PAGE || 10;
+    const itemsPerPage = import.meta.env.VITE_ITEMS_PER_PAGE || 5;
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentOrders = orderList.slice(indexOfFirstItem, indexOfLastItem);
@@ -43,7 +46,7 @@ function Order(props) {
                 console.error('Lỗi khi lấy đơn hàng:', data);
                 setOrderList([]);
             }
-            if (searchQuery) setCurrentPage(1);
+            setCurrentPage(1);
         } catch (error) {
             console.error('Fetch orders error:', error);
         } finally {
@@ -56,14 +59,14 @@ function Order(props) {
         if (user && user.id) {
             socketRef.current.emit('adminConnect', user.id);
         }
-        
+
         const handleSendListOrder = listOrder => {
             console.log(listOrder);
             setOrderSocket(listOrder);
         };
-        
+
         socketRef.current.on('sendListOrder', handleSendListOrder);
-        
+
         return () => {
             socketRef.current.off('sendListOrder', handleSendListOrder);
         };
@@ -92,51 +95,52 @@ function Order(props) {
     }, [orderList]);
 
     return (
-        <div className="admin-card mt-md">
-            <div className="admin-card__header">
-                <h3>Danh sách đơn hàng</h3>
-                <div className="admin-card__actions">
+        <div className="staff-management block-order ps-0 pt-0">
+            <div className="staff-management__header d-flex justify-content-between align-items-center mb-4 mt-4 px-0">
+                <h2 className="title-admin mb-0" style={{ fontSize: '24px', fontWeight: '600', color: '#2d3748', marginLeft: '0', paddingLeft: '0' }}>Quản lý Đơn hàng
+                    <style>{`.title-admin::after { display: none !important; }`}</style> </h2>
+                <div className="d-flex align-items-center gap-2">
                     <div className="search-container" style={{ width: '380px' }}>
-                        <div className="input-group">
-                            <span className="input-group-text bg-white border-end-0">
-                                <i className="fa fa-search text-muted"></i>
-                            </span>
-                                <input
-                                    type="text"
-                                    placeholder="Tìm theo Mã đơn, Khách hàng, SĐT..."
-                                    value={searchTerm}
-                                    onChange={handleSearchChange}
-                                    className="admin-form__control border-start-0 border-end-0 shadow-none"
-                                />
-                                {searchTerm && (
-                                    <span 
-                                        className="input-group-text bg-white border-start-0" 
-                                        onClick={handleClearSearch}
-                                        style={{ cursor: 'pointer' }}
-                                    >
-                                    <i className="fa fa-times text-secondary"></i>
-                                </span>
+                        <InputGroup>
+                            <InputGroup.Text className="bg-white border-end-0 border-secondary-subtle">
+                                <FaSearch className="text-muted" />
+                            </InputGroup.Text>
+                            <Form.Control
+                                type="text"
+                                placeholder="Tìm kiếm theo mã đơn hàng hoặc tên khách..."
+                                value={searchTerm}
+                                onChange={handleSearchChange}
+                                className="border-start-0 border-secondary-subtle ps-1 shadow-none"
+                            />
+                            {searchTerm && (
+                                <InputGroup.Text
+                                    className="bg-white border-start-0 cursor-pointer border-secondary-subtle"
+                                    onClick={handleClearSearch}
+                                >
+                                    <IoMdClose className="text-secondary" />
+                                </InputGroup.Text>
                             )}
-                        </div>
+                        </InputGroup>
                     </div>
                 </div>
-                
-                <div className="admin-table-wrapper">
-                    <table className="admin-table">
-                        <thead>
-                            <tr>
-                                <th>STT</th>
-                                <th>Mã đơn hàng</th>
-                                <th>Tên khách hàng</th>
-                                <th>Nguồn đặt hàng</th>
-                                <th>Số lượng sản phẩm</th>
-                                <th>Tổng tiền</th>
-                                <th>Trạng thái</th>
-                                <th style={{textAlign: 'center'}}>Hành động</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        {orderList && orderList.length > 0 && (
+            </div>
+
+            <div className="pt-0 mt-0">
+                <Table striped bordered hover className="mt-3 text-center align-middle">
+                    <thead className="table-success">
+                        <tr>
+                            <th>STT</th>
+                            <th>Mã đơn hàng</th>
+                            <th>Tên khách hàng</th>
+                            <th>Nguồn đặt hàng</th>
+                            <th>Số lượng</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                            <th style={{ textAlign: 'center' }}>Xem chi tiết</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {orderList && orderList.length > 0 ? (
                             currentOrders.map((orderData, index) => {
                                 const {
                                     id,
@@ -178,20 +182,21 @@ function Order(props) {
                                                                 status === statusOrder.COMPLETED ? 'Hoàn thành' : 'Đã hủy'
                                                 }</span>
                                         </td>
-                                        <td>
-                                            <div className="admin-table__actions" style={{justifyContent: 'center'}}>
-                                                <Link to={`/staff/order/detail/${id}`} className="admin-btn admin-btn--info admin-btn--sm">
-                                                    Chi tiết
-                                                </Link>
-                                            </div>
+                                        <td className="text-center">
+                                            <Link to={`/staff/order/detail/${id}`} className="btn btn-sm btn-link p-1" title="Chi tiết đơn hàng">
+                                                <FaEye className='icon-view fs-5 text-info' />
+                                            </Link>
                                         </td>
                                     </tr>
                                 )
                             })
+                        ) : (
+                            <tr>
+                                <td colSpan="8" className="text-center">Không có đơn hàng nào</td>
+                            </tr>
                         )}
                     </tbody>
-                </table>
-                </div>
+                </Table>
 
                 <div className="admin-pagination">
                     <button
@@ -201,15 +206,19 @@ function Order(props) {
                         Prev
                     </button>
 
-                    {[...Array(totalPages)].map((_, i) => (
-                        <button
-                            key={i}
-                            className={currentPage === i + 1 ? 'active' : ''}
-                            onClick={() => setCurrentPage(i + 1)}
-                        >
-                            {i + 1}
-                        </button>
-                    ))}
+                    {(() => {
+                        const maxVisiblePages = 5;
+                        const currentGroup = Math.ceil(currentPage / maxVisiblePages);
+                        const startPage = (currentGroup - 1) * maxVisiblePages + 1;
+                        const endPage = Math.min(startPage + maxVisiblePages - 1, totalPages);
+                        const pageNumbers = [];
+                        for (let i = startPage; i <= endPage; i++) {
+                            pageNumbers.push(
+                                <button key={i} className={currentPage === i ? 'active' : ''} onClick={() => setCurrentPage(i)}>{i}</button>
+                            );
+                        }
+                        return pageNumbers;
+                    })()}
 
                     <button
                         disabled={currentPage === totalPages}

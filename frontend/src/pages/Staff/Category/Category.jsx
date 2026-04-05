@@ -11,13 +11,13 @@ import './category.scss';
 function Category(props) {
     const [categoryList, setCategoryList] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    
+
     // Search properties
     const [searchTerm, setSearchTerm] = useState('');
     const [isSearching, setIsSearching] = useState(false);
     const debounceTimeoutRef = useRef(null);
 
-    const itemsPerPage = import.meta.env.VITE_ITEMS_PER_PAGE || 10;
+    const itemsPerPage = import.meta.env.VITE_ITEMS_PER_PAGE || 5;
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentCategories = categoryList.slice(indexOfFirstItem, indexOfLastItem);
@@ -57,7 +57,7 @@ function Category(props) {
             const response = await fetch(url);
             const data = await response.json();
             setCategoryList(data || []);
-            if (searchQuery) setCurrentPage(1);
+            setCurrentPage(1);
         } catch (error) {
             console.error('Fetch categories error:', error);
         } finally {
@@ -130,7 +130,7 @@ function Category(props) {
 
     const handleFormSubmit = async (e) => {
         e.preventDefault();
-        
+
         if (actionType === 'ADD' && !formData.image) {
             toast.warn('Vui lòng chọn hình ảnh đại diện danh mục');
             return;
@@ -166,15 +166,10 @@ function Category(props) {
     };
 
     return (
-        <section className="block-category">
-            <h3 className="title-admin">Danh sách danh mục</h3>
-
-            <div className="category-container background-radius">
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                    <div className="category-add mb-0">
-                        <button className="btn btn-add-modal border-0 px-3 py-2 text-white bg-success rounded-3 shadow-sm" onClick={openAddModal}> + Thêm mới</button>
-                    </div>
-
+        <div className="staff-management block-category ps-0 pt-0">
+            <div className="staff-management__header d-flex justify-content-between align-items-center mb-4 mt-4 px-0">
+                <h2 className="title-admin mb-0" style={{ fontSize: '24px', fontWeight: '600', color: '#2d3748', marginLeft: '0', paddingLeft: '0' }}>Quản lý danh mục
+                    <style>{`.title-admin::after { display: none !important; }`}</style> </h2>                <div className="d-flex align-items-center gap-2">
                     <div className="search-container" style={{ width: '380px' }}>
                         <InputGroup>
                             <InputGroup.Text className="bg-white border-end-0">
@@ -188,8 +183,8 @@ function Category(props) {
                                 className="border-start-0 border-end-0 shadow-none"
                             />
                             {searchTerm && (
-                                <InputGroup.Text 
-                                    className="bg-white border-start-0 cursor-pointer" 
+                                <InputGroup.Text
+                                    className="bg-white border-start-0 cursor-pointer"
                                     onClick={handleClearSearch}
                                 >
                                     <IoMdClose className="text-secondary" />
@@ -197,10 +192,13 @@ function Category(props) {
                             )}
                         </InputGroup>
                     </div>
+                    <button className="btn btn-success ms-3 d-flex align-items-center gap-2" onClick={openAddModal}> + Thêm mới</button>
                 </div>
+            </div>
 
-                <Table className='category-table'>
-                    <thead>
+            <div className="pt-0 mt-0">
+                <Table striped bordered hover className="mt-3 text-center align-middle">
+                    <thead className="table-success">
                         <tr>
                             <th>STT</th>
                             <th>Tên danh mục</th>
@@ -254,7 +252,7 @@ function Category(props) {
                                     <label className="fw-medium mb-1">Tên danh mục <span className="text-danger">*</span></label>
                                     <input required type="text" className="form-control" name="name" value={formData.name} onChange={handleInputChange} placeholder="Nhập tên danh mục..." />
                                 </div>
-                                
+
                                 <div className="form-group mb-4">
                                     <label className="fw-medium mb-1">Hình ảnh đại diện {actionType === 'ADD' && <span className="text-danger">*</span>}</label>
                                     <input type="file" accept="image/*" className="form-control" onChange={handleFileChange} />
@@ -279,15 +277,25 @@ function Category(props) {
                     document.body
                 )}
 
-                <div className="pagination d-flex justify-content-center mt-3 gap-2">
-                    <button className="btn btn-secondary" disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)}>Prev</button>
-                    {totalPages > 0 && [...Array(totalPages)].map((_, i) => (
-                        <button key={i} className={`btn ${currentPage === i + 1 ? 'btn-primary' : 'btn-outline-primary'}`} onClick={() => setCurrentPage(i + 1)}>{i + 1}</button>
-                    ))}
-                    <button className="btn btn-secondary" disabled={currentPage >= totalPages || totalPages === 0} onClick={() => setCurrentPage(currentPage + 1)}>Next</button>
+                <div className="admin-pagination">
+                    <button disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)}>Prev</button>
+                    {totalPages > 0 && (() => {
+                        const maxVisiblePages = 5;
+                        const currentGroup = Math.ceil(currentPage / maxVisiblePages);
+                        const startPage = (currentGroup - 1) * maxVisiblePages + 1;
+                        const endPage = Math.min(startPage + maxVisiblePages - 1, totalPages);
+                        const pageNumbers = [];
+                        for (let i = startPage; i <= endPage; i++) {
+                            pageNumbers.push(
+                                <button key={i} className={currentPage === i ? 'active' : ''} onClick={() => setCurrentPage(i)}>{i}</button>
+                            );
+                        }
+                        return pageNumbers;
+                    })()}
+                    <button disabled={currentPage >= totalPages || totalPages === 0} onClick={() => setCurrentPage(currentPage + 1)}>Next</button>
                 </div>
             </div>
-        </section>
+        </div>
     );
 }
 

@@ -3,6 +3,7 @@
 .block-menu {
     padding-top: 100px;
     min-height: calc(100vh - 200px);
+
     .menu-products {
         h2 {
             color: $color-primary;
@@ -23,6 +24,7 @@
                 border-radius: 8px;
                 display: inline-block;
                 margin-bottom: 30px;
+
                 span {
                     font-size: 18px;
                     font-weight: 500;
@@ -54,6 +56,7 @@
             }
 
             .order-info {
+
                 .table-info span,
                 .online-info span {
                     font-size: 16px;
@@ -61,4 +64,23 @@
             }
         }
     }
-} 
+
+    .menu-products {
+        .order-info {
+            margin-bottom: 15px;
+        }
+
+        /* Đảm bảo danh sách category có khoảng trống ở dưới */
+        .category-list-container {
+            margin-bottom: 30px;
+            padding-bottom: 5px;
+            /* Giúp border không bị dính sát */
+        }
+
+        /* Đẩy Row xuống để tránh lề âm của Bootstrap Row đè lên trên */
+        .row {
+            margin-top: 20px !important;
+        }
+    }
+
+}

@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Row, Col } from 'react-bootstrap';
+import { Row, Col, Table } from 'react-bootstrap';
 import moment from 'moment';
 
 import { fetchUpdateIsPayment, fetchUpdateStatusOrder } from '../../../actions/order';
 import { statusOrder } from '../../../config/statusOrder';
+import '../../../scss/admin/admin-theme.scss';
+import './order.scss';
 
 function OrderDetail(props) {
     const [orderDetail, setOrderDetail] = useState(null);
@@ -85,24 +87,40 @@ function OrderDetail(props) {
                     <label>Tên tài khoản: <span>{orderDetail && orderDetail.first_name} {orderDetail && orderDetail.last_name}</span></label>
                     <label>Ngày đặt hàng: <span>{orderDetail && moment(orderDetail.createdAt).format('DD-MM-YYYY')}</span></label>
                 </div>
-                <div className="order__detail-group">
-                    <Row>
-                        {orderItems && orderItems.map((item, index) => {
-                            const { id, product_name, product_image, price, qty } = item;
+                <div className="order__detail-group mt-4">
+                    <Table striped bordered hover className="text-center align-middle">
+                        <thead className="table-success">
+                            <tr>
+                                <th>STT</th>
+                                <th>Tên sản phẩm</th>
+                                <th>Số lượng</th>
+                                <th>Đơn giá</th>
+                                <th>Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {orderItems && orderItems.length > 0 ? (
+                                orderItems.map((item, index) => {
+                                    const { product_name, price, qty } = item;
+                                    const subtotal = (price || 0) * (qty || 0);
 
-                            return (
-                                <Col xs={6} className='' key={index}>
-                                    <div className="order__detail-item" key={index}>
-                                        <img src={`http://localhost:5000/static/images/${product_image}`} alt="" />
-                                        <div className="detail-item-info">
-                                            <label>Tên sản phẩm: <span>{product_name}</span></label>
-                                            <label>Số lượng: <span>{qty}</span></label>
-                                        </div>
-                                    </div>
-                                </Col>
-                            )
-                        })}
-                    </Row>
+                                    return (
+                                        <tr key={index}>
+                                            <td>{index + 1}</td>
+                                            <td className="text-start fw-500">{product_name}</td>
+                                            <td>{qty}</td>
+                                            <td>{price ? price.toLocaleString('vi', { style: 'currency', currency: 'VND' }) : 'N/A'}</td>
+                                            <td className="fw-bold">{subtotal ? subtotal.toLocaleString('vi', { style: 'currency', currency: 'VND' }) : 'N/A'}</td>
+                                        </tr>
+                                    );
+                                })
+                            ) : (
+                                <tr>
+                                    <td colSpan="5" className="text-center">Không có sản phẩm nào</td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </Table>
                 </div>
                 <div className="order__detail-foot">
                     <div className="order__detail-status">

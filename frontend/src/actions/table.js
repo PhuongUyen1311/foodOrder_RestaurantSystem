@@ -182,3 +182,21 @@ export const checkTableAvailability = async (tableId) => {
     throw error;
   }
 };
+export const cancelReservation = async (accessToken, reservationId) => {
+  try {
+    const response = await fetch(`/api/reservations/${reservationId}`, {
+      method: "delete",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || "Hủy đặt bàn thất bại");
+    }
+    return data;
+  } catch (error) {
+    console.error("Lỗi khi hủy đặt bàn:", error);
+    throw error;
+  }
+};

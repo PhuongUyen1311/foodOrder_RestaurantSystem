@@ -3,8 +3,8 @@
     "$oid": "6752cf54cce432663f673e37"
   },
   "tableNumber": 1,
-  "isAvailable": true,
-  "status": "Trống",
+  "isAvailable": false,
+  "status": "Đang sử dụng",
   "seatingCapacity": 2,
   "location": "Tầng 1 trong nhà",
   "__v": 0,
@@ -75,8 +75,8 @@
     "$oid": "6752d3e2b856d05c31709c80"
   },
   "tableNumber": 7,
-  "isAvailable": true,
-  "status": "Trống",
+  "isAvailable": false,
+  "status": "Đã đặt",
   "seatingCapacity": 2,
   "location": "Tầng 1 ngoài trời",
   "__v": 0,

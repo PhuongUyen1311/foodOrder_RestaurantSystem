@@ -33,8 +33,6 @@
     padding: $space-lg;
     color: $text-primary;
     // Tự động scroll nếu quá dài
-    max-height: 70vh;
-    overflow-y: auto;
     @include custom-scrollbar;
   }
 

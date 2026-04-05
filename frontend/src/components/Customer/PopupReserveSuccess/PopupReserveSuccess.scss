@@ -1,14 +1,16 @@
 @use '../../../scss/' as *;
 
-.modal__success{
-    .modal-dialog{
-        max-width: 500px;
+.modal__success {
+    .modal-dialog {
+        max-width: 600px;
     }
-    .modal-header, .modal-footer{
+
+    .modal-header,
+    .modal-footer {
         padding: 30px 30px;
         border: none;
 
-        .modal-title{
+        .modal-title {
             font-weight: 500;
             font-size: 28px;
             line-height: 38px;
@@ -17,22 +19,22 @@
             text-align: center;
         }
 
-        .btn-success-close{
+        .btn-success-close {
             border: none;
             color: $color-text-secondary;
             transition: all 0.3s ease;
-            
+
             &:hover {
                 color: $color-primary;
             }
         }
     }
 
-    .modal-body{
+    .modal-body {
         padding: 0;
         margin: 0 auto;
 
-        svg{
+        svg {
             width: 120px;
             height: 120px;
             display: block;
@@ -40,7 +42,7 @@
             color: $color-success;
         }
 
-        h4{
+        h4 {
             font-weight: 400;
             font-size: 20px;
             line-height: 20px;
@@ -50,12 +52,12 @@
         }
     }
 
-    .modal-footer{
+    .modal-footer {
         justify-content: space-around;
         flex-wrap: nowrap;
         gap: 20px;
 
-        a{
+        a {
             font-weight: 500;
             font-size: 18px;
             line-height: 30px;
@@ -70,17 +72,17 @@
             transition: all 0.3s ease;
         }
 
-        .btn-success-follow{
+        .btn-success-follow {
             background: $color-success;
-            
+
             &:hover {
                 background: darken-color($color-success, 10%);
             }
         }
 
-        .btn-success-continue{
+        .btn-success-continue {
             background: $color-primary;
-            
+
             &:hover {
                 background: darken-color($color-primary, 10%);
             }

@@ -1,4 +1,11 @@
 @use 'variables' as *;
+@use 'mixins';
+@use 'buttons';
+@use 'card';
+@use 'table';
+@use 'pagination';
+@use 'forms';
+@use 'modal';
 
 // Khởi tạo các global class chung nếu không bọc trong component
 body {
@@ -8,13 +15,7 @@ body {
 }
 
 // Import các sub-modules
-@import 'mixins';
-@import 'buttons';
-@import 'card';
-@import 'table';
-@import 'pagination';
-@import 'forms';
-@import 'modal';
+// ==========================================
 
 // ==========================================
 // UTILITY CLASSES (Dùng chung)

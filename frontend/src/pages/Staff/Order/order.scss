@@ -2,68 +2,55 @@
 
 // Xóa các class cũ của list Order, chỉ giữ lại chi tiết
 
-.order__detail{
-    h3{
+.order__detail {
+    h3 {
         font-size: 20px;
     }
-    &-container{
+
+    &-container {
         margin-top: 48px;
         padding: 30px 20px;
     }
 
-    &-head{
+    &-head {
         display: flex;
         justify-content: space-between;
         margin-bottom: 20px;
 
-        label{
+        label {
             font-weight: 400;
             font-size: 16px;
             line-height: 20px;
         }
 
-        span{
+        span {
             font-weight: 500;
         }
     }
 
-    &-group{
-        overflow-y: scroll;
-        overflow-x: hidden;
-        height: 160px;
-    }
+    &-group {
+        overflow: hidden;
+        height: auto;
 
-    &-item{
-        display: flex;
-        gap: 24px;
-        margin-bottom: 16px;
-        border: 1px solid #929292;
-        border-radius: 20px;
+        .table {
+            margin-bottom: 20px;
 
-        img{
-            max-width: 150px;
-            border-top-left-radius: 20px;
-            border-bottom-left-radius: 20px;          
-        }
-
-        .detail-item-info{
-            display: flex;
-            flex-direction: column;
-            padding: 20px 20px 20px 0;
-            font-size: 16px;
-            line-height: 20px;
-
-            label{
-                font-weight: 400;
-                margin-bottom: 16px;
-            }
-            span{
+            th {
                 font-weight: 600;
+                color: $black-color;
+            }
+
+            td {
+                color: #4a5568;
+            }
+
+            .fw-500 {
+                font-weight: 500;
             }
         }
     }
 
-    &-foot{
+    &-foot {
         margin-top: 10px;
         border-top: 1px solid $black-color;
         display: flex;
@@ -71,22 +58,22 @@
         padding: 20px 0;
     }
 
-    &-status{
+    &-status {
         display: flex;
         flex-direction: column;
         gap: 16px;
 
-        label{
+        label {
             font-weight: 500;
             font-size: 18px;
             line-height: 20px;
         }
 
-        span{
+        span {
             margin-left: 8px;
         }
 
-        .order-status{
+        .order-status {
             border-radius: 33px;
             color: $white-color;
             padding: 2px 8px;
@@ -94,11 +81,12 @@
         }
 
     }
-    &-group-btn{
+
+    &-group-btn {
         display: flex;
         gap: 24px;
 
-        button{
+        button {
             font-size: 16px;
             font-weight: 500;
             line-height: 150%;
@@ -107,25 +95,25 @@
             padding: 12px 12px;
             color: $white-color;
 
-            &:disabled{
+            &:disabled {
                 opacity: 0.5;
                 border: none;
             }
         }
 
-        .btn-confirm{
+        .btn-confirm {
             background-color: #AFB1B0;
         }
 
-        .btn-processing{
+        .btn-processing {
             background-color: $yellow-color;
         }
 
-        .btn-complete{
+        .btn-complete {
             background-color: $green-color;
         }
 
-        .btn-payment{
+        .btn-payment {
             background-color: #007bff;
             border: 2px solid #0056b3;
             box-shadow: 0 0 10px rgba(0, 123, 255, 0.4);

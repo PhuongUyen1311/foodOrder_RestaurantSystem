@@ -11,36 +11,43 @@ function Profile(props) {
     const [selectedImage, setSelectedImage] = useState(null);
     const accessToken = sessionStorage.getItem("accessToken");
 
-    useEffect(()=>{
-        console.log('update');
-        sessionStorage.setItem("user", JSON.stringify(userUpdate));
-    },[userUpdate]);
-    
     const fetchUpdateInfoUser = async (event) =>{
         event.preventDefault();
 
         const formData = new FormData();
         formData.append("first_name", userUpdate.first_name);
         formData.append("last_name", userUpdate.last_name);
-        formData.append("avatar", selectedImage);
+        if (selectedImage) formData.append("avatar", selectedImage);
         formData.append("phone", userUpdate.phone);
         formData.append("gender", userUpdate.gender);
         formData.append("age", userUpdate.age);
 
-        const response = await fetch("/api/customer",{
-            method: 'post',
-            body: formData,
-            headers: {
-                Authorization: `Bearer ${accessToken}`
-            }
-        });
-        const data = await response.json();
+        try {
+            const response = await fetch("/api/customer",{
+                method: 'post',
+                body: formData,
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            });
+            const data = await response.json();
 
-        if(data) {
-            setUserUpdate(data);
-            sessionStorage.setItem("user", JSON.stringify(userUpdate));
-            toast.success('Thông tin đã được cập nhập');
-            return;
+            if(response.ok && data) {
+                // If the user's password field is empty in data, but the backend doesn't return it when we send normal form, 
+                // wait, the backend does `res.json(result)`, result has everything.
+                setUserUpdate(data);
+                sessionStorage.setItem("user", JSON.stringify(data));
+                toast.success('Thông tin đã được cập nhật thành công!');
+                
+                // Reload immediately to update the header's display name
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                toast.error(data.message || 'Cập nhật thất bại');
+            }
+        } catch (error) {
+            toast.error('Có lỗi xảy ra khi kết nối tới máy chủ');
         }
     }
 

@@ -9,7 +9,7 @@ import { MdDelete, MdCancel } from 'react-icons/md';
 import { IoMdClose } from "react-icons/io";
 import { socket } from '../../../socket.js';
 import './table.scss';
-import { completeReservation, cancelReservation } from '../../../actions/table.js';
+import { completeReservation, cancelReservation, mergeTable, unmergeTable } from '../../../actions/table.js';
 import { Table as AntTable, Tag } from 'antd';
 
 const TableManagement = () => {
@@ -88,6 +88,8 @@ const TableManagement = () => {
     const [viewTable, setViewTable] = useState(null);
     const [reservationInfo, setReservationInfo] = useState(null);
     const [allReservations, setAllReservations] = useState([]);
+    const [showMergeModal, setShowMergeModal] = useState(false);
+    const [mergeToTable, setMergeToTable] = useState('');
     const [socketTables, setSocketTables] = useState([]);
     const socketRef = useRef(socket);
     const user = JSON.parse(sessionStorage.getItem("user"));
@@ -113,11 +115,16 @@ const TableManagement = () => {
         const handleTableUpdated = (updatedTables) => {
             setSocketTables(updatedTables);
         };
+        const handleTableMerged = (data) => {
+            fetchTables();
+        };
 
         socketRef.current.on('tableUpdated', handleTableUpdated);
+        socketRef.current.on('tableMerged', handleTableMerged);
 
         return () => {
             socketRef.current.off('tableUpdated', handleTableUpdated);
+            socketRef.current.off('tableMerged', handleTableMerged);
         };
     }, []);
 
@@ -280,6 +287,23 @@ const TableManagement = () => {
 
     const emitTableChange = () => {
         socketRef.current.emit('tableChange');
+    };
+
+    const getSlaveTablesForMaster = (masterNumber) => {
+        return tables.filter(t => String(t.merged_into) === String(masterNumber)).map(t => t.tableNumber);
+    };
+
+    const handleUnmergeTable = async (tableNumber) => {
+        if (!window.confirm(`Xác nhận tách Bàn ${tableNumber} ra độc lập?`)) return;
+        try {
+            await unmergeTable(accessToken, tableNumber);
+            toast.success(`Đã tách Bàn ${tableNumber} thành công!`);
+            fetchTables();
+            emitTableChange();
+        } catch (error) {
+            toast.error(error.message || 'Lỗi khi tách bàn');
+            console.error("Error unmerging table:", error);
+        }
     };
 
     const handleCancelReservation = async (reservationId) => {
@@ -564,7 +588,23 @@ const TableManagement = () => {
                         <tbody>
                             {currentTables.map((table) => (
                                 <tr key={table._id}>
-                                    <td>Bàn {highlight(table.tableNumber, true)}</td>
+                                    <td>
+                                        Bàn {highlight(table.tableNumber, true)}
+                                        {table.merged_into && (
+                                            <div className="mt-1">
+                                                <span className="badge bg-secondary p-1">
+                                                    Đã gộp (→ Bàn {table.merged_into})
+                                                </span>
+                                            </div>
+                                        )}
+                                        {getSlaveTablesForMaster(table.tableNumber).length > 0 && (
+                                            <div className="mt-1">
+                                                <span className="badge p-1" style={{backgroundColor: '#17a2b8'}}>
+                                                    MASTER (Gồm: {getSlaveTablesForMaster(table.tableNumber).join(', ')})
+                                                </span>
+                                            </div>
+                                        )}
+                                    </td>
                                     <td>
                                         <div className="d-flex flex-column align-items-center">
                                             <span className={`badge ${getStatusBadgeClass(table.status)}`}>
@@ -585,7 +625,31 @@ const TableManagement = () => {
                                                 <MdDelete className='icon-delete fs-5 text-danger' />
                                             </button>
 
-                                            {(table.status === 'Trống' || table.status === 'Đã đặt') && (
+                                            {table.merged_into && (
+                                                <Button
+                                                    variant="secondary"
+                                                    size="sm"
+                                                    onClick={() => handleUnmergeTable(table.tableNumber)}
+                                                    className="ms-1 fw-500 text-white"
+                                                    style={{ fontSize: '11px', borderRadius: '20px' }}
+                                                >
+                                                    Tách bàn
+                                                </Button>
+                                            )}
+
+                                            {!table.merged_into && getSlaveTablesForMaster(table.tableNumber).length === 0 && (
+                                                <Button
+                                                    variant="info"
+                                                    size="sm"
+                                                    onClick={() => { setSelectedTable(table); setShowMergeModal(true); setMergeToTable(''); }}
+                                                    className="ms-1 fw-500 text-white"
+                                                    style={{ fontSize: '11px', borderRadius: '20px' }}
+                                                >
+                                                    Gộp bàn
+                                                </Button>
+                                            )}
+
+                                            {(table.status === 'Trống' || table.status === 'Đã đặt' || table.status === 'Hoàn thành') && !table.merged_into && getSlaveTablesForMaster(table.tableNumber).length === 0 && (
                                                 <Button
                                                     variant="warning"
                                                     size="sm"
@@ -751,6 +815,53 @@ const TableManagement = () => {
                     <Button variant="primary" onClick={handleEditTable}>
                         Lưu
                     </Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/* Modal Gộp Bàn */}
+            <Modal show={showMergeModal} onHide={() => setShowMergeModal(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Gộp bàn {selectedTable?.tableNumber}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form.Group>
+                        <Form.Label>Chọn bàn đích (Bàn này sẽ gộp vào)</Form.Label>
+                        <Form.Select 
+                            value={mergeToTable}
+                            onChange={(e) => setMergeToTable(e.target.value)}
+                        >
+                            <option value="">-- Chọn bàn đích --</option>
+                            {tables.filter(t => 
+                                !t.merged_into && 
+                                t.tableNumber !== selectedTable?.tableNumber &&
+                                (
+                                    (t.status !== 'Đang sử dụng' && t.isAvailable === true) || 
+                                    (tables.filter(tx => String(tx.merged_into) === String(t.tableNumber)).length > 0)
+                                )
+                            ).map(t => (
+                                <option key={t._id} value={t.tableNumber}>
+                                    Bàn {t.tableNumber} - {t.status} - {t.location}
+                                </option>
+                            ))}
+                        </Form.Select>
+                    </Form.Group>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowMergeModal(false)}>Đóng</Button>
+                    <Button variant="primary" onClick={async () => {
+                        if (!mergeToTable) return toast.error('Vui lòng chọn bàn đích!');
+                        try {
+                            await mergeTable(accessToken, {
+                                fromTable: selectedTable.tableNumber,
+                                toTable: Number(mergeToTable)
+                            });
+                            toast.success(`Đã gộp bàn ${selectedTable.tableNumber} vào bàn ${mergeToTable}`);
+                            setShowMergeModal(false);
+                            fetchTables();
+                        } catch (e) {
+                            toast.error(e.message || 'Lỗi gộp bàn');
+                        }
+                    }}>Thực hiện gộp</Button>
                 </Modal.Footer>
             </Modal>
 

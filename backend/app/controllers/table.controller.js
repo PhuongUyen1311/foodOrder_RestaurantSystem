@@ -189,6 +189,21 @@ exports.getAllTables = async (req, res) => {
   }
 };
 
+exports.getAvailableTables = async (req, res) => {
+  try {
+    const tables = await exports.getTablesListInternal();
+    const availableTables = tables.filter(t => 
+        t.isAvailable === true && 
+        t.status !== 'Đang sử dụng' && 
+        !t.merged_into
+    );
+    res.json(availableTables);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Lỗi khi lấy danh sách bàn trống.' });
+  }
+};
+
 exports.startUsingTable = async (req, res) => {
   try {
     const { id } = req.params;
@@ -238,5 +253,102 @@ exports.startUsingTable = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(400).json({ message: 'Lỗi khi cập nhật trạng thái bàn.' });
+  }
+};
+
+exports.mergeTable = async (req, res) => {
+  try {
+    const { fromTable, toTable } = req.body;
+
+    if (!fromTable || !toTable) {
+      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp bàn cần gộp và bàn đích.' });
+    }
+
+    if (String(fromTable) === String(toTable)) {
+      return res.status(400).json({ success: false, message: 'Không thể gộp vào cùng một bàn.' });
+    }
+
+    const tFrom = await Table.findOne({ tableNumber: fromTable });
+    const tTo = await Table.findOne({ tableNumber: toTable });
+
+    if (!tFrom || !tTo) {
+      return res.status(404).json({ success: false, message: 'Bàn không tồn tại.' });
+    }
+
+    // Bàn nguồn chưa bị merge
+    if (tFrom.merged_into) {
+      return res.status(400).json({ success: false, message: 'Bàn này đã được gộp vào bàn khác, không được gộp tiếp.' });
+    }
+    
+    // Đảm bảo bàn đích không phải là một Bàn bị gộp (SLAVE)
+    if (tTo.merged_into) {
+      return res.status(400).json({ success: false, message: 'Bàn đích đang là bàn bị gộp, vui lòng chọn Bàn Chủ hoặc bàn trống.' });
+    }
+
+    // Bàn fromTable bị gộp: status đang sử dụng, isAvailable false, merged_into toTable
+    tFrom.merged_into = String(toTable);
+    tFrom.isAvailable = false;
+    tFrom.status = 'Đang sử dụng';
+    await tFrom.save();
+
+    // Bàn toTable được gộp: status đang sử dụng, isAvailable là false
+    tTo.status = 'Đang sử dụng';
+    tTo.isAvailable = false;
+    await tTo.save();
+
+    // Bắn realtime cho bàn 5, bàn 6 (nếu app frontend có subscribe các room này)
+    const listSocket = require('../socket');
+    if (listSocket && listSocket.updateOrder) {
+        listSocket.updateOrder.to(String(fromTable)).emit('tableMerged', { merged_into: toTable });
+        listSocket.updateOrder.to(String(toTable)).emit('tableMerged', { received_from: fromTable });
+    }
+
+    res.status(200).json({ success: true, message: 'Merge table success' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Lỗi server khi gộp bàn.' });
+  }
+};
+
+exports.unmergeTable = async (req, res) => {
+  try {
+    const { tableNumber } = req.body;
+    if (!tableNumber) return res.status(400).json({ success: false, message: 'Thiếu mã bàn.' });
+    
+    const Table = db.table;
+    const slaveTable = await Table.findOne({ tableNumber: Number(tableNumber) });
+    
+    if (!slaveTable) return res.status(404).json({ success: false, message: 'Không tìm thấy bàn.' });
+    if (!slaveTable.merged_into) return res.status(400).json({ success: false, message: 'Bàn này đang không bị gộp.' });
+    
+    const masterTableNumber = slaveTable.merged_into;
+
+    // 1. Cập nhật Bàn bị gộp (SLAVE)
+    slaveTable.merged_into = null;
+    slaveTable.status = 'Trống';
+    slaveTable.isAvailable = true;
+    await slaveTable.save();
+    
+    // 2. Cập nhật Bàn chủ (MASTER)
+    const masterTable = await Table.findOne({ tableNumber: Number(masterTableNumber) });
+    if (masterTable) {
+        // Kiểm tra xem Master có còn bàn Slave nào khác gộp vào không
+        const remainingSlaves = await Table.countDocuments({ merged_into: String(masterTableNumber) });
+        if (remainingSlaves === 0) {
+            masterTable.status = 'Trống';
+            masterTable.isAvailable = true;
+            await masterTable.save();
+        }
+    }
+    
+    const listSocket = require('../socket');
+    if (listSocket && listSocket.updateOrder) {
+      listSocket.updateOrder.emit('tableMerged', { unmerged: tableNumber, master: masterTableNumber });
+    }
+    
+    res.status(200).json({ success: true, message: 'Tách bàn thành công' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Lỗi server khi tách bàn' });
   }
 };

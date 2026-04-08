@@ -79,9 +79,17 @@ exports.canDeductIngredients = canDeductIngredients;
 
 exports.createCashOrder = async (req, res) => {
     try {
-        const { cartId, tableNumber, selectedItemIds } = req.body;
+        let { cartId, tableNumber, selectedItemIds } = req.body;
         if (!cartId) {
             return res.status(400).send({ success: false, message: "No cart ID provided." });
+        }
+
+        if (tableNumber) {
+            const Table = db.table;
+            const tableRecord = await Table.findOne({ tableNumber: tableNumber });
+            if (tableRecord && tableRecord.merged_into) {
+                tableNumber = tableRecord.merged_into;
+            }
         }
 
         // Kiểm tra tồn kho trước khi tạo đơn
@@ -112,9 +120,17 @@ exports.createCashOrder = async (req, res) => {
 
 exports.createGuestOrder = async (req, res) => {
     try {
-        const { items, tableNumber, typeOrder } = req.body;
+        let { items, tableNumber, typeOrder } = req.body;
         if (!items || items.length === 0) {
             return res.status(400).send({ success: false, message: "No items provided." });
+        }
+        
+        if (tableNumber) {
+            const Table = db.table;
+            const tableRecord = await Table.findOne({ tableNumber: tableNumber });
+            if (tableRecord && tableRecord.merged_into) {
+                tableNumber = tableRecord.merged_into;
+            }
         }
 
         // Kiểm tra tồn kho trước khi tạo đơn

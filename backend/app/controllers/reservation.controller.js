@@ -215,11 +215,27 @@ exports.completeReservation = async (req, res) => {
       { status: 'Hoàn thành' }
     );
 
-    // Giải phóng bàn
-    await db.table.findByIdAndUpdate(tableId, {
-      status: 'Trống',
-      isAvailable: true
-    });
+    // 1. Tìm thông tin bàn Master
+    const masterTable = await db.table.findById(tableId);
+    if (!masterTable) {
+        return res.status(404).send({ message: 'Không tìm thấy bàn' });
+    }
+
+    // 2. Tìm tất cả bàn đang gộp vào MASTER này
+    const mergedTables = await db.table.find({ merged_into: String(masterTable.tableNumber) });
+
+    // 3. Reset toàn bộ bàn SLAVE
+    for (const table of mergedTables) {
+      table.merged_into = null;
+      table.status = 'Trống';
+      table.isAvailable = true;
+      await table.save();
+    }
+
+    // 4. Reset luôn bàn MASTER
+    masterTable.status = 'Trống';
+    masterTable.isAvailable = true;
+    await masterTable.save();
 
     res.status(200).send({ message: 'Đã hoàn tất và giải phóng bàn thành công' });
   } catch (error) {

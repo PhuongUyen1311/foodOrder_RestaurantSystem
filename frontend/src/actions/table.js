@@ -200,3 +200,56 @@ export const cancelReservation = async (accessToken, reservationId) => {
     throw error;
   }
 };
+
+export const mergeTable = async (accessToken, data) => {
+  try {
+    const response = await fetch('/api/tables/merge', {
+      method: 'POST',
+      headers: {
+        Authorization: "Bearer $accessToken",
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.message || "G?p bàn th?t b?i");
+    }
+    return result;
+  } catch (error) {
+    console.error('L?i khi g?p bàn:', error);
+    throw error;
+  }
+};
+
+export const getAvailableTables = async () => {
+  try {
+    const response = await fetch('/api/tables/available', { method: 'get' });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('L?i khi l?y danh sách bàn tr?ng:', error);
+    throw error;
+  }
+};
+
+export const unmergeTable = async (accessToken, tableNumber) => {
+  try {
+    const response = await fetch('/api/tables/unmerge', {
+      method: 'POST',
+      headers: {
+        Authorization: "Bearer $accessToken",
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ tableNumber })
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.message || "Tách bàn th?t b?i");
+    }
+    return result;
+  } catch (error) {
+    console.error('L?i khi tách bàn:', error);
+    throw error;
+  }
+};

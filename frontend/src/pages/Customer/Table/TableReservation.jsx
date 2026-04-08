@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Table as BootstrapTable, Button, Modal, Form, Spinner, Row, Col } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { getAllTables, createReservation, getReservationByTableId } from '../../../actions/table';
+import { getAvailableTables, createReservation, getReservationByTableId } from '../../../actions/table';
 import PopupReserveSuccess from '../../../components/Customer/PopupReserveSuccess/PopupReserveSuccess';
 
 const TableReservation = () => {
@@ -26,7 +26,7 @@ const TableReservation = () => {
   useEffect(() => {
     const fetchTables = async () => {
       try {
-        const data = await getAllTables();
+        const data = await getAvailableTables();
         if (data) {
           setTables(data);
         }
@@ -128,7 +128,7 @@ const TableReservation = () => {
 
       setShowSuccessPopup(true);
 
-      const updatedTables = await getAllTables();
+      const updatedTables = await getAvailableTables();
       setTables(updatedTables);
 
     } catch (error) {
@@ -146,34 +146,40 @@ const TableReservation = () => {
     <div className="container mt-4">
       <h2 className="mb-4" style={{ paddingTop: "80px", color: "green" }}>Danh sách bàn</h2>
 
-      <BootstrapTable striped bordered hover>
-        <thead>
-          <tr>
-            <th>Số bàn</th>
-            <th>Sức chứa</th>
-            <th>Vị trí</th>
-            <th>Hành động</th>
-          </tr>
-        </thead>
+      {tables.length === 0 ? (
+          <div className="alert alert-warning text-center mt-4 p-4 shadow-sm" style={{ fontSize: '18px', borderRadius: '10px' }}>
+              Hiện tại không còn bàn trống. Quý khách vui lòng chờ hoặc thử lại sau!
+          </div>
+      ) : (
+          <BootstrapTable striped bordered hover>
+            <thead>
+              <tr>
+                <th>Số bàn</th>
+                <th>Sức chứa</th>
+                <th>Vị trí</th>
+                <th>Hành động</th>
+              </tr>
+            </thead>
 
-        <tbody>
-          {tables.map((table) => (
-            <tr key={table._id}>
-              <td>Bàn {table.tableNumber}</td>
-              <td>{table.seatingCapacity} người</td>
-              <td>{table.location}</td>
-              <td>
-                <Button
-                  variant="primary"
-                  onClick={() => handleReservation(table)}
-                >
-                  Đặt bàn
-                </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </BootstrapTable>
+            <tbody>
+              {tables.map((table) => (
+                <tr key={table._id}>
+                  <td>Bàn {table.tableNumber}</td>
+                  <td>{table.seatingCapacity} người</td>
+                  <td>{table.location}</td>
+                  <td>
+                    <Button
+                      variant="primary"
+                      onClick={() => handleReservation(table)}
+                    >
+                      Đặt bàn
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </BootstrapTable>
+      )}
 
       {/* Modal đặt bàn */}
       <Modal

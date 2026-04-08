@@ -9,7 +9,7 @@ module.exports = mongoose => {
         
         qrCode: { type: String, unique: true }, // Lưu trữ URL hoặc dữ liệu của mã QR
         isAvailable: { type: Boolean, default: true },
-        status: { type: String, enum: ['Trống', 'Đã đặt', 'Đang sử dụng'], default: 'Trống' },
+        status: { type: String, enum: ['Trống', 'Đã đặt', 'Đang sử dụng', 'Hoàn thành'], default: 'Trống' },
         seatingCapacity: { 
             type: Number, 
             required: true,
@@ -19,6 +19,10 @@ module.exports = mongoose => {
             type: String,
             enum: ['Tầng 1 trong nhà', 'Tầng 2 trong nhà', 'Tầng 1 ngoài trời', 'Tầng 2 ngoài trời'],
             required: true 
+        },
+        merged_into: {
+            type: String,
+            default: null
         }
       }
     );

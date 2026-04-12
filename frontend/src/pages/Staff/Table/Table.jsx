@@ -11,8 +11,10 @@ import { socket } from '../../../socket.js';
 import './table.scss';
 import { completeReservation, cancelReservation, mergeTable, unmergeTable } from '../../../actions/table.js';
 import { Table as AntTable, Tag } from 'antd';
+import { useNavigate } from 'react-router-dom';
 
 const TableManagement = () => {
+    const navigate = useNavigate();
     const [tables, setTables] = useState([]);
     const accessToken = sessionStorage.getItem("accessToken");
     const [loading, setLoading] = useState(false);
@@ -390,6 +392,21 @@ const TableManagement = () => {
         }
     };
 
+    const handlePaymentRedirect = async (tableNumber) => {
+        try {
+            const response = await fetch(`/api/order/guest/table/${tableNumber}`);
+            const data = await response.json();
+            if (response.ok && data && data.length > 0) {
+                navigate(`/staff/order/detail/${data[0].order.id || data[0].order._id}`);
+            } else {
+                toast.warning('Không tìm thấy đơn hàng chưa thanh toán cho bàn này!');
+            }
+        } catch (e) {
+            console.error(e);
+            toast.error('Có lỗi xảy ra khi lấy thông tin đơn hàng');
+        }
+    };
+
     const renderCountdown = (targetTime) => {
         const diff = new Date(targetTime) - now;
         if (diff <= 0) return <span className="text-danger fw-bold">Hết giờ!</span>;
@@ -581,8 +598,8 @@ const TableManagement = () => {
                                 <th>Số bàn</th>
                                 <th>Trạng thái</th>
                                 <th>Sức chứa</th>
-                                <th style={{ width: '300px' }}>Hành động</th>
-                                <th style={{ width: '300px' }}>Ghi chú</th>
+                                <th style={{ width: '400px' }}>Hành động</th>
+                                <th style={{ width: '200px' }}>Ghi chú</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -604,7 +621,7 @@ const TableManagement = () => {
                                         )}
                                         {getSlaveTablesForMaster(table.tableNumber).length > 0 && (
                                             <div className="mt-1">
-                                                <span className="badge p-1" style={{backgroundColor: '#17a2b8'}}>
+                                                <span className="badge p-1" style={{ backgroundColor: '#17a2b8' }}>
                                                     MASTER (Gồm: {getSlaveTablesForMaster(table.tableNumber).join(', ')})
                                                 </span>
                                             </div>
@@ -652,6 +669,18 @@ const TableManagement = () => {
                                                 </Button>
                                             )}
 
+                                            {(table.status === 'Đang sử dụng') && !table.merged_into && !table.isPaid && (
+                                                <Button
+                                                    variant="primary"
+                                                    size="sm"
+                                                    onClick={() => handlePaymentRedirect(table.tableNumber)}
+                                                    className="ms-1 fw-bold text-white"
+                                                    style={{ fontSize: '11px', borderRadius: '20px', padding: '4px 10px' }}
+                                                >
+                                                    Thanh toán
+                                                </Button>
+                                            )}
+
                                             {(table.status === 'Trống' || table.status === 'Đã đặt' || table.status === 'Hoàn thành') && !table.merged_into && getSlaveTablesForMaster(table.tableNumber).length === 0 && (
                                                 <Button
                                                     variant="warning"
@@ -689,8 +718,8 @@ const TableManagement = () => {
                                     </td>
                                     <td className="text-start">
                                         <div className="d-flex flex-column">
-                                            <span style={{ color: '#6c757d', fontSize: '14px' }}>
-                                                {table.note}
+                                            <span style={{ color: table.isPaid ? '#198754' : '#6c757d', fontSize: '13px', fontWeight: table.isPaid ? '500' : 'normal' }}>
+                                                {table.isPaid && <span className="me-1">Đã thanh toán, chuẩn bị dọn bàn để đón khách kế tiếp</span>}{table.note}
                                                 {table.confirmationCode && (
                                                     <span className="d-block mt-1">
                                                         Mã đặt: <strong>{highlight(table.confirmationCode, false)}</strong>
@@ -829,13 +858,13 @@ const TableManagement = () => {
                 <Modal.Body>
                     <Form.Group>
                         <Form.Label>Chọn bàn đích (Bàn này sẽ gộp vào)</Form.Label>
-                        <Form.Select 
+                        <Form.Select
                             value={mergeToTable}
                             onChange={(e) => setMergeToTable(e.target.value)}
                         >
                             <option value="">-- Chọn bàn đích --</option>
-                            {tables.filter(t => 
-                                !t.merged_into && 
+                            {tables.filter(t =>
+                                !t.merged_into &&
                                 t.tableNumber !== selectedTable?.tableNumber
                             ).map(t => (
                                 <option key={t._id} value={t.tableNumber}>

@@ -83,9 +83,9 @@ exports.createSplitPaymentUrl = async (req, res) => {
         if (!split) return res.status(404).json({ success: false, message: "Split bill not found" });
         if (split.is_payment) return res.status(400).json({ success: false, message: "Phần này đã được thanh toán" });
 
-        if (method === 'cash') {
+        if (method === 'cash' || method === 'manual_transfer') {
             split.is_payment = true;
-            split.payment_method = 'tiền mặt';
+            split.payment_method = method === 'cash' ? 'tiền mặt' : 'chuyển khoản';
             split.paid_at = new Date();
             
             // Check if all are paid

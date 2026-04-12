@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Row, Col, Table } from 'react-bootstrap';
+import { Row, Col, Table, Form } from 'react-bootstrap';
 import moment from 'moment';
+import { QRCodeSVG } from 'qrcode.react';
 
 import { fetchUpdateIsPayment, fetchUpdateStatusOrder } from '../../../actions/order';
 import { statusOrder } from '../../../config/statusOrder';
@@ -15,6 +16,9 @@ function OrderDetail(props) {
     const [orderPayment, setOrderPayment] = useState(null);
     const [orderItems, setOrderItems] = useState([]);
     const [showSplit, setShowSplit] = useState(false);
+    const [splitPaymentMethods, setSplitPaymentMethods] = useState({});
+    const [printSplitBill, setPrintSplitBill] = useState(null);
+    const [qrModalData, setQrModalData] = useState(null);
     const { orderId } = useParams();
     const accessToken = sessionStorage.getItem("accessToken");
 
@@ -81,15 +85,51 @@ function OrderDetail(props) {
     }
 
     const handleSplitPayment = async (splitId) => {
+        const method = splitPaymentMethods[splitId] || 'transfer';
+
+        if (method === 'transfer') {
+            try {
+                const resp = await fetch('/api/payment/split/pay', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+                    body: JSON.stringify({ orderId: orderDetail.id || orderDetail._id, splitId, method: 'transfer' })
+                });
+                const data = await resp.json();
+                if (data.success && data.paymentUrl) {
+                    const sb = orderDetail.split_bills.find(s => s.split_id === splitId);
+                    setQrModalData({ paymentUrl: data.paymentUrl, splitId, amount: sb.amount });
+                } else {
+                    alert(data.message || "Lỗi tạo mã QR");
+                }
+            } catch (e) {
+                console.error(e);
+            }
+            return;
+        }
+
+        processSplitPayment(splitId, method);
+    };
+
+    const processSplitPayment = async (splitId, method) => {
         try {
             const resp = await fetch('/api/payment/split/pay', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
-                body: JSON.stringify({ orderId: orderDetail.id || orderDetail._id, splitId, method: 'cash' })
+                body: JSON.stringify({ orderId: orderDetail.id || orderDetail._id, splitId, method })
             });
             const data = await resp.json();
             if (data.success) {
-                fetchOrderDetail(orderId, accessToken);
+                await fetchOrderDetail(orderId, accessToken);
+                setQrModalData(null);
+
+                if (window.confirm("Thanh toán thành công. Bạn có muốn in hóa đơn cho khách này không?")) {
+                    // Mới fetch lên, orderDetail có thể chưa phản ánh kịp trên instance này,
+                    // Nên tìm trong data trả về nếu có, hoặc fetch lại
+                    // Để đơn giản, ta tìm trong state hiện tại (nó sẽ render lại sau)
+                    setTimeout(() => {
+                        setPrintSplitBill(splitId); // Cần dựa trên orderDetail render sau update, truyền string ID để trigger effect
+                    }, 300);
+                }
             } else {
                 alert(data.message || "Lỗi thanh toán phần chia bill");
             }
@@ -98,52 +138,196 @@ function OrderDetail(props) {
         }
     };
 
+    const targetPrintBill = printSplitBill && typeof printSplitBill === 'string' ? orderDetail?.split_bills?.find(s => s.split_id === printSplitBill) : printSplitBill;
+
+    useEffect(() => {
+        if (targetPrintBill && typeof printSplitBill === 'string') {
+            setPrintSplitBill(targetPrintBill);
+            setTimeout(() => {
+                window.print();
+            }, 500);
+        }
+    }, [orderDetail, printSplitBill, targetPrintBill]);
+
+    // Callback when printing is done (or cancelled) to return to main view
+    useEffect(() => {
+        const handleAfterPrint = () => {
+            if (printSplitBill) {
+                setPrintSplitBill(null);
+            }
+        };
+        window.addEventListener('afterprint', handleAfterPrint);
+        return () => window.removeEventListener('afterprint', handleAfterPrint);
+    }, [printSplitBill]);
+
+    if (targetPrintBill) {
+        return (
+            <div className="bg-white p-4 print-section" style={{ minHeight: '100vh', color: '#000' }}>
+                <div className="text-center mb-4 border-bottom pb-3">
+                    <h2 className="fw-bold text-uppercase mb-1" style={{ color: '#2c3e50' }}>Healthy Food Restaurant</h2>
+                    <p className="text-muted mb-0">Địa chỉ: 123 Đường Ẩm Thực, Quận 1, TP. HCM</p>
+                    <p className="text-muted mb-0">Hotline: 0909 123 456</p>
+                    <h4 className="mt-3 fw-bold text-dark text-uppercase">HÓA ĐƠN THANH TOÁN (PHẦN CHIA)</h4>
+                    <p className="text-muted mb-0">Hóa đơn #: {orderDetail.id}</p>
+                    <p className="text-muted mb-0 fw-bold mt-1">Người thanh toán: {targetPrintBill.user_name}</p>
+                </div>
+                <Table striped className="text-end align-middle table-borderless mt-3 border-bottom pb-3">
+                    <thead className="table-dark text-white">
+                        <tr>
+                            <th className="text-start">Tên sản phẩm</th>
+                            <th className="text-center">SL</th>
+                            <th>Đơn giá</th>
+                            <th>Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {targetPrintBill.split_type === 'item' ? (
+                            targetPrintBill.items && targetPrintBill.items.map((it, idx) => (
+                                <tr key={idx}>
+                                    <td className="text-start fw-bold text-dark">{it.product_name}</td>
+                                    <td className="text-center fw-bold">{it.qty}</td>
+                                    <td className="text-muted">{(it.unit_price || Math.floor(it.price / it.qty))?.toLocaleString()} đ</td>
+                                    <td className="fw-bold text-dark">{it.price?.toLocaleString()} đ</td>
+                                </tr>
+                            ))
+                        ) : (
+                            orderItems && orderItems.map((it, idx) => (
+                                <tr key={idx}>
+                                    <td className="text-start fw-bold text-dark">{it.product_name || it.name}</td>
+                                    <td className="text-center fw-bold">{it.qty}</td>
+                                    <td className="text-muted">{(it.unit_price || Math.floor(it.price / it.qty))?.toLocaleString()} đ</td>
+                                    <td className="fw-bold text-dark">{(it.price || 0).toLocaleString()} đ</td>
+                                </tr>
+                            ))
+                        )}
+                        {(!targetPrintBill.items || targetPrintBill.items.length === 0) && targetPrintBill.split_type === 'item' && (
+                            <tr><td colSpan="4" className="text-center text-muted">Thanh toán theo giá trị tùy chỉnh</td></tr>
+                        )}
+                    </tbody>
+                </Table>
+
+                {targetPrintBill.split_type !== 'item' && (
+                    <div className="d-flex justify-content-between w-100 mt-2 align-items-center mb-1">
+                        <span className="text-muted">Tổng bill gốc:</span>
+                        <span className="fw-bold fs-6">{(orderDetail?.total_price || 0).toLocaleString()} đ</span>
+                    </div>
+                )}
+
+                {targetPrintBill.split_type !== 'item' && (
+                    <div className="d-flex justify-content-between w-100 mb-2 border-bottom pb-2">
+                        <span className="text-muted fst-italic">Phần share bill ({targetPrintBill.split_type === 'even' ? `Chia đều ${orderDetail.split_bills.length}` : `Tỷ lệ ${targetPrintBill.percent}%`}):</span>
+                        <span className="fw-bold text-primary">{(targetPrintBill.percent || (100 / orderDetail.split_bills.length)).toFixed(1)}%</span>
+                    </div>
+                )}
+
+                <div className="d-flex justify-content-between w-100 mt-3 align-items-center">
+                    <span className="fw-bold fs-5 text-dark">Khách Phải Thanh Toán:</span>
+                    <h2 className="text-danger fw-bold mb-0">{targetPrintBill.amount?.toLocaleString()} đ</h2>
+                </div>
+                <div className="text-center mt-5 pt-3">
+                    <p className="fst-italic text-muted">Cảm ơn và hẹn gặp lại!</p>
+                </div>
+                <div className="mt-5 text-center no-print">
+                    <button className="btn btn-primary" onClick={() => setPrintSplitBill(null)}>Thoát Chế Độ In</button>
+                </div>
+            </div>
+        );
+    }
+
+    const handleShareBill = () => {
+        if (!orderDetail) return;
+        const itemsText = orderItems.map(item => `- ${item.product_name} x ${item.qty}: ${item.total_price?.toLocaleString()}đ`).join('\n');
+        const shareText = `--- THÔNG TIN ${(orderDetail.is_payment ? 'HÓA ĐƠN' : 'TẠM TÍNH')} ---\n` +
+            `Số bàn: ${orderDetail.table_number || 'N/A'}\n` +
+            `Khách hàng: ${orderDetail.first_name} ${orderDetail.last_name}\n` +
+            `------------------\n` +
+            `${itemsText}\n` +
+            `------------------\n` +
+            `Tổng cộng: ${orderDetail.total_price?.toLocaleString()}đ\n` +
+            `Trạng thái: ${orderDetail.is_payment ? 'Đã thanh toán' : 'Chưa thanh toán'}\n` +
+            `Xem thực đơn tại: ${window.location.origin}/menu?table=${orderDetail.table_number}`;
+
+        navigator.clipboard.writeText(shareText).then(() => {
+            alert("Đã sao chép tóm tắt đơn hàng vào bộ nhớ tạm!");
+        }).catch(err => {
+            console.error('Lỗi khi sao chép:', err);
+        });
+    }
+
     return (
         <React.Fragment>
+            {qrModalData && (
+                <div className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 d-flex justify-content-center align-items-center" style={{ zIndex: 1050 }}>
+                    <div className="bg-white p-4 rounded text-center shadow" style={{ minWidth: '350px' }}>
+                        <h4 className="mb-3 text-primary fw-bold">Quét Mã QR Trả Tiền</h4>
+                        <div className="d-flex justify-content-center mb-3 border p-2 rounded bg-light" style={{ width: 'fit-content', margin: '0 auto' }}>
+                            <QRCodeSVG value={qrModalData.paymentUrl} size={250} />
+                        </div>
+                        <h3 className="text-danger fw-bold mb-4">{qrModalData.amount.toLocaleString()} đ</h3>
+                        <div className="d-flex justify-content-center gap-3">
+                            <button className="btn btn-secondary" onClick={() => setQrModalData(null)}>Hủy</button>
+                            <button className="btn btn-success fw-bold" onClick={() => processSplitPayment(qrModalData.splitId, 'manual_transfer')}>Đã nhận được tiền</button>
+                        </div>
+                    </div>
+                </div>
+            )}
             <div className='order__detail'>
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h3 className="title-admin mb-0">Chi tiết Hóa Đơn: #{orderDetail && orderDetail.id}</h3>
-                    <button className="btn btn-dark d-flex align-items-center shadow-sm" onClick={() => window.print()}>
-                        <span className="me-2 fs-5">🖨️</span> In Hóa Đơn
-                    </button>
+                <div className="d-flex justify-content-between align-items-center mb-4 no-print">
+                    <h3 className="title-admin mb-0">
+                        {orderDetail && orderDetail.is_payment ? "Chi tiết Hóa Đơn" : "Chi tiết Đơn Hàng"}: #{orderDetail && orderDetail.id}
+                    </h3>
+                    <div className="d-flex gap-2">
+                        <button className="btn btn-info d-flex align-items-center shadow-sm text-white" onClick={handleShareBill}>
+                            <span className="me-2 fs-5">🔗</span> Chia sẻ
+                        </button>
+                        <button className="btn btn-dark d-flex align-items-center shadow-sm" onClick={() => window.print()}>
+                            <span className="me-2 fs-5">🖨️</span> {orderDetail && orderDetail.is_payment ? "In Hóa Đơn" : "In Phiếu Mua Hàng"}
+                        </button>
+                    </div>
                 </div>
 
                 <div className="order__detail-container background-radius shadow-sm bg-white print-section">
-                    
+
                     {/* Print Header */}
                     <div className="text-center mb-4 border-bottom pb-3">
-                        <h2 className="fw-bold text-uppercase mb-1" style={{color: '#2c3e50'}}>Healthy Food Restaurant</h2>
+                        <h2 className="fw-bold text-uppercase mb-1" style={{ color: '#2c3e50' }}>Healthy Food Restaurant</h2>
                         <p className="text-muted mb-0">Địa chỉ: 123 Đường Ẩm Thực, Quận 1, TP. HCM</p>
                         <p className="text-muted mb-0">Hotline: 0909 123 456</p>
-                        <h4 className="mt-3 fw-bold text-dark">HÓA ĐƠN THANH TOÁN</h4>
-                        <p className="text-muted mb-0">Hóa đơn #: {orderDetail && orderDetail.id}</p>
+                        <h4 className="mt-3 fw-bold text-dark text-uppercase">
+                            {orderDetail && orderDetail.is_payment ? "Hóa Đơn Thanh Toán" : "Phiếu mua hàng (Tạm tính)"}
+                        </h4>
+                        <p className="text-muted mb-0">
+                            {orderDetail && orderDetail.is_payment ? "Hóa đơn #" : "Phiếu mua hàng #"}: {orderDetail && orderDetail.id}
+                        </p>
                     </div>
 
-                    <div className="order__detail-head border p-3 rounded bg-light mb-4">
-                        <Row>
-                            <Col md={6}>
-                                <label className="text-muted mb-1 d-block">Tên khách hàng:</label>
-                                <div className="fw-bold fs-5">{orderDetail && orderDetail.first_name} {orderDetail && orderDetail.last_name}</div>
-                                {orderDetail && orderDetail.table_number && (
-                                    <div className="mt-2 text-primary fw-bold">🏠 Bàn số: {orderDetail.table_number}</div>
-                                )}
-                            </Col>
-                            <Col md={6} className="text-md-end">
-                                <label className="text-muted mb-1 d-block">Ngày đặt hàng:</label>
-                                <div className="fw-bold fs-6">{orderDetail && moment(orderDetail.createdAt).format('DD/MM/YYYY HH:mm')}</div>
-                            </Col>
-                        </Row>
+                    <div className="order__detail-head border p-3 rounded bg-light mb-4 d-flex justify-content-between align-items-center flex-wrap">
+                        <div className="d-flex align-items-center gap-4">
+                            <div>
+                                <span className="text-muted me-1">Tên khách hàng:</span>
+                                <span className="fw-bold fs-5">{orderDetail && orderDetail.first_name} {orderDetail && orderDetail.last_name}</span>
+                            </div>
+                            {orderDetail && orderDetail.table_number && (
+                                <div className="text-primary fw-bold fs-5" style={{ borderLeft: '2px solid #ccc', paddingLeft: '20px' }}>
+                                    Bàn số: {orderDetail.table_number}
+                                </div>
+                            )}
+                        </div>
+                        <div>
+                            <span className="text-muted me-1">Ngày đặt hàng:</span>
+                            <span className="fw-bold fs-6">{orderDetail && moment(orderDetail.createdAt).format('DD/MM/YYYY HH:mm')}</span>
+                        </div>
                     </div>
-                    
+
                     <div className="order__detail-group mt-3">
                         <Table striped hover className="text-end align-middle border-bottom table-borderless">
-                            <thead className="table-dark text-white">
-                                <tr>
-                                    <th className="text-center column-stt">STT</th>
-                                    <th className="text-start">Tên sản phẩm</th>
-                                    <th className="text-center">Số lượng</th>
-                                    <th>Đơn giá</th>
-                                    <th>Thành tiền</th>
+                            <thead className="table-dark" style={{ color: '#fff' }}>
+                                <tr style={{ color: '#fff' }}>
+                                    <th className="text-center column-stt" style={{ color: '#fff' }}>STT</th>
+                                    <th className="text-start" style={{ color: '#fff' }}>Tên sản phẩm</th>
+                                    <th className="text-center" style={{ color: '#fff' }}>Số lượng</th>
+                                    <th style={{ color: '#fff' }}>Đơn giá</th>
+                                    <th style={{ color: '#fff' }}>Thành tiền</th>
                                 </tr>
                             </thead>
                             <tbody className="border-top-0">
@@ -170,10 +354,17 @@ function OrderDetail(props) {
                             </tbody>
                         </Table>
                     </div>
-                    
+
                     {orderDetail && orderDetail.split_bills && orderDetail.split_bills.length > 0 && (
                         <div className="order__detail-group mt-4 p-3 border rounded border-warning">
-                            <h5 className="text-warning font-bold mb-3">Thông tin Chia Bill</h5>
+                            <div className="d-flex justify-content-between align-items-center mb-3">
+                                <h5 className="text-warning font-bold mb-0">Thông tin Chia Bill</h5>
+                                {!orderDetail.is_payment && (
+                                    <button className="btn btn-sm btn-outline-warning fw-bold d-flex align-items-center" onClick={() => setShowSplit(true)}>
+                                        <span className="me-1">✏️</span> Chỉnh sửa
+                                    </button>
+                                )}
+                            </div>
                             <Table bordered size="sm" className="text-center align-middle">
                                 <thead className="table-warning">
                                     <tr>
@@ -187,23 +378,40 @@ function OrderDetail(props) {
                                 <tbody>
                                     {orderDetail.split_bills.map((sb, sbIdx) => (
                                         <tr key={sbIdx}>
-                                            <td className="fw-bold">{sb.user_name} <br/><small className="text-muted">({sb.percent}%)</small></td>
-                                            <td className="text-danger fw-bold">{sb.amount.toLocaleString()} đ</td>
-                                            <td className="text-start" style={{fontSize: '12px'}}>
+                                            <td className="fw-bold align-middle">{sb.user_name} <br /><small className="text-muted">({sb.percent}%)</small></td>
+                                            <td className="text-danger fw-bold align-middle">{sb.amount.toLocaleString()} đ</td>
+                                            <td className="text-center align-middle" style={{ fontSize: '12px' }}>
                                                 {sb.items && sb.items.map((it, idx) => (
                                                     <div key={idx}>- {it.product_name} x {it.qty}</div>
                                                 ))}
                                                 {(!sb.items || sb.items.length === 0) && "Không áp dụng món"}
                                             </td>
-                                            <td>
+                                            <td className="align-middle">
                                                 <span className={`badge ${sb.is_payment ? 'bg-success' : 'bg-secondary'}`}>
                                                     {sb.is_payment ? 'Đã thu' : 'Chưa thu'}
                                                 </span>
                                             </td>
-                                            <td>
-                                                {!sb.is_payment && (
-                                                    <button className="btn btn-sm btn-primary" onClick={() => handleSplitPayment(sb.split_id)}>Thu tiền</button>
-                                                )}
+                                            <td className="align-middle">
+                                                <div className="d-flex justify-content-center align-items-center gap-2 text-center h-100">
+                                                    {!sb.is_payment ? (
+                                                        <>
+                                                            <Form.Select
+                                                                size="sm"
+                                                                style={{ width: '130px' }}
+                                                                value={splitPaymentMethods[sb.split_id] || 'transfer'}
+                                                                onChange={(e) => setSplitPaymentMethods({ ...splitPaymentMethods, [sb.split_id]: e.target.value })}
+                                                            >
+                                                                <option value="transfer">Chuyển khoảnQR</option>
+                                                                <option value="cash">Tiền mặt</option>
+                                                            </Form.Select>
+                                                            <button className="btn btn-sm btn-primary" onClick={() => handleSplitPayment(sb.split_id)}>Thu tiền</button>
+                                                        </>
+                                                    ) : (
+                                                        <span className="text-secondary fw-bold fst-italic">
+                                                            {sb.payment_method === 'tiền mặt' ? 'Đã trả tiền mặt' : 'Đã chuyển khoản'}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}
@@ -251,7 +459,7 @@ function OrderDetail(props) {
 
                         <button hidden={orderDetail && orderDetail.is_payment} className="btn btn-payment"
                             onClick={() => handlePayment(orderDetail && orderDetail.id)}>Đã thanh toán</button>
-                            
+
                         {orderDetail && !orderDetail.is_payment && (!orderDetail.split_bills || orderDetail.split_bills.length === 0) && (
                             <button className="btn btn-warning ms-2 text-white font-bold px-3 py-2" onClick={() => setShowSplit(true)}>
                                 Mở chia hóa đơn
@@ -260,11 +468,11 @@ function OrderDetail(props) {
                     </div>
                 </div>
             </div>
-            
-            <SplitBillModal 
-                show={showSplit} 
-                onHide={() => setShowSplit(false)} 
-                order={orderDetail} 
+
+            <SplitBillModal
+                show={showSplit}
+                onHide={() => setShowSplit(false)}
+                order={orderDetail}
                 orderItems={orderItems}
                 onSuccess={() => fetchOrderDetail(orderId, accessToken)}
             />

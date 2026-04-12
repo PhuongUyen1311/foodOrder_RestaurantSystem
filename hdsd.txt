@@ -1,0 +1,165 @@
+4.2. Hướng dẫn sử dụng
+4.2.1. Hướng dẫn quy trình sử dụng dành cho khách hàng
+A.Luồng mua hàng online - Lấy hàng tại quán
+Dành cho khách hàng muốn đặt món trước từ xa và đến quán nhận hàng.
+Bước 1: Truy cập và Đăng nhập
+-Khách hàng truy cập website.
+-Thực hiện Đăng nhập tài khoản (Bắt buộc), nếu chưa có tài khoản thì tiến hành Đăng ký. Tài khoản giúp bạn theo dõi trạng thái đơn hàng.
+Bước 2: Chọn món ăn
+-Duyệt qua thực đơn, xem hình ảnh và mô tả chi tiết món ăn, có thể xem thành phần món ăn hoặc chat với nutribot (tang cơ/ giảm cân/ bao nhiêu calo) để lựa chọn được món ăn phú hợp khẩu vị cũng như đáp ứng chế độ ăn cá nhân.
+-Nhấn "Thêm vào giỏ" để đưa món vào danh sách chờ thanh toán.
+Bước 3: Kiểm tra Giỏ hàng & Thanh toán
+-Truy cập Giỏ hàng, tích chọn các món cần mua.
+-Nhấn "Thanh toán". Hệ thống tự nhận diện hình thức "Đặt hàng online".
+-Chọn phương thức thanh toán:
+  + Tiền mặt: Thanh toán cho nhân viên khi nhận món tại quầy.
+  + Chuyển khoản (VNPay): Quét mã QR code hoặc dùng Internet Banking để thanh toán ngay.
+Bước 4: Nhận hàng
+-Sau khi đặt thành công, đơn hàng sẽ ở trạng thái chờ nhận đơn . 
+-Khách hàng đến quán, cung cấp thông tin "Lịch sử đơn hàng" để nhân viên bàn giao món.
+
+B.Luồng gọi món tại bàn qua QR Code
+Quy trình tối giản giúp khách hàng gọi món nhanh chóng ngay tại bàn mà không cần sự trợ giúp trực tiếp của nhân viên hay các bước xác thực phức tạp.
+Bước 1: Quét mã QR tại bàn
+-Mỗi bàn trong nhà hàng đều có một mã QR riêng biệt. Khách hàng chỉ cần dùng điện thoại quét mã này.
+-Hệ thống sẽ đưa bạn thẳng đến trang Thực đơn (Menu) của đúng bàn đó mà KHÔNG cần đăng nhập hay xác nhận số bàn thủ công.
+Bước 2: Chọn món trực tiếp
+-Bạn có thể thoải mái chọn món và thêm vào giỏ hàng ngay lập tức.
+-Thông tin "Bàn số: X" sẽ được tự động liên kết và hiển thị trên giao diện của bạn.
+Bước 3: Gửi Order
+-Vào giỏ hàng, kiểm tra lại danh sách món và nhấn "Đặt món".
+-Hệ thống đã kết nối trực tiếp với Admin quản lý, đảm bảo đơn hàng của bạn được ghi nhận ngay lập tức cho đúng số bàn.
+-Khách hàng có thể oder món nhiều lần trong bữa ăn, các phiếu đặt món sẽ được lưu lại trong mục "Món đã đặt" để khách hàng dễ dàng kiểm tra trước khi thanh toán.
+Bước 4: Chờ phục vụ tận nơi
+-Các đơn hàng được gửi thẳng đến bộ phận Bếp/Bar. 
+- Nhân viên phục vụ sẽ mang món đến đúng vị trí bàn của bạn dựa trên thông tin mã QR đã quét.
+Bước 5: Thanh toán
+-Nhấn "Thanh toán". Hệ thống tự nhận diện hình thức "Đặt món tại quán".
+-Chọn phương thức thanh toán:
+  + Tiền mặt: Nhân viên sẽ thu tiền tại bàn.
+  + Chuyển khoản (VNPay): Thanh toán online để hoàn tất nhanh chóng.
+(*) Tính năng mở rộng: Chia hóa đơn (Split Bill)
+-Tại màn hình "Thanh toán", khách hàng có thể chọn "Mở chia hóa đơn".
+-Hệ thống cho phép chọn món ăn riêng hoặc chia theo % tổng hóa đơn để khách hàng chủ động thanh toán phần của mình ngay tại bàn.
+
+
+C.Luồng đặt bàn trước (Reservation)
+Dành cho khách hàng muốn giữ chỗ trước cho các buổi tiệc, gặp mặt hoặc dùng bữa gia đình.
+(*) Điều kiện và Quy định đặt bàn:
+-Tài khoản: Khách hàng bắt buộc phải Đăng nhập để thực hiện đặt bàn.
+-Thời gian hoạt động: Nhà hàng nhận đặt bàn trong khung giờ từ 08:00 đến 20:00 hằng ngày.
+-Thời gian chuẩn bị: Nên đặt trước ít nhất 30 phút - 1 tiếng để nhà hàng sắp xếp tốt nhất.
+-Chính xác thông tin: Thông tin Họ tên, Số điện thoại và Email được lấy tự động từ hồ sơ cá nhân của bạn để đảm bảo liên lạc khi cần thiết.
+(*) Các tính năng hỗ trợ:
+-Xem danh sách bàn: Hiển thị đầy đủ Số bàn, Sức chứa (số lượng người) và Vị trí (VD: Gần cửa sổ, Tầng 2, Ngoài trời).
+-Lịch khả dụng trực quan: Khi chọn một bàn, hệ thống hiển thị lịch trong 30 ngày tới:
+  + Màu Xanh: Bàn còn trống, bạn có thể đặt.
+  + Màu Đỏ: Bàn đã có khách đặt trước vào ngày đó, vui lòng chọn ngày khác.
+(*) Quy trình chi tiết:
+1. Chọn bàn: Tìm bàn có sức chứa phù hợp với số lượng người tham gia và nhấn "Đặt bàn".
+2. Kiểm tra lịch: Xem lịch hiển thị để chọn ngày còn trống (màu xanh).
+3. Nhập thông tin:
+-Ngày sử dụng: Chọn ngày bạn dự định đến.
+-Giờ sử dụng: Nhập thời gian chính xác trong khung giờ quy định (08:00 - 20:00).
+-Yêu cầu đặc biệt: Nhập các yêu cầu như (Gần máy lạnh, Trang trí sinh nhật, Ghế trẻ em, v.v.)
+4. Xác nhận: Nhấn "Xác nhận đặt bàn". Hệ thống sẽ xử lý và thông báo kết quả ngay lập tức.
+5. Kiểm tra lại: Bạn có thể vào mục "Lịch sử đặt bàn" để xem lại thông tin bàn đã đặt.
+(*) Lưu ý: Nếu bạn đến muộn quá 2 tiếng so với giờ đã đặt mà không thông báo, nhà hàng có quyền hủy đơn đặt bàn để phục vụ khách khác.
+
+4.3. Hướng dẫn vận hành dành cho nhân viên
+(*) Quyền hạn: Nhân viên tập trung vào các công việc vận hành trực tiếp tại quán, xử lý đơn hàng và quản lý tình trạng bàn thực tế.
+
+4.3.1. Quan lý đơn hàng (Order Management)
+Hệ thống sẽ cập nhật đơn hàng theo thời gian thực (Real-time), staff cần theo dõi liên tục mục này. Dưới đây là quy trình xử lý một đơn hàng:
+Bước 1: Tiếp nhận đơn (Đơn mới)
+-Khi có thông báo đơn hàng mới (từ Online hoặc tại Bàn), nhấn vào "Chi tiết" (biểu tượng icon mắt).
+-Kiểm tra danh sách món ăn và ghi chú của khách.
+-Nhấn "Nhận đơn" (Confirm) để xác nhận hệ thống đã ghi nhận việc chuẩn bị.
+Bước 2: Chuẩn bị món (Đang chờ làm)
+-Sau khi bếp bắt đầu chế biến, nhấn "Đang làm" (Processing). Trạng thái này giúp quản lý biết món đang được thực hiện.
+Bước 3: Hoàn thành & Phục vụ (Hoàn thành)
+-Khi món đã sẵn sàng mang ra bàn hoặc giao cho khách đặt online (lấy hàng tại quán), nhấn "Hoàn thành" (Complete).
+Bước 4: Xác nhận thanh toán
+- Đối với khách thanh toán tiền mặt tại quầy hoặc tại bàn, Staff nhấn nút "Đã thanh toán" để kết thúc và cập nhật trạng thái đơn hàng
+-Lưu ý: Nút này sẽ tự ẩn nếu khách thanh toán qua VNPay thành công.
+
+4.3.1.1. Chia hóa đơn (Split Bill)
+Khi khách muốn thanh toán riêng từng món hoặc chia tiền, nhân viên thực hiện:
+-Bước 1: Vào "Chi tiết" đơn hàng, nhấn "Mở chia hóa đơn".
+-Bước 2: Hệ thống hiển thị danh sách món. Nhân viên chọn món của khách cần tách hoặc nhập số tiền/phần trăm tương ứng.
+-Bước 3: Sau khi tách, hóa đơn chính sẽ xuất hiện danh sách các "Hóa đơn con" (Split Bills).
+-Bước 4: Nhấn "Thu tiền" cho từng người khi họ thanh toán. Đơn hàng chỉ được tính là hoàn thành (`Đã thanh toán đủ`) khi tất cả các hóa đơn con đã được thanh toán.
+
+
+4.3.2 Quan lý tình trạng bàn (Table Status)
+Việc quản lý trạng thái bàn chính xác giúp hệ thống đồng bộ sơ đồ bàn trống cho khách hàng xem online.
+(*) Các trạng thái chính:
+●TRỐNG (Màu xanh): Bàn sẵn sàng đón khách mới.
+●ĐÃ ĐẶT (Màu vàng): Bàn có người đặt trước qua hệ thống. Nhân viên cần giữ chỗ để tránh những sai sót không đáng có
+●ĐANG SỬ DỤNG (Màu đỏ): Có khách đang ngồi. Bàn này chưa thể đón khách khác.
+(*) Hướng dẫn thao tác & Điều kiện sử dụng:
+a. Đối với Khách Vãng Lai (Không đặt trước):
+-Điều kiện: Chỉ khi bàn đang TRỐNG và KHÔNG có lịch đặt sắp tới trong vòng 1 tiếng.
+-Thao tác: Nhấn nút "Sử dụng" để chuyển sang ĐANG SỬ DỤNG.
+b. Đối với Khách Đã Đặt Trước:
+-Điều kiện: Khách đến đúng giờ và cung cấp đúng Mã xác nhận.
+-Thao tác: 
+●Kiểm tra mã khớp  
+●Nhấn nút "Sử dụng" để chuyển từ ĐÃ ĐẶT sang ĐANG SỬ DỤNG.
+c. Giải phóng bàn:
+-Điều kiện: Khách dùng xong, đã thanh toán và bàn đã được dọn dẹp.
+-Thao tác: Nhấn nút "Hoàn thành" để đưa trạng thái về TRỐNG.
+(*) Các quy tắc bắt buộc
+-KHÔNG cho khách vãng lai ngồi vào bàn ĐÃ ĐẶT.
+-KHÔNG cho sử dụng bàn TRỐNG nếu bàn đó có lịch đặt tiếp theo trong vòng 60 phút (Cần ưu tiên cho khách đã đặt trước).
+-Xử lý khách trễ: Nếu quá thời gian 2 tiếng giữ chỗ (có đồng hồ đếm ngược trên hệ thống) so với giờ đã đặt mà khách không đến, Staff có quyền nhấn "Hủy đặt" để giải phóng bàn.
+
+4.3.2.1. Gộp và Tách bàn (Merge/Split Tables)
+Hỗ trợ quản lý linh hoạt khi khách muốn đổi chỗ hoặc ghép đoàn:
+a. Gộp bàn:
+-Thao tác: Tại Sơ đồ bàn, chọn bàn đang sử dụng và nhấn "Gộp bàn".
+-Chọn bàn đích: Chọn số bàn cần gộp vào.
+-Kết quả: Toàn bộ món ăn của bàn nguồn sẽ được chuyển sang hóa đơn của bàn đích. Bàn nguồn sẽ trở về trạng thái TRỐNG.
+b. Tách bàn:
+-Thao tác: Với bàn đã gộp (hiển thị trạng thái Master/Slave), nhân viên nhấn "Tách bàn".
+-Kết quả: Bàn sẽ được giải phóng khỏi trạng thái gộp, trở về trạng thái độc lập.
+
+
+4.3.3 Quản lý khách hàng và thông tin liên hệ
+- Staff có thể tra cứu thông tin khách hàng (SĐT, Email) để liên hệ trong các trường hợp cần xác nhận đơn online hoặc thông báo về bàn đặt trước.
+
+4.3.4 Lưu ý cho nhân viên
+-Không có quyền: Thay đổi giá món ăn, xóa nhân viên khác, hoặc xem các báo cáo doanh thu chuyên sâu.
+-Phối hợp: Luôn cập nhật trạng thái bàn và đơn hàng ngay khi thực hiện xong thao tác ngoài thực tế để hệ thống đồng bộ chính xác.
+
+4.4. Hướng dẫn vận hành dành cho admin
+Quyền hạn: Admin là cấp bậc tài khoản cao nhất, có toàn quyền quản lý hệ thống, nhân sự, danh mục món ăn, kho nguyên liệu và theo dõi doanh thu.
+4.4.1. Tổng quan hệ thống (DashBoard)
+-Truy cập: Mục "Trang chủ" trong thanh menu bên trái.
+- Chức năng: Xem báo cáo tổng quan về số lượng đơn hàng, doanh thu trong ngày/tháng, Top danh mục phổ biến và món ăn bán chạy
+-Biểu đồ: Theo dõi xu hướng bán hàng qua các biểu đồ doanh thu và món ăn bán chạy (Top Dishes).
+4.4.2. Quản lý nhân sự
+-Mục tiêu: Quản lý danh sách nhân viên vận hành hệ thống.
+-Các thao tác:
+  + Thêm nhân viên: Nhập thông tin (Tên, Email, SĐT, Mật khẩu) và phân quyền (ADMIN hoặc STAFF).
+  + Sửa: Cập nhật thông tin khi có thay đổi.
+  + Xóa: Loại bỏ tài khoản nhân viên đã nghỉ việc.
+-Lưu ý: Chỉ Admin mới có quyền truy cập vào chức năng này.
+4.4.3. Quản lý thực đơn
+Admin chịu trách nhiệm cấu hình toàn bộ menu hiển thị cho khách hàng.
+-Danh mục (Category): Tạo các nhóm món ăn (Khai vị, Món chính, Đồ uống...). Bật/Tắt trạng thái hoạt động của danh mục.
+- Sản phẩm (Product):
+  + Thêm món mới: Tên, giá, hình ảnh, mô tả và liên kết với danh mục.
+  + Cập nhật giá: Admin là người duy nhất có quyền thay đổi giá bán trên hệ thống.
+  + Quản lý trạng thái: Tạm ẩn các món đã hết hàng hoặc ngừng kinh doanh
+4.4.4. Quản lý nguyên liệu
+- Quản lý kho: Theo dõi danh sách nguyên liệu và số lượng tồn kho thực tế.
+- Định mức (BOM): Thiết lập định mức nguyên liệu cho từng món ăn để hệ thống tự động trừ kho khi có đơn hàng thành công.
+4.4.5. Quản lý khách hàng
+-Xem danh sách khách hàng đã đăng ký tài khoản trên hệ thống.
+-Theo dõi lịch sử giao dịch và thông tin liên hệ của khách để thực hiện các chương trình chăm sóc khách hàng.
+4.4.6. Giám sát vận hành (Table & Order)
+Admin có quyền giám sát và can thiệp vào tất cả các bàn và đơn hàng:
+-Quản lý bàn: Tạo bàn mới, cấu hình vị trí, sức chứa và tạo mã QR Code cho từng bàn.
+-Đơn hàng: Xem danh sách toàn bộ đơn hàng trong hệ thống (bao gồm cả đơn đã hoàn thành và đơn hủy).
+-Thao tác nâng cao: Admin có toàn quyền thực hiện Gộp/Tách bàn và Chia hóa đơn tương tự nhân viên (chi tiết xem tại mục 4.3).

@@ -150,7 +150,8 @@ function Order(props) {
                                     total_price,
                                     order_source,
                                     table_number,
-                                    status
+                                    status,
+                                    is_payment
                                 } = orderData;
 
                                 return (
@@ -170,17 +171,23 @@ function Order(props) {
                                             </span>
                                         </td>
                                         <td>
-                                            <span className={`admin-badge ${status === statusOrder.NEW ? 'admin-badge--default' :
-                                                status === statusOrder.CONFIRMED ? 'admin-badge--info' :
-                                                    status === statusOrder.PROCESSING ? 'admin-badge--warning' :
-                                                        status === statusOrder.COMPLETED ? 'admin-badge--success' : 'admin-badge--danger'
-                                                }`}>
-                                                {
-                                                    status === statusOrder.NEW ? 'Đơn mới' :
-                                                        status === statusOrder.CONFIRMED ? 'Nhận đơn' :
-                                                            status === statusOrder.PROCESSING ? 'Đang chờ làm' :
-                                                                status === statusOrder.COMPLETED ? 'Hoàn thành' : 'Đã hủy'
-                                                }</span>
+                                            <div className="d-flex flex-column gap-1 align-items-center">
+                                                <span className={`admin-badge ${status === statusOrder.NEW ? 'admin-badge--default' :
+                                                    status === statusOrder.CONFIRMED ? 'admin-badge--info' :
+                                                        status === statusOrder.PROCESSING ? 'admin-badge--warning' :
+                                                            status === statusOrder.COMPLETED ? 'admin-badge--success' : 'admin-badge--danger'
+                                                    }`}>
+                                                    {
+                                                        status === statusOrder.NEW ? 'Đơn mới' :
+                                                            status === statusOrder.CONFIRMED ? 'Nhận đơn' :
+                                                                status === statusOrder.PROCESSING ? 'Đang chờ làm' :
+                                                                    status === statusOrder.COMPLETED ? 'Hoàn thành' : 'Đã hủy'
+                                                    }
+                                                </span>
+                                                <span className={`badge ${is_payment ? 'bg-success' : 'bg-secondary'}`} style={{ fontSize: '11px', padding: '4px 8px' }}>
+                                                    {is_payment ? 'Đã thanh toán' : 'Chưa thanh toán'}
+                                                </span>
+                                            </div>
                                         </td>
                                         <td className="text-center">
                                             <Link to={`/staff/order/detail/${id}`} className="btn btn-sm btn-link p-1" title="Chi tiết đơn hàng">

@@ -7,7 +7,6 @@ const OrderItem = db.orderItem;
 const CartItem = db.cartItem;
 const Admin = db.admin;
 const { canDeductIngredients, deductIngredients } = require("./order.controller");
-const mongoose = require("mongoose");
 const { PayOS } = require("@payos/node");
 
 const client_id = process.env.PAYOS_CLIENT_ID || "";
@@ -31,13 +30,13 @@ exports.splitBill = async (req, res) => {
 
             order = orders[0];
             if (orders.length > 1) {
-                // Merge subsequent orders into the first order
-                for (let i = 1; i < orders.length; i++) {
-                    order.total_price += orders[i].total_price;
-                    order.total_item += orders[i].total_item;
-                    await OrderItem.updateMany({ order_id: orders[i]._id }, { $set: { order_id: order._id } });
-                    await Order.findByIdAndDelete(orders[i]._id);
-                }
+                // Merge subsequent orders into the first order using O(1) DB Calls
+                const orderIdsToDelete = orders.slice(1).map(o => o._id);
+                order.total_price += orders.slice(1).reduce((sum, curr) => sum + curr.total_price, 0);
+                order.total_item += orders.slice(1).reduce((sum, curr) => sum + curr.total_item, 0);
+                
+                await OrderItem.updateMany({ order_id: { $in: orderIdsToDelete } }, { $set: { order_id: order._id } });
+                await Order.deleteMany({ _id: { $in: orderIdsToDelete } });
                 await order.save();
             }
         } else {
@@ -81,7 +80,7 @@ exports.splitBill = async (req, res) => {
 
 exports.createSplitPaymentUrl = async (req, res) => {
     try {
-        const { orderId, splitId, bankCode, method } = req.body;
+        const { orderId, splitId, method } = req.body;
         
         let order;
         if (typeof orderId === 'string' && orderId.startsWith("TABLE_")) {
@@ -110,20 +109,16 @@ exports.createSplitPaymentUrl = async (req, res) => {
             }
             await order.save();
 
-            const listOrder = await Order.find({});
-            const admins = await Admin.find({});
+            const activeOrders = await Order.find({ status: { $ne: 'COMPLETED' }, is_payment: false });
+            const admins = await Admin.find({ socket_id: { $exists: true, $ne: null } });
             for (const ad of admins) {
-                if (ad.socket_id) {
-                    listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', listOrder);
-                }
+                listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', activeOrders);
             }
             return res.status(200).json({ success: true, message: "Thanh toán split (tiền mặt) thành công" });
         }
 
         // PAYOS
         const payosOrderCode = Number(String(Date.now()).slice(-6) + Math.floor(100 + Math.random() * 900));
-        split.payos_order_code = payosOrderCode;
-        await order.save();
 
         const body = {
             orderCode: payosOrderCode,
@@ -134,6 +129,8 @@ exports.createSplitPaymentUrl = async (req, res) => {
         };
 
         const paymentLinkResponse = await payos.paymentRequests.create(body);
+        
+        split.payos_order_code = payosOrderCode;
         split.payos_checkout_url = paymentLinkResponse.checkoutUrl;
         split.payos_qr_code = paymentLinkResponse.qrCode;
         await order.save();
@@ -156,7 +153,7 @@ exports.createPaymentUrl = async (req, res) => {
         if (!req.body.cartId) {
             return res.status(400).send({ message: "Not cart id" });
         }
-        const { cartId, bankCode, selectedItemIds } = req.body;
+        const { cartId, selectedItemIds } = req.body;
 
         // Kiểm tra tồn kho trước khi tạo đơn và thanh toán
         const cartItems = await CartItem.find({ cart_id: cartId });
@@ -171,13 +168,8 @@ exports.createPaymentUrl = async (req, res) => {
 
         const order = await convertHelper.convertCartToOrder(cartId, "transfer", selectedItemIds);
         await deductIngredients(order.id);
-        const oId = order.id;
-
-
 
         const payosOrderCode = Number(String(Date.now()).slice(-6) + Math.floor(100 + Math.random() * 900));
-        order.payos_order_code = payosOrderCode;
-        await order.save();
 
         const body = {
             orderCode: payosOrderCode,
@@ -188,6 +180,9 @@ exports.createPaymentUrl = async (req, res) => {
         };
 
         const paymentLinkResponse = await payos.paymentRequests.create(body);
+        
+        order.payos_order_code = payosOrderCode;
+        await order.save();
         res.status(200).json({ 
             paymentUrl: paymentLinkResponse.checkoutUrl, 
             qrCode: paymentLinkResponse.qrCode, 
@@ -201,7 +196,7 @@ exports.createPaymentUrl = async (req, res) => {
 
 exports.createGuestPaymentUrl = async (req, res) => {
     try {
-        const { items, tableNumber, orderSource, bankCode } = req.body;
+        const { items, tableNumber } = req.body;
         if (!items || items.length === 0) {
             return res.status(400).send({ message: "No items provided." });
         }
@@ -214,11 +209,8 @@ exports.createGuestPaymentUrl = async (req, res) => {
 
         const order = await convertHelper.createOrderFromGuestItems(items, "transfer", tableNumber);
         await deductIngredients(order.id);
-        const oId = order.id;
 
         const payosOrderCode = Number(String(Date.now()).slice(-6) + Math.floor(100 + Math.random() * 900));
-        order.payos_order_code = payosOrderCode;
-        await order.save();
 
         const body = {
             orderCode: payosOrderCode,
@@ -229,6 +221,9 @@ exports.createGuestPaymentUrl = async (req, res) => {
         };
 
         const paymentLinkResponse = await payos.paymentRequests.create(body);
+        
+        order.payos_order_code = payosOrderCode;
+        await order.save();
         res.status(200).json({ 
             paymentUrl: paymentLinkResponse.checkoutUrl, 
             qrCode: paymentLinkResponse.qrCode, 
@@ -242,7 +237,7 @@ exports.createGuestPaymentUrl = async (req, res) => {
 
 exports.createTablePaymentUrl = async (req, res) => {
     try {
-        const { tableNumber, bankCode } = req.body;
+        const { tableNumber } = req.body;
         if (!tableNumber) {
             return res.status(400).send({ message: "No table number provided." });
         }
@@ -258,11 +253,8 @@ exports.createTablePaymentUrl = async (req, res) => {
         }
 
         const totalAmount = orders.reduce((sum, order) => sum + order.total_price, 0);
-        const firstOrderId = orders[0]._id;
 
         const payosOrderCode = Number(String(Date.now()).slice(-6) + Math.floor(100 + Math.random() * 900));
-        orders[0].payos_order_code = payosOrderCode;
-        await orders[0].save();
 
         const body = {
             orderCode: payosOrderCode,
@@ -273,6 +265,9 @@ exports.createTablePaymentUrl = async (req, res) => {
         };
 
         const paymentLinkResponse = await payos.paymentRequests.create(body);
+
+        orders[0].payos_order_code = payosOrderCode;
+        await orders[0].save();
         res.status(200).json({ 
             paymentUrl: paymentLinkResponse.checkoutUrl, 
             qrCode: paymentLinkResponse.qrCode, 
@@ -327,12 +322,10 @@ exports.receiveWebhook = async (req, res) => {
             if (listSocket.io) {
                 listSocket.io.emit('paymentSuccess', { orderCode });
                 
-                const listOrder = await Order.find({});
-                const admins = await Admin.find({});
+                const activeOrders = await Order.find({ status: { $ne: 'COMPLETED' }, is_payment: false });
+                const admins = await Admin.find({ socket_id: { $exists: true, $ne: null } });
                 for (const ad of admins) {
-                    if (ad.socket_id) {
-                        listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', listOrder);
-                    }
+                    listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', activeOrders);
                 }
             }
         }

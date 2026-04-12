@@ -18,15 +18,27 @@ const { checkAllProductsAvailability } = require("../services/product.service");
  * Helper function to check if ingredients are sufficient
  */
 async function canDeductIngredients(orderItems) {
+    const productIds = orderItems.map(item => new mongoose.Types.ObjectId(item.product_id || item.id));
+    const allBoms = await ProductBOM.find({ product_id: { $in: productIds } });
+    const ingredientIds = allBoms.map(bom => bom.ingredient_id);
+    const ingredients = await Ingredient.find({ _id: { $in: ingredientIds } });
+    const ingredientMap = new Map(ingredients.map(ing => [ing._id.toString(), ing]));
+
+    const requiredQtyMap = {};
     for (const item of orderItems) {
-        const productId = item.product_id || item.id;
-        const pid = new mongoose.Types.ObjectId(productId);
-        const boms = await ProductBOM.find({ product_id: pid });
+        const pidStr = (item.product_id || item.id).toString();
+        const boms = allBoms.filter(b => b.product_id.toString() === pidStr);
         for (const bom of boms) {
-            const ingredient = await Ingredient.findById(bom.ingredient_id);
-            if (!ingredient || ingredient.qty < (bom.quantity * item.qty)) {
-                return { success: false, message: `Nguyên liệu cho món ${item.product_name || item.name} không đủ.` };
-            }
+            const ingIdStr = bom.ingredient_id.toString();
+            if (!requiredQtyMap[ingIdStr]) requiredQtyMap[ingIdStr] = 0;
+            requiredQtyMap[ingIdStr] += bom.quantity * item.qty;
+        }
+    }
+
+    for (const [ingIdStr, requiredQty] of Object.entries(requiredQtyMap)) {
+        const ingredient = ingredientMap.get(ingIdStr);
+        if (!ingredient || ingredient.qty < requiredQty) {
+            return { success: false, message: `Nguyên liệu ${ingredient ? ingredient.name : 'không xác định'} không đủ.` };
         }
     }
     return { success: true };
@@ -34,18 +46,27 @@ async function canDeductIngredients(orderItems) {
 
 async function deductIngredients(orderId) {
     const orderItems = await OrderItem.find({ order_id: orderId });
+    const productIds = orderItems.map(item => new mongoose.Types.ObjectId(item.product_id));
+    const allBoms = await ProductBOM.find({ product_id: { $in: productIds } });
 
+    const requiredQtyMap = {};
     for (const item of orderItems) {
-        const pid = new mongoose.Types.ObjectId(item.product_id);
-        const boms = await ProductBOM.find({ product_id: pid });
+        const pidStr = item.product_id.toString();
+        const boms = allBoms.filter(b => b.product_id.toString() === pidStr);
         for (const bom of boms) {
-            const ingredient = await Ingredient.findById(bom.ingredient_id);
-            if (ingredient) {
-                ingredient.qty -= (bom.quantity * item.qty);
-                await ingredient.save();
-            }
+            const ingIdStr = bom.ingredient_id.toString();
+            if (!requiredQtyMap[ingIdStr]) requiredQtyMap[ingIdStr] = 0;
+            requiredQtyMap[ingIdStr] += bom.quantity * item.qty;
         }
     }
+
+    const updates = Object.entries(requiredQtyMap).map(([ingId, qty]) => ({
+        updateOne: {
+            filter: { _id: new mongoose.Types.ObjectId(ingId) },
+            update: { $inc: { qty: -qty } }
+        }
+    }));
+    if (updates.length > 0) await Ingredient.bulkWrite(updates);
 
     // Quét và cập nhật trạng thái cho TOÀN BỘ sản phẩm trong hệ thống để đảm bảo đồng bộ 100%
     await checkAllProductsAvailability();
@@ -56,18 +77,27 @@ async function deductIngredients(orderId) {
  */
 async function restoreIngredients(orderId) {
     const orderItems = await OrderItem.find({ order_id: orderId });
+    const productIds = orderItems.map(item => new mongoose.Types.ObjectId(item.product_id));
+    const allBoms = await ProductBOM.find({ product_id: { $in: productIds } });
 
+    const requiredQtyMap = {};
     for (const item of orderItems) {
-        const pid = new mongoose.Types.ObjectId(item.product_id);
-        const boms = await ProductBOM.find({ product_id: pid });
+        const pidStr = item.product_id.toString();
+        const boms = allBoms.filter(b => b.product_id.toString() === pidStr);
         for (const bom of boms) {
-            const ingredient = await Ingredient.findById(bom.ingredient_id);
-            if (ingredient) {
-                ingredient.qty += (bom.quantity * item.qty);
-                await ingredient.save();
-            }
+            const ingIdStr = bom.ingredient_id.toString();
+            if (!requiredQtyMap[ingIdStr]) requiredQtyMap[ingIdStr] = 0;
+            requiredQtyMap[ingIdStr] += bom.quantity * item.qty;
         }
     }
+
+    const updates = Object.entries(requiredQtyMap).map(([ingId, qty]) => ({
+        updateOne: {
+            filter: { _id: new mongoose.Types.ObjectId(ingId) },
+            update: { $inc: { qty: qty } }
+        }
+    }));
+    if (updates.length > 0) await Ingredient.bulkWrite(updates);
 
     // Quét và cập nhật trạng thái cho TOÀN BỘ sản phẩm trong hệ thống để đảm bảo đồng bộ 100%
     await checkAllProductsAvailability();
@@ -115,6 +145,15 @@ exports.createCashOrder = async (req, res) => {
         }
         await order.save();
         await deductIngredients(order.id);
+
+        if (listSocket.io) {
+            const activeOrders = await Order.find({ status: { $ne: 'COMPLETED' }, is_payment: false });
+            const admins = await Admin.find({ socket_id: { $exists: true, $ne: null } });
+            for (const ad of admins) {
+                listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', activeOrders);
+            }
+        }
+
         res.status(200).send({ success: true, message: "Order created successfully.", order });
     } catch (error) {
         console.error(error);
@@ -150,6 +189,14 @@ exports.createGuestOrder = async (req, res) => {
         }
 
         await deductIngredients(order.id);
+
+        if (listSocket.io) {
+            const activeOrders = await Order.find({ status: { $ne: 'COMPLETED' }, is_payment: false });
+            const admins = await Admin.find({ socket_id: { $exists: true, $ne: null } });
+            for (const ad of admins) {
+                listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', activeOrders);
+            }
+        }
 
         res.status(200).send({ success: true, message: "Guest order created successfully.", order });
     } catch (error) {
@@ -262,12 +309,10 @@ exports.updateStatusOrder = async (req, res) => {
                 listSocket.updateOrder.to(customer.socket_id).emit('sendStatusOrder', order);
             }
         }
-        const listOrder = await Order.find({});
-        const admin = await Admin.find({});
+        const listOrder = await Order.find({ status: { $ne: 'COMPLETED' }, is_payment: false });
+        const admin = await Admin.find({ socket_id: { $exists: true, $ne: null } });
         for (const ad of admin) {
-            if (ad.socket_id) {
-                listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', listOrder);
-            }
+            listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', listOrder);
         }
         res.status(200).json({ message: "Updated status." });
     } catch (error) {
@@ -332,12 +377,10 @@ exports.payGuestOrdersByTable = async (req, res) => {
             return res.status(404).send({ success: false, message: "No unpaid orders found for this table." });
         }
 
-        const listOrder = await Order.find({});
-        const admin = await Admin.find({});
+        const listOrder = await Order.find({ status: { $ne: 'COMPLETED' }, is_payment: false });
+        const admin = await Admin.find({ socket_id: { $exists: true, $ne: null } });
         for (const ad of admin) {
-            if (ad.socket_id) {
-                listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', listOrder);
-            }
+            listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', listOrder);
         }
 
         res.status(200).send({ success: true, message: "Guest orders updated with payment method." });
@@ -378,13 +421,13 @@ exports.updateIsPayment = async (req, res) => {
         }
 
         // Gửi socket update list cho admin
-        const listOrder = await Order.find({});
-        const admin = await Admin.find({});
+        const listOrder = await Order.find({ status: { $ne: 'COMPLETED' }, is_payment: false });
+        const admin = await Admin.find({ socket_id: { $exists: true, $ne: null } });
         for (const ad of admin) {
-            if (ad.socket_id) {
-                listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', listOrder);
-            }
+            listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', listOrder);
         }
+
+        res.status(200).json({ success: true, message: "Cập nhật thanh toán thành công!" });
 
     } catch (error) {
         console.error(error);

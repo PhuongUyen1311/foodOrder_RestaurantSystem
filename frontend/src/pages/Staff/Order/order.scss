@@ -161,3 +161,75 @@
         border-bottom: 1px solid #ddd !important;
     }
 }
+
+// Receipt (K80 80mm) Styling
+.receipt-layout {
+    width: 320px !important;
+    max-width: 100%;
+    margin: 0 auto;
+    font-family: 'Inter', 'Courier New', Courier, monospace;
+    font-size: 13px;
+    color: #000;
+    line-height: 1.4;
+    padding: 10px;
+    background: #fff;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+
+    &.print-section {
+        box-shadow: none !important;
+        border: none !important;
+    }
+
+    h2, h4 {
+        font-family: 'Inter', sans-serif;
+        font-weight: 800;
+        margin-bottom: 5px;
+    }
+
+    .border-bottom {
+        border-bottom: 1px dashed #000 !important;
+    }
+
+    .table {
+        font-size: 12px;
+        margin-bottom: 10px;
+
+        thead {
+            border-bottom: 1px dashed #000 !important;
+            border-top: 1px dashed #000 !important;
+            background: transparent !important;
+            th {
+                color: #000 !important;
+                background: transparent !important;
+                padding: 6px 2px;
+                border: none !important;
+            }
+        }
+
+        tbody tr {
+            border-bottom: 1px dotted #ccc !important;
+        }
+
+        td {
+            padding: 6px 2px;
+            color: #000;
+            border: none !important;
+            background: transparent !important;
+        }
+    }
+
+    .text-muted {
+        color: #333 !important;
+    }
+
+    .bg-light {
+        background-color: transparent !important;
+    }
+
+    .badge {
+        color: #000 !important;
+        border: 1px solid #000;
+        background: transparent !important;
+    }
+}

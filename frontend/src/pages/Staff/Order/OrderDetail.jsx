@@ -9,6 +9,7 @@ import { fetchUpdateIsPayment, fetchUpdateStatusOrder } from '../../../actions/o
 import { statusOrder } from '../../../config/statusOrder';
 import SplitBillModal from '../../../components/SplitBillModal';
 import { socket } from '../../../socket';
+import html2pdf from 'html2pdf.js';
 import '../../../scss/admin/admin-theme.scss';
 import './order.scss';
 
@@ -223,20 +224,37 @@ function OrderDetail(props) {
         if (targetPrintBill && typeof printSplitBill === 'string') {
             setPrintSplitBill(targetPrintBill);
             setTimeout(() => {
-                window.print();
+                const element = document.querySelector('.print-section');
+                if (element) {
+                    const noPrintElements = element.querySelectorAll('.no-print');
+                    noPrintElements.forEach(el => el.style.display = 'none');
+                    element.classList.add('receipt-layout');
+
+                    const toastId = toast.loading("Đang xuất file PDF...", { autoClose: false });
+
+                    const opt = {
+                        margin: 0.2,
+                        filename: `HoaDon_ChiaCho_${targetPrintBill?.user_name || 'Khach'}.pdf`,
+                        image: { type: 'jpeg', quality: 0.98 },
+                        html2canvas: { scale: 2, useCORS: true, logging: false },
+                        jsPDF: { unit: 'in', format: [3.15, 11], orientation: 'portrait' }
+                    };
+
+                    html2pdf().set(opt).from(element).outputPdf('bloburl').then((pdfUrl) => {
+                        toast.update(toastId, { render: "Đã xuất PDF!", type: "success", isLoading: false, autoClose: 3000 });
+                        window.open(pdfUrl, '_blank');
+                    }).catch(err => {
+                        console.error('Lỗi xuất PDF:', err);
+                        toast.update(toastId, { render: "Lỗi xuất PDF", type: "error", isLoading: false, autoClose: 3000 });
+                    }).finally(() => {
+                        noPrintElements.forEach(el => el.style.display = '');
+                        element.classList.remove('receipt-layout');
+                        setPrintSplitBill(null);
+                    });
+                }
             }, 500);
         }
     }, [orderDetail, printSplitBill, targetPrintBill]);
-
-    useEffect(() => {
-        const handleAfterPrint = () => {
-            if (printSplitBill) {
-                setPrintSplitBill(null);
-            }
-        };
-        window.addEventListener('afterprint', handleAfterPrint);
-        return () => window.removeEventListener('afterprint', handleAfterPrint);
-    }, [printSplitBill]);
 
     if (targetPrintBill) {
         return (
@@ -314,23 +332,73 @@ function OrderDetail(props) {
 
     const handleShareBill = () => {
         if (!orderDetail) return;
-        const itemsText = orderItems.map(item => `- ${item.product_name} x ${item.qty}: ${item.total_price?.toLocaleString()}đ`).join('\n');
-        const shareText = `--- THÔNG TIN ${(orderDetail.is_payment ? 'HÓA ĐƠN' : 'TẠM TÍNH')} ---\n` +
-            `Số bàn: ${orderDetail.table_number || 'N/A'}\n` +
-            `Khách hàng: ${orderDetail.first_name} ${orderDetail.last_name}\n` +
-            `------------------\n` +
+        const itemsText = orderItems.map(item => `- ${item.product_name || item.name} x ${item.qty}: ${(item.price || 0).toLocaleString()}đ`).join('\n');
+        const shareTitle = `Hóa Đơn #${orderDetail.id} - Healthy Food`;
+        const shareText = `🧾 THÔNG TIN ${(orderDetail.is_payment ? 'HÓA ĐƠN' : 'TẠM TÍNH')}\n` +
+            `📍 Bàn: ${orderDetail.table_number || 'Mang đi'}\n` +
+            `👤 Khách hàng: ${orderDetail.first_name || ''} ${orderDetail.last_name || ''}\n` +
+            `------------------------\n` +
             `${itemsText}\n` +
-            `------------------\n` +
-            `Tổng cộng: ${orderDetail.total_price?.toLocaleString()}đ\n` +
-            `Trạng thái: ${orderDetail.is_payment ? 'Đã thanh toán' : 'Chưa thanh toán'}\n` +
+            `------------------------\n` +
+            `💰 Tổng cộng: ${(orderDetail.total_price || 0).toLocaleString()}đ\n` +
+            `📌 Trạng thái: ${orderDetail.is_payment ? '✅ Đã thanh toán' : '❌ Chưa thanh toán'}\n\n` +
             `Xem thực đơn tại: ${window.location.origin}/menu?table=${orderDetail.table_number}`;
 
-        navigator.clipboard.writeText(shareText).then(() => {
-            alert("Đã sao chép tóm tắt đơn hàng vào bộ nhớ tạm!");
-        }).catch(err => {
-            console.error('Lỗi khi sao chép:', err);
-        });
+        if (navigator.share) {
+            navigator.share({
+                title: shareTitle,
+                text: shareText,
+            }).then(() => toast.success("Chia sẻ thành công!"))
+              .catch(err => {
+                  if (err.name !== 'AbortError') toast.error("Chia sẻ bị lỗi!");
+              });
+        } else {
+            navigator.clipboard.writeText(shareTitle + '\n\n' + shareText).then(() => {
+                toast.success("✅ Đã sao chép tóm tắt đơn hàng!");
+            }).catch(err => {
+                console.error('Lỗi khi sao chép:', err);
+                toast.error("Không thể sao chép");
+            });
+        }
     }
+
+    const handleExportPDF = (format = 'RECEIPT') => {
+        const element = document.querySelector('.print-section');
+        if (!element) {
+            toast.error("Không tìm thấy nội dung để in");
+            return;
+        }
+
+        const noPrintElements = element.querySelectorAll('.no-print');
+        noPrintElements.forEach(el => el.style.display = 'none');
+
+        if (format === 'RECEIPT') {
+            element.classList.add('receipt-layout');
+        }
+
+        const toastId = toast.loading("Đang xuất file PDF...", { autoClose: false });
+
+        const opt = {
+            margin: format === 'RECEIPT' ? 0.2 : 0.5,
+            filename: `HoaDon_${orderDetail?.id || 'Bill'}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
+            jsPDF: { unit: 'in', format: format === 'RECEIPT' ? [3.15, 11] : 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(element).outputPdf('bloburl').then((pdfUrl) => {
+            toast.update(toastId, { render: "Đã xuất PDF!", type: "success", isLoading: false, autoClose: 3000 });
+            window.open(pdfUrl, '_blank');
+        }).catch(err => {
+            console.error(err);
+            toast.update(toastId, { render: "Có lỗi xảy ra khi tạo PDF. Vui lòng thử lại.", type: "error", isLoading: false, autoClose: 3000 });
+        }).finally(() => {
+            noPrintElements.forEach(el => el.style.display = '');
+            if (format === 'RECEIPT') {
+                element.classList.remove('receipt-layout');
+            }
+        });
+    };
 
     return (
         <React.Fragment>
@@ -441,10 +509,13 @@ function OrderDetail(props) {
                     </h3>
                     <div className="d-flex gap-2">
                         <button className="btn btn-info d-flex align-items-center shadow-sm text-white" onClick={handleShareBill}>
-                            <span className="me-2 fs-5">🔗</span> Chia sẻ
+                            <span className="me-1 fs-5">🔗</span> Chia sẻ
                         </button>
-                        <button className="btn btn-dark d-flex align-items-center shadow-sm" onClick={() => window.print()}>
-                            <span className="me-2 fs-5">🖨️</span> {orderDetail && orderDetail.is_payment ? "In Hóa Đơn" : "In Phiêu Mua Hàng"}
+                        <button className="btn border border-secondary bg-white text-dark d-flex align-items-center shadow-sm" onClick={() => handleExportPDF('A4')}>
+                            <span className="me-1 fs-5">📄</span> Khổ A4
+                        </button>
+                        <button className="btn btn-dark d-flex align-items-center shadow-sm fw-bold" onClick={() => handleExportPDF('RECEIPT')}>
+                            <span className="me-1 fs-5">🖨️</span> K80 (Máy POS)
                         </button>
                     </div>
                 </div>

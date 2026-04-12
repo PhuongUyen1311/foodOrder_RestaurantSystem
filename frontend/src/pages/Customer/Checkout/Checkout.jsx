@@ -28,6 +28,8 @@ function Checkout(props) {
     const [isZoomed, setIsZoomed] = useState(false);
     const [splitPaymentLinks, setSplitPaymentLinks] = useState({});
     const [isCallingStaff, setIsCallingStaff] = useState(false);
+    const [callStaffCount, setCallStaffCount] = useState(0);
+    const [lastCallReset, setLastCallReset] = useState(Date.now());
     const [orderSource, setOrderSource] = useState('online');
     const [tableNumber, setTableNumber] = useState(null);
     const accessToken = sessionStorage.getItem("accessToken");
@@ -260,10 +262,7 @@ function Checkout(props) {
 
     useEffect(() => {
         if (splitSuccessData && splitSuccessData.length > 0) {
-            if (splitSuccessData.length > 3) {
-                // Tự động gọi nhân viên
-                handleCallStaff("Khách hàng chia bill > 3 phần, cần hỗ trợ xử lý thủ công.");
-            } else {
+            if (splitSuccessData.length <= 3) {
                 // Tự động lấy link PayOS cho tối đa 3 phần
                 const fetchLinks = async () => {
                     const links = {};
@@ -307,12 +306,35 @@ function Checkout(props) {
         };
     }, [mainOrderQr, orderSource]);
 
-    const handleCallStaff = async (customMessage = null) => {
+    const handleCallStaff = async (customMessage = null, orderId = null) => {
+        const now = Date.now();
+        
+        // Reset count nếu đã qua 3 phút
+        let currentCount = callStaffCount;
+        let currentReset = lastCallReset;
+        
+        if (now - lastCallReset > 180000) {
+            currentCount = 0;
+            currentReset = now;
+            setCallStaffCount(0);
+            setLastCallReset(now);
+        }
+
+        // Kiểm tra giới hạn 3 lần trong 3 phút
+        if (currentCount >= 3) {
+            const remainingSec = Math.ceil((180000 - (now - currentReset)) / 1000);
+            const min = Math.floor(remainingSec / 60);
+            const sec = remainingSec % 60;
+            toast.warning(`Bạn đã gọi hỗ trợ 3 lần. Vui lòng đợi ${min > 0 ? `${min}p ` : ""}${sec}s nữa để gọi tiếp.`);
+            return;
+        }
+
         setIsCallingStaff(true);
         try {
             const savedTableNumber = tableNumber || localStorage.getItem('tableNumber');
-            const res = await fetchCallStaff(savedTableNumber, customMessage, splitOrderPayload?.id);
+            const res = await fetchCallStaff(savedTableNumber, customMessage, orderId || splitOrderPayload?.id);
             if (res.success) {
+                setCallStaffCount(prev => prev + 1);
                 toast.success("Đã gửi yêu cầu hỗ trợ tới nhân viên.");
             } else {
                 toast.error("Không thể gửi yêu cầu hỗ trợ. Vui lòng thử lại!");
@@ -540,6 +562,12 @@ function Checkout(props) {
                         if (realOrderId) {
                             setSplitOrderPayload(prev => ({ ...prev, id: realOrderId }));
                         }
+
+                        // Tự động gọi nhân viên hỗ trợ nếu chia bill > 3 người
+                        if (splits && splits.length > 3) {
+                            handleCallStaff(`Bàn ${tableNumber} đã chia hóa đơn thành ${splits.length} phần và cần hỗ trợ thanh toán trực tiếp.`, realOrderId || splitOrderPayload?.id);
+                        }
+
                         if (orderSource === 'table') {
                             localStorage.removeItem('guestCart');
                             localStorage.removeItem('guestHasOrdered');

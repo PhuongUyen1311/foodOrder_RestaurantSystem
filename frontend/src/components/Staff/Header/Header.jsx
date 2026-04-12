@@ -1,5 +1,6 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { socket } from "../../../socket";
 import {
     FaSearch,
     FaBell,
@@ -11,6 +12,48 @@ function Header() {
     const user = JSON.parse(sessionStorage.getItem("user"));
     const location = useLocation();
     const [openProfile, setOpenProfile] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+
+    // Hàm phát âm thanh thông báo
+    const playNotificationSound = () => {
+        const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
+        audio.play().catch(e => console.log("Audio play failed:", e));
+    };
+
+    useEffect(() => {
+        // Cập nhật socket cho nhân viên
+        if (user && (user.id || user._id)) {
+            socket.emit("adminConnect", user.id || user._id);
+        }
+
+        // Lấy thông báo từ localStorage khi khởi tạo
+        const savedNotifications = JSON.parse(localStorage.getItem("admin_notifications") || "[]");
+        setNotifications(savedNotifications);
+
+        // Lắng nghe sự kiện thông báo mới từ socket
+        socket.on("notification", (data) => {
+            playNotificationSound();
+            setNotifications(prev => {
+                const newList = [{ ...data, id: Date.now() }, ...prev];
+                localStorage.setItem("admin_notifications", JSON.stringify(newList));
+                // Thông báo cho các tab khác hoặc chính tab này về sự thay đổi
+                window.dispatchEvent(new Event("storage"));
+                return newList;
+            });
+        });
+
+        // Lắng nghe sự kiện thay đổi localStorage từ các tab khác (ví dụ trang Notification xóa thông báo)
+        const handleStorageChange = () => {
+            const updated = JSON.parse(localStorage.getItem("admin_notifications") || "[]");
+            setNotifications(updated);
+        };
+        window.addEventListener("storage", handleStorageChange);
+
+        return () => {
+            socket.off("notification");
+            window.removeEventListener("storage", handleStorageChange);
+        };
+    }, []);
     const handleLogout = () => {
         sessionStorage.removeItem("user");
         sessionStorage.removeItem("accessToken");
@@ -44,6 +87,9 @@ function Header() {
                     className={`header-icon ${location.pathname === "/staff/notification" ? "active" : ""}`}
                 >
                     <FaBell />
+                    {notifications.length > 0 && (
+                        <span className="notification-badge">{notifications.length}</span>
+                    )}
                 </Link>
 
                 {/* PROFILE */}

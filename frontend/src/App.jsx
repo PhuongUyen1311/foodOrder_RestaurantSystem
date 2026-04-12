@@ -38,6 +38,7 @@ import Ingredient from './pages/Staff/Ingredient/Ingredient';
 import 'react-toastify/dist/ReactToastify.css';
 import { RequireAuth } from './middleware/AuthMiddleware';
 import Customer from './pages/Staff/Customer/Customer';
+import NotificationStaff from './pages/Staff/Notification/Notification';
 
 function App() {
   const location = useLocation();
@@ -80,6 +81,7 @@ function App() {
               <Route path='/staff/table' element={<Table />} />
               <Route path='/staff/profile' element={<ProfileAdmin />} />
               <Route path='/staff/customer' element={<Customer />} />
+              <Route path='/staff/notification' element={<NotificationStaff />} />
             </Routes >
           </div >
         </div >

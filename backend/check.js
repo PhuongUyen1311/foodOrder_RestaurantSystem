@@ -1,0 +1,1 @@
+const mongoose = require('mongoose'); mongoose.connect('mongodb://127.0.0.1:27017/food_order').then(async () => { const orders = await mongoose.connection.collection('orders').find({}).sort({ created_at: -1 }).limit(3).toArray(); console.log(JSON.stringify(orders, null, 2)); process.exit(0); });

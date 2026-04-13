@@ -149,7 +149,19 @@ exports.createCashOrder = async (req, res) => {
         if (listSocket.io) {
             const activeOrders = await Order.find({ status: { $ne: 'COMPLETED' }, is_payment: false });
             const admins = await Admin.find({ socket_id: { $exists: true, $ne: null } });
+            
+            const messageStr = typeOrder === 'chia bill' 
+                ? `Khách yêu cầu chia bill mới!` 
+                : (tableNumber ? `Có đơn hàng mới từ bàn ${tableNumber}!` : `Có đơn hàng online mới!`);
+
             for (const ad of admins) {
+                listSocket.updateOrder.to(ad.socket_id).emit('notification', {
+                    message: messageStr,
+                    time: "Vừa xong",
+                    tableNumber: tableNumber,
+                    orderId: order.id,
+                    type: "order"
+                });
                 listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', activeOrders);
             }
         }
@@ -193,7 +205,19 @@ exports.createGuestOrder = async (req, res) => {
         if (listSocket.io) {
             const activeOrders = await Order.find({ status: { $ne: 'COMPLETED' }, is_payment: false });
             const admins = await Admin.find({ socket_id: { $exists: true, $ne: null } });
+            
+            const messageStr = typeOrder === 'chia bill' 
+                ? `Khách yêu cầu chia bill mới!` 
+                : (tableNumber ? `Có đơn đặt hàng mới tại bàn ${tableNumber}!` : `Có đơn đặt hàng khách ẩn danh mới!`);
+
             for (const ad of admins) {
+                listSocket.updateOrder.to(ad.socket_id).emit('notification', {
+                    message: messageStr,
+                    time: "Vừa xong",
+                    tableNumber: tableNumber,
+                    orderId: order.id,
+                    type: "order"
+                });
                 listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', activeOrders);
             }
         }
@@ -380,6 +404,14 @@ exports.payGuestOrdersByTable = async (req, res) => {
         const listOrder = await Order.find({ status: { $ne: 'COMPLETED' }, is_payment: false });
         const admin = await Admin.find({ socket_id: { $exists: true, $ne: null } });
         for (const ad of admin) {
+            if (paymentMethod === "tiền mặt") {
+                listSocket.updateOrder.to(ad.socket_id).emit('notification', {
+                    message: `Bàn ${tableNumber} yêu cầu thu bằng tiền mặt tổng đơn!`,
+                    time: "Vừa xong",
+                    tableNumber: tableNumber,
+                    type: "warning"
+                });
+            }
             listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', listOrder);
         }
 

@@ -41,7 +41,17 @@ function Order(props) {
             });
             const data = await response.json();
             if (response.ok && Array.isArray(data)) {
-                setOrderList(data);
+                const sortedData = data.sort((a, b) => {
+                    if (a.is_payment !== b.is_payment) {
+                        return a.is_payment ? 1 : -1;
+                    }
+                    if (a.is_payment) {
+                        return new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt);
+                    } else {
+                        return new Date(b.createdAt) - new Date(a.createdAt);
+                    }
+                });
+                setOrderList(sortedData);
             } else {
                 console.error('Lỗi khi lấy đơn hàng:', data);
                 setOrderList([]);
@@ -54,23 +64,31 @@ function Order(props) {
         }
     }
 
+    const searchRef = useRef(searchTerm);
+    useEffect(() => {
+        searchRef.current = searchTerm;
+    }, [searchTerm]);
+
     useEffect(() => {
         if (accessToken) fetchOrderList(accessToken);
-        if (user && user.id) {
-            socketRef.current.emit('adminConnect', user.id);
+        if (user && (user.id || user._id)) {
+            socketRef.current.emit('adminConnect', user.id || user._id);
         }
 
-        const handleSendListOrder = listOrder => {
-            console.log(listOrder);
-            setOrderSocket(listOrder);
+        const handleRefreshList = () => {
+            if (accessToken) fetchOrderList(accessToken, searchRef.current);
         };
 
-        socketRef.current.on('sendListOrder', handleSendListOrder);
+        socketRef.current.on('sendListOrder', handleRefreshList);
+        socketRef.current.on('paymentSuccess', handleRefreshList);
+        socketRef.current.on('notification', handleRefreshList);
 
         return () => {
-            socketRef.current.off('sendListOrder', handleSendListOrder);
+            socketRef.current.off('sendListOrder', handleRefreshList);
+            socketRef.current.off('paymentSuccess', handleRefreshList);
+            socketRef.current.off('notification', handleRefreshList);
         };
-    }, []);
+    }, [accessToken]);
 
     const handleSearchChange = (e) => {
         const value = e.target.value;

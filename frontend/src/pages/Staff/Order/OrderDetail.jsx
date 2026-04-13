@@ -5,7 +5,7 @@ import moment from 'moment';
 import { QRCodeSVG } from 'qrcode.react';
 import { ToastContainer, toast } from 'react-toastify';
 
-import { fetchUpdateIsPayment, fetchUpdateStatusOrder } from '../../../actions/order';
+import { fetchUpdateIsPayment, fetchUpdateStatusOrder, fetchPaymentStatus } from '../../../actions/order';
 import { statusOrder } from '../../../config/statusOrder';
 import SplitBillModal from '../../../components/SplitBillModal';
 import { socket } from '../../../socket';
@@ -57,12 +57,7 @@ function OrderDetail(props) {
                 
                 // Refresh data
                 if (orderId && accessToken) {
-                    fetchOrderDetail(orderId, accessToken).then(res => {
-                        if (res && res.status === 200) {
-                            setOrderDetail(res.data.order);
-                            setOrderPayment(res.data.order.is_payment);
-                        }
-                    });
+                    fetchOrderDetail(orderId, accessToken);
                 }
             }
         });
@@ -71,6 +66,33 @@ function OrderDetail(props) {
             socket.off('paymentSuccess');
         };
     }, [orderDetail, orderId, accessToken]);
+
+    useEffect(() => {
+        let intervalId;
+        const activeModal = mainQrData || qrModalData;
+        if (activeModal && activeModal.orderCode) {
+            intervalId = setInterval(async () => {
+                try {
+                    const res = await fetchPaymentStatus(activeModal.orderCode);
+                    if (res && res.success && res.data && res.data.status === 'PAID') {
+                        clearInterval(intervalId);
+                        setMainQrData(null);
+                        setQrModalData(null);
+                        setIsZoomed(false);
+                        toast.success(`Giao dịch quét mã QR nhận tiền thành công!`);
+                        if (orderId && accessToken) {
+                            fetchOrderDetail(orderId, accessToken);
+                        }
+                    }
+                } catch (error) {
+                    console.error("Polling error:", error);
+                }
+            }, 3000);
+        }
+        return () => {
+            if (intervalId) clearInterval(intervalId);
+        };
+    }, [mainQrData, qrModalData, orderId, accessToken]);
 
     const fetchOrderDetail = async (orderId, accessToken) => {
         const response = await fetch(`/api/order/${orderId}`, {
@@ -145,7 +167,13 @@ function OrderDetail(props) {
                 const data = await resp.json();
                 if (data.success && data.paymentUrl) {
                     const sb = orderDetail.split_bills.find(s => s.split_id === splitId);
-                    setQrModalData({ paymentUrl: data.paymentUrl, qrCode: data.qrCode || data.paymentUrl, splitId, amount: sb.amount });
+                    setQrModalData({ 
+                        paymentUrl: data.paymentUrl, 
+                        qrCode: data.qrCode || data.paymentUrl, 
+                        splitId, 
+                        amount: sb.amount,
+                        orderCode: data.orderCode 
+                    });
                 } else {
                     alert(data.message || "Lỗi tạo mã QR");
                 }
@@ -182,7 +210,8 @@ function OrderDetail(props) {
                 setMainQrData({ 
                     paymentUrl: data.paymentUrl, 
                     qrCode: data.qrCode || data.paymentUrl,
-                    amount: orderDetail.total_price 
+                    amount: orderDetail.total_price,
+                    orderCode: data.orderCode
                 });
             } else {
                 alert(data.message || "Không thể tạo mã QR thanh toán");
@@ -633,7 +662,8 @@ function OrderDetail(props) {
                                                                     qrCode: sb.payos_qr_code || sb.payos_checkout_url || "#",
                                                                     amount: sb.amount, 
                                                                     isSplit: true, 
-                                                                    splitId: sb.split_id 
+                                                                    splitId: sb.split_id,
+                                                                    orderCode: sb.payos_order_code 
                                                                 })}
                                                             >
                                                                 <QRCodeSVG 

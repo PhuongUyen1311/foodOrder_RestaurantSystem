@@ -143,3 +143,13 @@ export const fetchCreateSplitPayment = async (orderId, splitId, method = 'transf
     });
     return response.json();
 }
+
+export const fetchPaymentStatus = async (orderCode) => {
+    const response = await fetch(`/api/payment/status/${orderCode}`, {
+        method: 'get',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+    return response.json();
+}

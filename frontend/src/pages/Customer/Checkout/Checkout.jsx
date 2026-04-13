@@ -12,7 +12,7 @@ import { setCartItems, setCartStore } from '../../../actions/user';
 import { 
     fetchOrder, fetchPayment, fetchUpdateIsPayment, fetchGuestOrder, 
     fetchGuestPayment, fetchPayGuestOrdersByTable, fetchTablePayment,
-    fetchCallStaff, fetchCreateSplitPayment 
+    fetchCallStaff, fetchCreateSplitPayment, fetchPaymentStatus 
 } from '../../../actions/order';
 import SplitBillModal from '../../../components/SplitBillModal';
 import { socket } from '../../../socket';
@@ -154,6 +154,7 @@ function Checkout(props) {
                         total_price: 0
                     }));
                 }
+                toast.success(isFullTablePayment ? "Đã gửi thông báo thu tiền mặt đến nhân viên!" : "Đặt hàng thành công!");
                 return setShowPopup(true);
             } else {
                 toast.error(data?.message || 'Có lỗi xảy ra khi xử lý đơn hàng');
@@ -305,6 +306,36 @@ function Checkout(props) {
             socket.off('paymentSuccess');
         };
     }, [mainOrderQr, orderSource]);
+
+    useEffect(() => {
+        // Fallback polling for local dev environments where webhooks might not reach the local server
+        let intervalId;
+        if (mainOrderQr && mainOrderQr.orderCode) {
+            intervalId = setInterval(async () => {
+                try {
+                    const res = await fetchPaymentStatus(mainOrderQr.orderCode);
+                    if (res && res.success && res.data && res.data.status === 'PAID') {
+                        setMainOrderQr(null);
+                        setShowPopup(true);
+                        toast.success("Thanh toán thành công!");
+                        
+                        if (orderSource === 'table') {
+                            localStorage.removeItem('guestCart');
+                            localStorage.removeItem('guestHasOrdered');
+                            dispatch(setCartItems([]));
+                            dispatch(setCartStore({ id: 'guest', total_item: 0, total_price: 0 }));
+                        }
+                        clearInterval(intervalId);
+                    }
+                } catch (error) {
+                    console.error("Polling error: ", error);
+                }
+            }, 3000);
+        }
+        return () => {
+            if (intervalId) clearInterval(intervalId);
+        };
+    }, [mainOrderQr, orderSource, dispatch]);
 
     const handleCallStaff = async (customMessage = null, orderId = null) => {
         const now = Date.now();

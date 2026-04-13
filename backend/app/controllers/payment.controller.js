@@ -281,9 +281,9 @@ exports.createTablePaymentUrl = async (req, res) => {
 
 exports.receiveWebhook = async (req, res) => {
     try {
-        const webhookData = payos.webhooks.verify(req.body);
+        const webhookData = await payos.webhooks.verify(req.body);
 
-        if (webhookData.code === '00') {
+        if (req.body.code === '00') {
             const { orderCode } = webhookData;
 
             // 1. Tìm và xử lý đơn hàng chính
@@ -342,8 +342,69 @@ exports.getOrderStatus = async (req, res) => {
         if (!payosOrderCode) return res.status(400).json({ success: false, message: "Thiếu orderCode" });
 
         const paymentData = await payos.paymentRequests.get(Number(payosOrderCode));
+        
+        if (paymentData && paymentData.status === 'PAID') {
+            const orderCodeNum = Number(payosOrderCode);
+            // 1. Tìm và xử lý đơn hàng chính
+            const order = await Order.findOne({ payos_order_code: orderCodeNum });
+            if (order && !order.is_payment) {
+                if (order.order_source === 'table') {
+                    await Order.updateMany(
+                        { table_number: order.table_number, order_source: 'table', is_payment: false },
+                        { $set: { is_payment: true, payment_method: "chuyển khoản (PayOS)" } }
+                    );
+                } else {
+                    order.is_payment = true;
+                    order.payment_method = "chuyển khoản (PayOS)";
+                    await order.save();
+                }
+                
+                if (listSocket.io) {
+                    listSocket.io.emit('paymentSuccess', { orderCode: orderCodeNum });
+                    
+                    const activeOrders = await Order.find({ status: { $ne: 'COMPLETED' }, is_payment: false });
+                    const admins = await Admin.find({ socket_id: { $exists: true, $ne: null } });
+                    for (const ad of admins) {
+                        listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', activeOrders);
+                    }
+                }
+            } else {
+                // 2. Tìm đơn chia bill
+                const splitOrder = await Order.findOne({ "split_bills.payos_order_code": orderCodeNum });
+                if (splitOrder) {
+                    const split = splitOrder.split_bills.find(s => s.payos_order_code === orderCodeNum);
+                    let changed = false;
+                    if (split && !split.is_payment) {
+                        split.is_payment = true;
+                        split.payment_method = 'chuyển khoản (PayOS)';
+                        split.paid_at = new Date();
+                        changed = true;
+                    }
+                    if (changed) {
+                        const allPaid = splitOrder.split_bills.every(s => s.is_payment);
+                        if (allPaid) {
+                            splitOrder.is_payment = true;
+                            splitOrder.payment_method = 'chia bill (PayOS)';
+                        }
+                        await splitOrder.save();
+                        
+                        if (listSocket.io) {
+                            listSocket.io.emit('paymentSuccess', { orderCode: orderCodeNum });
+                            
+                            const activeOrders = await Order.find({ status: { $ne: 'COMPLETED' }, is_payment: false });
+                            const admins = await Admin.find({ socket_id: { $exists: true, $ne: null } });
+                            for (const ad of admins) {
+                                listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', activeOrders);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         res.status(200).json({ success: true, data: paymentData });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ success: false, message: "Lỗi Call PayOS" });
     }
 };

@@ -8,7 +8,6 @@ import ProductCard from '../../../components/Customer/Product-Card/ProductCard';
 import CategoryList from '../../../components/Customer/Category/Category';
 import Cart from '../../../components/Customer/Cart/Cart';
 import { setDisplayToast, getCategoryId } from '../../../actions/user';
-import Chatbot from '../../../components/Customer/Chatbot/Chatbot';
 import { socket } from '../../../socket';
 
 function Menu() {
@@ -103,7 +102,6 @@ function Menu() {
                 autoClose={1000}
             />
             <Cart accessToken={accessToken} />
-            <Chatbot />
             <Container className='block-menu'>
                 <div className="menu-products">
                     {/* <h2>Thực Đơn</h2> */}

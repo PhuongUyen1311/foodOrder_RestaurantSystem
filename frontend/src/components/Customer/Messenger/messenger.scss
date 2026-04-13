@@ -1,0 +1,223 @@
+.messenger-customer {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    font-family: 'Inter', sans-serif;
+
+    .messenger-bubble {
+        width: 60px;
+        height: 60px;
+        background: #f3ba00;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 28px;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(243, 186, 0, 0.4);
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+        &:hover {
+            transform: scale(1.1);
+        }
+    }
+
+    .messenger-window {
+        position: absolute;
+        bottom: 80px;
+        right: 0;
+        width: 360px;
+        height: 500px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid #f0f0f0;
+        transform-origin: bottom right;
+        transition: all 0.3s ease;
+
+        &.hidden {
+            transform: scale(0);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .window-header {
+            padding: 16px;
+            background: #f3ba00;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            .brand {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 700;
+                font-size: 16px;
+                
+                img { width: 30px; height: 30px; border-radius: 50%; }
+            }
+
+            .close-btn { cursor: pointer; opacity: 0.8; &:hover { opacity: 1; }}
+        }
+
+        .window-tabs {
+            display: flex;
+            background: #fff;
+            border-bottom: 1px solid #f0f0f0;
+
+            .tab {
+                flex: 1;
+                padding: 12px;
+                text-align: center;
+                font-size: 14px;
+                font-weight: 600;
+                color: #888;
+                cursor: pointer;
+                border-bottom: 2px solid transparent;
+                transition: all 0.2s;
+
+                &.active {
+                    color: #f3ba00;
+                    border-bottom-color: #f3ba00;
+                    background: #fff9e6;
+                }
+            }
+        }
+
+        .window-content {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+
+            .message-list {
+                flex: 1;
+                padding: 16px;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+
+                .msg {
+                    max-width: 85%;
+                    padding: 10px 14px;
+                    border-radius: 18px;
+                    font-size: 14px;
+                    line-height: 1.5;
+
+                    &.bot, &.received {
+                        align-self: flex-start;
+                        background: #f0f2f5;
+                        color: #1c1e21;
+                        border-bottom-left-radius: 4px;
+                    }
+
+                    &.user, &.sent {
+                        align-self: flex-end;
+                        background: #f3ba00;
+                        color: white;
+                        border-bottom-right-radius: 4px;
+                    }
+
+                    .msg-img { 
+                        max-width: 100%; 
+                        border-radius: 8px; 
+                        margin-top: 5px; 
+                        cursor: pointer;
+                        &:hover { filter: brightness(0.9); }
+                    }
+
+                    .chat-cart-card {
+                        background: white;
+                        border: 1px solid #eee;
+                        border-radius: 12px;
+                        padding: 12px;
+                        margin-top: 10px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 8px;
+                        color: #333;
+
+                        .ccc-info {
+                            display: flex;
+                            flex-direction: column;
+                            .ccc-name { font-weight: 700; font-size: 14px; }
+                            .ccc-price { color: #f3ba00; font-weight: 600; font-size: 13px; }
+                        }
+
+                        .ccc-btn {
+                            background: #f3ba00;
+                            color: white;
+                            border: none;
+                            padding: 6px;
+                            border-radius: 8px;
+                            font-size: 12px;
+                            font-weight: 600;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            gap: 5px;
+                            &:hover { background: #d4a300; }
+                        }
+                    }
+                }
+            }
+
+            .chat-input-area {
+                padding: 12px;
+                border-top: 1px solid #f0f0f0;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+
+                input {
+                    flex: 1;
+                    padding: 8px 16px;
+                    background: #f0f2f5;
+                    border: none;
+                    border-radius: 20px;
+                    outline: none;
+                    font-size: 14px;
+                }
+
+                .send-btn {
+                    color: #f3ba00;
+                    cursor: pointer;
+                    font-size: 20px;
+                }
+
+                .action-icon {
+                    color: #999;
+                    cursor: pointer;
+                    font-size: 18px;
+                    &:hover { color: #f3ba00; }
+                }
+            }
+        }
+    }
+}
+
+.light-box-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.9);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-out;
+
+    img {
+        max-width: 90%;
+        max-height: 90%;
+        object-fit: contain;
+        box-shadow: 0 0 50px rgba(0,0,0,0.5);
+    }
+}

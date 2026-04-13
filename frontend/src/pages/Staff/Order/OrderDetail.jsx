@@ -359,36 +359,10 @@ function OrderDetail(props) {
         );
     }
 
-    const handleShareBill = () => {
+    const handleShareToMessenger = () => {
         if (!orderDetail) return;
-        const itemsText = orderItems.map(item => `- ${item.product_name || item.name} x ${item.qty}: ${(item.price || 0).toLocaleString()}đ`).join('\n');
-        const shareTitle = `Hóa Đơn #${orderDetail.id} - Healthy Food`;
-        const shareText = `🧾 THÔNG TIN ${(orderDetail.is_payment ? 'HÓA ĐƠN' : 'TẠM TÍNH')}\n` +
-            `📍 Bàn: ${orderDetail.table_number || 'Mang đi'}\n` +
-            `👤 Khách hàng: ${orderDetail.first_name || ''} ${orderDetail.last_name || ''}\n` +
-            `------------------------\n` +
-            `${itemsText}\n` +
-            `------------------------\n` +
-            `💰 Tổng cộng: ${(orderDetail.total_price || 0).toLocaleString()}đ\n` +
-            `📌 Trạng thái: ${orderDetail.is_payment ? '✅ Đã thanh toán' : '❌ Chưa thanh toán'}\n\n` +
-            `Xem thực đơn tại: ${window.location.origin}/menu?table=${orderDetail.table_number}`;
-
-        if (navigator.share) {
-            navigator.share({
-                title: shareTitle,
-                text: shareText,
-            }).then(() => toast.success("Chia sẻ thành công!"))
-              .catch(err => {
-                  if (err.name !== 'AbortError') toast.error("Chia sẻ bị lỗi!");
-              });
-        } else {
-            navigator.clipboard.writeText(shareTitle + '\n\n' + shareText).then(() => {
-                toast.success("✅ Đã sao chép tóm tắt đơn hàng!");
-            }).catch(err => {
-                console.error('Lỗi khi sao chép:', err);
-                toast.error("Không thể sao chép");
-            });
-        }
+        const event = new CustomEvent('shareOrderToChat', { detail: orderDetail });
+        window.dispatchEvent(event);
     }
 
     const handleExportPDF = (format = 'RECEIPT') => {
@@ -537,8 +511,8 @@ function OrderDetail(props) {
                         {orderDetail && orderDetail.is_payment ? "Chi tiết Hóa Đơn" : "Chi tiết Đơn Hàng"}: #{orderDetail && orderDetail.id}
                     </h3>
                     <div className="d-flex gap-2">
-                        <button className="btn btn-info d-flex align-items-center shadow-sm text-white" onClick={handleShareBill}>
-                            <span className="me-1 fs-5">🔗</span> Chia sẻ
+                        <button className="btn btn-primary d-flex align-items-center shadow-sm text-white fw-bold" onClick={handleShareToMessenger}>
+                            <span className="me-1 fs-5">💬</span> Messenger
                         </button>
                         <button className="btn border border-secondary bg-white text-dark d-flex align-items-center shadow-sm" onClick={() => handleExportPDF('A4')}>
                             <span className="me-1 fs-5">📄</span> Khổ A4

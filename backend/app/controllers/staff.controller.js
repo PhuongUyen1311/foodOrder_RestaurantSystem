@@ -206,3 +206,13 @@ exports.deleteStaff = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+exports.getSupportContact = async (req, res) => {
+    try {
+        const support = await Admin.findOne({ role: 'ADMIN' }).select('_id first_name last_name avatar');
+        if (!support) return res.status(404).send({ message: "No support available" });
+        res.json(support);
+    } catch (error) {
+        res.status(500).send({ message: error.message });
+    }
+};

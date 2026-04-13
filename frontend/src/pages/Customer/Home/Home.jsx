@@ -8,7 +8,6 @@ import ProductRecommender from '../../../components/Customer/Product-Recommender
 import Contact from '../../../components/Customer/Contact/Contact';
 import Category from '../../../components/Customer/Category/Category';
 import Cart from '../../../components/Customer/Cart/Cart';
-import Chatbot from '../../../components/Customer/Chatbot/Chatbot';
 import { getCategoryId, setDisplayToast } from '../../../actions/user';
 
 import './home.scss';
@@ -62,7 +61,6 @@ function Home(props) {
                 autoClose={1000}
             />
             <Cart accessToken={accessToken} />
-            <Chatbot />
             <Container className='block-product'>
                 {
                     accessToken && (

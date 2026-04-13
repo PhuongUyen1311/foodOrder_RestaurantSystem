@@ -35,6 +35,10 @@ module.exports = mongoose => {
             type: Boolean,
             default: true,
         },
+        is_guest: {
+            type: Boolean,
+            default: false,
+        },
       },
       { timestamps: true }
     );

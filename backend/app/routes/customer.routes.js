@@ -5,6 +5,7 @@ module.exports = app => {
 
     // update
     router.post("/", customer.updateCustomer);
+    router.post("/init-guest", customer.initGuest);
 
     app.use("/api/customer", router);
   };

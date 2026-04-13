@@ -39,6 +39,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import { RequireAuth } from './middleware/AuthMiddleware';
 import Customer from './pages/Staff/Customer/Customer';
 import NotificationStaff from './pages/Staff/Notification/Notification';
+import Messenger from './components/Staff/Messenger/Messenger';
+import MessengerCustomer from './components/Customer/Messenger/MessengerCustomer';
 
 function App() {
   const location = useLocation();
@@ -83,6 +85,7 @@ function App() {
               <Route path='/staff/customer' element={<Customer />} />
               <Route path='/staff/notification' element={<NotificationStaff />} />
             </Routes >
+            <Messenger />
           </div >
         </div >
       </>
@@ -129,6 +132,7 @@ function App() {
             <Route path="/table-checkin" element={<TableCheckin />} />
             <Route path="/menu" element={<Menu />} />
           </Routes>
+          <MessengerCustomer />
         </main>
         <Footer />
         <ToastContainer

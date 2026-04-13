@@ -6,7 +6,8 @@ import {
     FaExclamationTriangle,
     FaCheckCircle,
     FaExternalLinkAlt,
-    FaTrashAlt
+    FaTrashAlt,
+    FaShareAlt
 } from "react-icons/fa";
 import { socket } from "../../../socket";
 import { useNavigate } from "react-router-dom";
@@ -46,6 +47,12 @@ function Notification() {
         if (orderId) {
             navigate(`/staff/order/detail/${orderId}`);
         }
+    };
+
+    const handleShare = (item) => {
+        const content = `[THÔNG BÁO] ${item.message} ${item.tableNumber ? `(Bàn ${item.tableNumber})` : ""}`;
+        const event = new CustomEvent('shareContentToChat', { detail: content });
+        window.dispatchEvent(event);
     };
 
     const renderIcon = (type) => {
@@ -103,6 +110,13 @@ function Notification() {
                                             <FaExternalLinkAlt /> Xem đơn
                                         </button>
                                     )}
+                                    <button 
+                                        className="btn-action share" 
+                                        onClick={() => handleShare(item)}
+                                        title="Chia sẻ lên Messenger"
+                                    >
+                                        <FaShareAlt /> Chia sẻ
+                                    </button>
                                     <button 
                                         className="btn-action complete" 
                                         onClick={() => handleComplete(item.id)}

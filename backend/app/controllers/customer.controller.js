@@ -59,3 +59,30 @@ exports.updateCustomer = (req, res) => {
         }
     });
 };
+exports.initGuest = async (req, res) => {
+    try {
+        const db = require("../models");
+        const Customer = db.customer;
+        const { guestId } = req.body;
+
+        let customer = null;
+        if (guestId && guestId.length === 24) {
+            customer = await Customer.findById(guestId);
+        }
+
+        if (!customer || !customer.is_guest) {
+            const shortId = (guestId && guestId.length >= 4) ? guestId.toString().slice(-4).toUpperCase() : Math.random().toString(36).substring(2, 6).toUpperCase();
+            customer = new Customer({
+                first_name: "Khách vãng lai",
+                last_name: `#${shortId}`,
+                email: `guest_${Date.now()}@example.com`,
+                is_guest: true
+            });
+            await customer.save();
+        }
+
+        res.json(customer);
+    } catch (error) {
+        handleError(res, error);
+    }
+};

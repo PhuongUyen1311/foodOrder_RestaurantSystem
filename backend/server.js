@@ -54,6 +54,7 @@ require("./app/routes/chatbot.routes")(app);
 require("./app/routes/admin.routes")(app);
 require("./app/routes/staff.routes")(app);
 require("./app/routes/admin.customer.routes")(app);
+require("./app/routes/message.routes")(app);
 
 const http = require("http");
 const server = http.createServer(app);

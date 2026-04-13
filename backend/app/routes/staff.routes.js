@@ -30,6 +30,7 @@ module.exports = app => {
     router.post("/", verifyAdminRole, staffController.createStaff);
     router.put("/:id", verifyAdminRole, staffController.updateStaff);
     router.delete("/:id", verifyAdminRole, staffController.deleteStaff);
+    router.get("/support-contact", staffController.getSupportContact);
 
     app.use("/api/staff", router);
 };

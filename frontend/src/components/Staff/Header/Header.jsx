@@ -5,14 +5,17 @@ import {
     FaSearch,
     FaBell,
     FaUserAlt,
-    FaCircle
+    FaCircle,
+    FaFacebookMessenger
 } from "react-icons/fa";
 import "./header.scss";
+
 function Header() {
     const user = JSON.parse(sessionStorage.getItem("user"));
     const location = useLocation();
     const [openProfile, setOpenProfile] = useState(false);
     const [notifications, setNotifications] = useState([]);
+    const [unreadMessages, setUnreadMessages] = useState(0);
 
     // Hàm phát âm thanh thông báo
     const playNotificationSound = () => {
@@ -30,6 +33,11 @@ function Header() {
         const savedNotifications = JSON.parse(localStorage.getItem("admin_notifications") || "[]");
         setNotifications(savedNotifications);
 
+        const handleUnreadUpdate = (e) => {
+            setUnreadMessages(e.detail || 0);
+        };
+        window.addEventListener('unreadUpdate', handleUnreadUpdate);
+
         // Lắng nghe sự kiện thông báo mới từ socket
         socket.on("notification", (data) => {
             playNotificationSound();
@@ -42,7 +50,7 @@ function Header() {
             });
         });
 
-        // Lắng nghe sự kiện thay đổi localStorage từ các tab khác (ví dụ trang Notification xóa thông báo)
+        // Lắng nghe sự kiện thay đổi localStorage từ các tab khác
         const handleStorageChange = () => {
             const updated = JSON.parse(localStorage.getItem("admin_notifications") || "[]");
             setNotifications(updated);
@@ -52,36 +60,37 @@ function Header() {
         return () => {
             socket.off("notification");
             window.removeEventListener("storage", handleStorageChange);
+            window.removeEventListener('unreadUpdate', handleUnreadUpdate);
         };
     }, []);
+
     const handleLogout = () => {
         sessionStorage.removeItem("user");
         sessionStorage.removeItem("accessToken");
         window.location.href = "/staff";
     };
+
     const timeoutRef = useRef(null);
     const handleMouseEnter = () => {
         clearTimeout(timeoutRef.current);
-        setOpenProfile(true);};
+        setOpenProfile(true);
+    };
     const handleMouseLeave = () => {
         timeoutRef.current = setTimeout(() => {
-            setOpenProfile(false);}, 200); };// delay 200ms};
+            setOpenProfile(false);
+        }, 200);
+    };
+
     return (
         <div className="header-staff">
-            {/* LEFT */}
             <div className="header-left">
                 <div className="header-search">
                     <FaSearch className="search-icon" />
-                    <input
-                        type="text"
-                        placeholder="Tìm kiếm..."
-                    />
+                    <input type="text" placeholder="Tìm kiếm..." />
                 </div>
             </div>
 
-            {/* RIGHT */}
             <div className="header-right">
-                {/* NOTIFICATION */}
                 <Link
                     to="/staff/notification"
                     className={`header-icon ${location.pathname === "/staff/notification" ? "active" : ""}`}
@@ -91,38 +100,37 @@ function Header() {
                         <span className="notification-badge">{notifications.length}</span>
                     )}
                 </Link>
+                
+                <div 
+                    className="header-icon"
+                    onClick={() => window.dispatchEvent(new Event('toggleMessenger'))}
+                    style={{ cursor: 'pointer' }}
+                >
+                    <FaFacebookMessenger />
+                    {unreadMessages > 0 && (
+                        <span className="notification-badge messenger">{unreadMessages}</span>
+                    )}
+                </div>
 
-                {/* PROFILE */}
                 <div
-  className="header-avatar"
-  onMouseEnter={handleMouseEnter}
-  onMouseLeave={handleMouseLeave}
->
-  <FaUserAlt />
-
-  {openProfile && (
-    <div className="profile-dropdown">
-
-      <div className="profile-name">
-        {user?.firstName}
-      </div>
-
-      <Link to="/staff/profile" className="dropdown-item">
-        Hồ sơ cá nhân
-      </Link>
-
-      <div
-        className="dropdown-item logout"
-        onClick={handleLogout}
-      >
-        Đăng xuất
-      </div>
-
-    </div>
-  )}
-</div>
+                    className="header-avatar"
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                >
+                    <FaUserAlt />
+                    {openProfile && (
+                        <div className="profile-dropdown">
+                            <div className="profile-name">
+                                {user?.firstName || user?.first_name}
+                            </div>
+                            <Link to="/staff/profile" className="dropdown-item">Hồ sơ cá nhân</Link>
+                            <div className="dropdown-item logout" onClick={handleLogout}>Đăng xuất</div>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
 }
+
 export default Header;

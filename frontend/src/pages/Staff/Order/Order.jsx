@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { socket } from '../../../socket.js';
 import { Link } from 'react-router-dom';
 import { Table, InputGroup, Form } from 'react-bootstrap';
-import { FaSearch, FaEye } from 'react-icons/fa';
+import { FaSearch, FaEye, FaShareAlt } from 'react-icons/fa';
 import { IoMdClose } from "react-icons/io";
 const host = import.meta.env.VITE_API_URL;
 
@@ -208,9 +208,21 @@ function Order(props) {
                                             </div>
                                         </td>
                                         <td className="text-center">
-                                            <Link to={`/staff/order/detail/${id}`} className="btn btn-sm btn-link p-1" title="Chi tiết đơn hàng">
-                                                <FaEye className='icon-view fs-5 text-info' />
-                                            </Link>
+                                            <div className="d-flex justify-content-center gap-2">
+                                                <Link to={`/staff/order/detail/${id}`} className="btn btn-sm btn-link p-1" title="Chi tiết đơn hàng">
+                                                    <FaEye className='icon-view fs-5 text-info' />
+                                                </Link>
+                                                <button 
+                                                    className="btn btn-sm btn-link p-1" 
+                                                    title="Chia sẻ vào Chat"
+                                                    onClick={() => {
+                                                        const event = new CustomEvent('shareOrderToChat', { detail: orderData });
+                                                        window.dispatchEvent(event);
+                                                    }}
+                                                >
+                                                    <FaShareAlt className='icon-share fs-5 text-warning' />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 )

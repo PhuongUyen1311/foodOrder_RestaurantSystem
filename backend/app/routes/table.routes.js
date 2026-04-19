@@ -3,7 +3,10 @@ module.exports = app => {
     const reservation = require('../controllers/reservation.controller');
     var router = require('express').Router();
     router.get('/available', table.getAvailableTables);
+    router.post('/verify-pin', table.verifyPIN);
+    router.post('/move-table', table.moveTable);
     router.post('/unmerge', table.unmergeTable);
+    router.post('/unmerge-all', table.unmergeAllSlaves);
     router.get('/:qrCode', table.getTableByQRCode);
     router.post('/merge', table.mergeTable);
     router.post('/', table.addTable);

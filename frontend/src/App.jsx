@@ -30,6 +30,7 @@ import Product from './pages/Staff/Product/Product';
 import LoginStaff from './pages/Staff/Login/Login';
 import Order from './pages/Staff/Order/Order';
 import OrderDetail from './pages/Staff/Order/OrderDetail';
+import MultiPayment from './pages/Staff/Order/MultiPayment';
 import Table from './pages/Staff/Table/Table';
 import ProfileAdmin from './pages/Staff/Profile/Profile';
 import StaffList from './pages/Staff/Staff/StaffList';
@@ -77,6 +78,7 @@ function App() {
               <Route path='/staff/product' element={<Product />} />
               <Route path='/staff/ingredient' element={<Ingredient />} />
               <Route path='/staff/order' element={<Order />} />
+              <Route path='/staff/order/multi-payment' element={<MultiPayment />} />
               <Route path='/staff/order/detail/:orderId' element={<OrderDetail />} />
               <Route path='/staff/revenue' element={<Charts />} />
               <Route path='/staff/manage' element={<StaffList />} />

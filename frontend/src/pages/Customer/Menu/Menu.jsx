@@ -62,40 +62,42 @@ function Menu() {
 
         if (table) {
             setOrderSource('table');
-            // Kiểm tra format table=3/khanhvan+code 
+            // Kiểm tra format table=3/sessionId
             if (table.includes('/')) {
                 const slashIndex = table.indexOf('/');
                 const tabNum = table.substring(0, slashIndex);
-                const userCode = table.substring(slashIndex + 1);
-                
+                const sessionIdFromUrl = table.substring(slashIndex + 1);
+
                 setTableNumber(tabNum);
                 sessionStorage.setItem('tableNumber', tabNum);
                 sessionStorage.setItem('orderSource', 'table');
-                
-                // userCode có thể là "Khánh Văn 0375266538"
-                // Ta tìm khoảng trắng cuối cùng để tách số điện thoại (code)
-                const lastSpaceIndex = userCode.lastIndexOf(' ');
-                let uname = userCode;
-                let ucode = '';
 
-                if (lastSpaceIndex !== -1) {
-                    uname = userCode.substring(0, lastSpaceIndex).trim();
-                    ucode = userCode.substring(lastSpaceIndex + 1).trim();
+                // Thử lấy thông tin từ session hiện tại
+                const savedSession = JSON.parse(sessionStorage.getItem('guest_session'));
+                if (savedSession && savedSession.sessionId === sessionIdFromUrl) {
+                    setGuestName(savedSession.username);
+                } else {
+                    // Nếu chưa có local, sẽ fetch danh sách đơn để lấy tên khách
+                    fetch(`/api/order/guest/table/${tabNum}?sessionId=${sessionIdFromUrl}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data && data.length > 0) {
+                                const uname = data[0].order.guest_name;
+                                setGuestName(uname);
+                                sessionStorage.setItem('guest_session', JSON.stringify({
+                                    table: tabNum,
+                                    username: uname,
+                                    sessionId: sessionIdFromUrl
+                                }));
+                            }
+                        });
                 }
-
-                setGuestName(uname);
-                sessionStorage.setItem('guest_session', JSON.stringify({ 
-                    table: tabNum, 
-                    username: uname, 
-                    code: ucode, 
-                    sessionId: ucode 
-                }));
             } else {
                 setTableNumber(table);
                 sessionStorage.setItem('tableNumber', table);
                 sessionStorage.setItem('orderSource', 'table');
 
-                // Mở model check session
+                // Mở model check session (Sẽ bao gồm nhập PIN)
                 setShowGuestJoin(true);
             }
         } else {
@@ -107,8 +109,9 @@ function Menu() {
     const handleGuestJoined = (username, code, sessionId) => {
         setShowGuestJoin(false);
         setGuestName(username);
-        // Thay đổi URL mà không reload trang 
-        navigate(`/menu?table=${tableNumber}/${username}+${code}`, { replace: true });
+        
+        // URL mới chỉ chứa sessionId ngẫu nhiên (Giữ tính năng đa khách)
+        navigate(`/menu?table=${tableNumber}/${sessionId}`, { replace: true });
     };
 
     useEffect(() => {
@@ -153,7 +156,7 @@ function Menu() {
                     <div className="order-info">
                         {orderSource === 'table' ? (
                             <div className="table-info">
-                                <span> THỰC ĐƠN | Bàn: {tableNumber} | Khách: {guestName || 'Khách vãng lai'} </span>
+                                <span> THỰC ĐƠN - Khách hàng: {guestName || 'Khách vãng lai'} </span>
                             </div>
                         ) : (
                             <div className="online-info">
@@ -161,11 +164,11 @@ function Menu() {
                             </div>
                         )}
                     </div>
-                    
-                    <GuestJoin 
-                        show={showGuestJoin} 
-                        tableNumber={tableNumber} 
-                        onJoined={handleGuestJoined} 
+
+                    <GuestJoin
+                        show={showGuestJoin}
+                        tableNumber={tableNumber}
+                        onJoined={handleGuestJoined}
                     />
                     <div className="mb-2"> {/* mb-5 tạo khoảng cách lớn phía dưới category */}
                         <CategoryList categories={categories} />

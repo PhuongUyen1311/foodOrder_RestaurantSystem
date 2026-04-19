@@ -8,6 +8,7 @@ const CartItem = db.cartItem;
 const Admin = db.admin;
 const { canDeductIngredients, deductIngredients } = require("./order.controller");
 const { PayOS } = require("@payos/node");
+const { refreshTableSession } = require("./table.controller");
 
 const client_id = process.env.PAYOS_CLIENT_ID || "";
 const api_key = process.env.PAYOS_API_KEY || "";
@@ -24,13 +25,21 @@ exports.splitBill = async (req, res) => {
 
         let order;
         if (typeof orderId === 'string' && orderId.startsWith("TABLE_")) {
+            const { sessionId } = req.body;
             const tableNum = orderId.split("_")[1];
-            const orders = await Order.find({ table_number: tableNum, order_source: 'table', is_payment: false });
-            if (!orders || orders.length === 0) return res.status(404).json({ success: false, message: "Không tìm thấy hóa đơn chưa thanh toán cho bàn này." });
+            
+            // Limit to specific session if provided
+            let query = { table_number: tableNum, order_source: 'table', is_payment: false };
+            if (sessionId) {
+                query.session_id = sessionId;
+            }
+
+            const orders = await Order.find(query);
+            if (!orders || orders.length === 0) return res.status(404).json({ success: false, message: "Không tìm thấy hóa đơn chưa thanh toán." });
 
             order = orders[0];
             if (orders.length > 1) {
-                // Merge subsequent orders into the first order using O(1) DB Calls
+                // Merge subsequent rounds for THIS SESSION into the first order
                 const orderIdsToDelete = orders.slice(1).map(o => o._id);
                 order.total_price += orders.slice(1).reduce((sum, curr) => sum + curr.total_price, 0);
                 order.total_item += orders.slice(1).reduce((sum, curr) => sum + curr.total_item, 0);
@@ -96,9 +105,9 @@ exports.createSplitPaymentUrl = async (req, res) => {
         if (!split) return res.status(404).json({ success: false, message: "Split bill not found" });
         if (split.is_payment) return res.status(400).json({ success: false, message: "Phần này đã được thanh toán" });
 
-        if (method === 'cash' || method === 'manual_transfer') {
+        if (method === 'cash' || method === 'manual_transfer' || method === 'tiền mặt') {
             split.is_payment = true;
-            split.payment_method = method === 'cash' ? 'tiền mặt' : 'chuyển khoản';
+            split.payment_method = (method === 'cash' || method === 'tiền mặt') ? 'tiền mặt' : 'chuyển khoản';
             split.paid_at = new Date();
 
             // Check if all are paid
@@ -112,6 +121,13 @@ exports.createSplitPaymentUrl = async (req, res) => {
             const activeOrders = await Order.find({ status: { $ne: 'COMPLETED' }, is_payment: false });
             const admins = await Admin.find({ socket_id: { $exists: true, $ne: null } });
             for (const ad of admins) {
+                listSocket.updateOrder.to(ad.socket_id).emit('notification', {
+                    message: `Bàn ${order.table_number} vừa thanh toán một phần hóa đơn (${split.user_name})!`,
+                    time: "Vừa xong",
+                    tableNumber: order.table_number,
+                    type: "payment",
+                    createdAt: new Date()
+                });
                 listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', activeOrders);
             }
             return res.status(200).json({ success: true, message: "Thanh toán split (tiền mặt) thành công" });
@@ -237,16 +253,22 @@ exports.createGuestPaymentUrl = async (req, res) => {
 
 exports.createTablePaymentUrl = async (req, res) => {
     try {
-        const { tableNumber } = req.body;
+        const { tableNumber, sessionId } = req.body;
         if (!tableNumber) {
             return res.status(400).send({ message: "No table number provided." });
         }
 
-        const orders = await Order.find({
+        let query = {
             table_number: tableNumber,
             order_source: 'table',
             is_payment: false
-        });
+        };
+
+        if (sessionId) {
+            query.session_id = sessionId;
+        }
+
+        const orders = await Order.find(query);
 
         if (orders.length === 0) {
             return res.status(404).send({ message: "No unpaid orders found for this table." });
@@ -259,7 +281,7 @@ exports.createTablePaymentUrl = async (req, res) => {
         const body = {
             orderCode: payosOrderCode,
             amount: totalAmount,
-            description: `Gop Ban ${tableNumber}`,
+            description: sessionId ? `Ban ${tableNumber} (Sess ${sessionId.slice(-4)})` : `Gop Ban ${tableNumber}`,
             returnUrl: `http://localhost:5173/checkout`,
             cancelUrl: `http://localhost:5173/checkout`,
         };
@@ -290,14 +312,32 @@ exports.receiveWebhook = async (req, res) => {
             const order = await Order.findOne({ payos_order_code: orderCode });
             if (order) {
                 if (order.order_source === 'table') {
+                    const updateQuery = { table_number: order.table_number, order_source: 'table', is_payment: false };
+                    if (order.session_id) {
+                        updateQuery.session_id = order.session_id;
+                    }
                     await Order.updateMany(
-                        { table_number: order.table_number, order_source: 'table', is_payment: false },
+                        updateQuery,
                         { $set: { is_payment: true, payment_method: "chuyển khoản (PayOS)" } }
                     );
                 } else {
                     order.is_payment = true;
                     order.payment_method = "chuyển khoản (PayOS)";
                     await order.save();
+                }
+
+                // Notify payment success
+                if (listSocket.io) {
+                    const admins = await Admin.find({ socket_id: { $exists: true, $ne: null } });
+                    for (const ad of admins) {
+                        listSocket.updateOrder.to(ad.socket_id).emit('notification', {
+                            message: `Bàn ${order.table_number} đã thanh toán thành công qua PayOS!`,
+                            time: "Vừa xong",
+                            tableNumber: order.table_number,
+                            type: "payment",
+                            createdAt: new Date()
+                        });
+                    }
                 }
             } else {
                 // 2. Nếu không thấy đơn chính, tìm đơn chia bill (split_bills)
@@ -315,6 +355,20 @@ exports.receiveWebhook = async (req, res) => {
                         splitOrder.payment_method = 'chia bill (PayOS)';
                     }
                     await splitOrder.save();
+
+                    // Notify split payment success
+                    if (listSocket.io) {
+                        const admins = await Admin.find({ socket_id: { $exists: true, $ne: null } });
+                        for (const ad of admins) {
+                            listSocket.updateOrder.to(ad.socket_id).emit('notification', {
+                                message: `Một phần hóa đơn bàn ${splitOrder.table_number} (${split.user_name}) đã được thanh toán qua PayOS!`,
+                                time: "Vừa xong",
+                                tableNumber: splitOrder.table_number,
+                                type: "payment",
+                                createdAt: new Date()
+                            });
+                        }
+                    }
                 }
             }
 
@@ -349,8 +403,12 @@ exports.getOrderStatus = async (req, res) => {
             const order = await Order.findOne({ payos_order_code: orderCodeNum });
             if (order && !order.is_payment) {
                 if (order.order_source === 'table') {
+                    const updateQuery = { table_number: order.table_number, order_source: 'table', is_payment: false };
+                    if (order.session_id) {
+                        updateQuery.session_id = order.session_id;
+                    }
                     await Order.updateMany(
-                        { table_number: order.table_number, order_source: 'table', is_payment: false },
+                        updateQuery,
                         { $set: { is_payment: true, payment_method: "chuyển khoản (PayOS)" } }
                     );
                 } else {
@@ -380,24 +438,31 @@ exports.getOrderStatus = async (req, res) => {
                         split.paid_at = new Date();
                         changed = true;
                     }
-                    if (changed) {
-                        const allPaid = splitOrder.split_bills.every(s => s.is_payment);
-                        if (allPaid) {
-                            splitOrder.is_payment = true;
-                            splitOrder.payment_method = 'chia bill (PayOS)';
-                        }
-                        await splitOrder.save();
-                        
-                        if (listSocket.io) {
-                            listSocket.io.emit('paymentSuccess', { orderCode: orderCodeNum });
-                            
-                            const activeOrders = await Order.find({ status: { $ne: 'COMPLETED' }, is_payment: false });
-                            const admins = await Admin.find({ socket_id: { $exists: true, $ne: null } });
-                            for (const ad of admins) {
-                                listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', activeOrders);
+                        if (changed) {
+                            const allPaid = splitOrder.split_bills.every(s => s.is_payment);
+                            if (allPaid) {
+                                splitOrder.is_payment = true;
+                                splitOrder.payment_method = 'chia bill (PayOS)';
+                            }
+                            await splitOrder.save();
+
+                            if (listSocket.io) {
+                                listSocket.io.emit('paymentSuccess', { orderCode: orderCodeNum });
+                                
+                                const activeOrders = await Order.find({ status: { $ne: 'COMPLETED' }, is_payment: false });
+                                const admins = await Admin.find({ socket_id: { $exists: true, $ne: null } });
+                                for (const ad of admins) {
+                                    listSocket.updateOrder.to(ad.socket_id).emit('notification', {
+                                        message: `Bàn ${splitOrder.table_number} vừa có một phần thanh toán hoàn tất!`,
+                                        time: "Vừa xong",
+                                        tableNumber: splitOrder.table_number,
+                                        type: "payment",
+                                        createdAt: new Date()
+                                    });
+                                    listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', activeOrders);
+                                }
                             }
                         }
-                    }
                 }
             }
         }
@@ -406,5 +471,138 @@ exports.getOrderStatus = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: "Lỗi Call PayOS" });
+    }
+};
+
+exports.undoSplit = async (req, res) => {
+    try {
+        const { orderId } = req.body;
+        if (!orderId) {
+            return res.status(400).json({ success: false, message: "Thiếu orderId." });
+        }
+
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Không tìm thấy hóa đơn." });
+        }
+
+        // Kiểm tra xem đã có phần nào được thanh toán chưa
+        const hasPaidSplit = order.split_bills && order.split_bills.some(sb => sb.is_payment);
+        if (hasPaidSplit) {
+            return res.status(400).json({ success: false, message: "Không thể hủy chia hóa đơn vì đã có khách thanh toán một phần." });
+        }
+
+        order.split_bills = [];
+        await order.save();
+
+        res.status(200).json({ success: true, message: "Đã hủy chia hóa đơn thành công." });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Lỗi khi hủy chia hóa đơn." });
+    }
+};
+
+exports.mergeBills = async (req, res) => {
+    try {
+        const { mainTableNumber, slaveTableNumbers } = req.body;
+        if (!mainTableNumber || !slaveTableNumbers || !Array.isArray(slaveTableNumbers) || slaveTableNumbers.length === 0) {
+            return res.status(400).json({ success: false, message: "Dữ liệu không hợp lệ." });
+        }
+
+        // Tìm order chính (đang hoạt động) của bàn main
+        const mainOrder = await Order.findOne({ table_number: mainTableNumber, order_source: 'table', is_payment: false });
+        if (!mainOrder) {
+            return res.status(404).json({ success: false, message: "Không tìm thấy hóa đơn chưa thanh toán của bàn chính." });
+        }
+
+        // Tìm các orders đang hoạt động của các bàn slave
+        const slaveOrders = await Order.find({ table_number: { $in: slaveTableNumbers }, order_source: 'table', is_payment: false });
+        if (!slaveOrders || slaveOrders.length === 0) {
+            return res.status(404).json({ success: false, message: "Không tìm thấy hóa đơn chưa thanh toán của các bàn phụ." });
+        }
+
+        // Tính tổng tiền và tổng món
+        const addedPrice = slaveOrders.reduce((sum, curr) => sum + curr.total_price, 0);
+        const addedItems = slaveOrders.reduce((sum, curr) => sum + curr.total_item, 0);
+
+        mainOrder.total_price += addedPrice;
+        mainOrder.total_item += addedItems;
+
+        // Lưu linked_tables để xử lý khi thanh toán
+        const newLinkedTables = new Set(mainOrder.linked_tables || []);
+        slaveTableNumbers.forEach(t => newLinkedTables.add(String(t)));
+        mainOrder.linked_tables = Array.from(newLinkedTables);
+
+        const slaveOrderIds = slaveOrders.map(o => o._id);
+
+        // Chuyển OrderItems từ slave sang main
+        await OrderItem.updateMany({ order_id: { $in: slaveOrderIds } }, { $set: { order_id: mainOrder._id } });
+
+        // Xóa các slave orders
+        await Order.deleteMany({ _id: { $in: slaveOrderIds } });
+
+        await mainOrder.save();
+
+        if (listSocket.io) {
+            const activeOrders = await Order.find({ status: { $ne: 'COMPLETED' }, is_payment: false });
+            const admins = await Admin.find({ socket_id: { $exists: true, $ne: null } });
+            for (const ad of admins) {
+                listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', activeOrders);
+            }
+        }
+
+        res.status(200).json({ success: true, message: "Đã gộp hóa đơn thành công." });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Lỗi server khi gộp hóa đơn." });
+    }
+};
+
+exports.multiPay = async (req, res) => {
+    try {
+        const { orderIds, paymentMethod } = req.body;
+        
+        if (!orderIds || !Array.isArray(orderIds) || orderIds.length === 0) {
+            return res.status(400).json({ success: false, message: "Thiếu danh sách orderIds" });
+        }
+        
+        const orders = await Order.find({ _id: { $in: orderIds }, is_payment: false });
+        if (orders.length === 0) {
+            return res.status(404).json({ success: false, message: "Không tìm thấy hóa đơn chưa thanh toán hợp lệ." });
+        }
+        
+        // Cập nhật tất cả các đơn hàng thành đã thanh toán
+        await Order.updateMany(
+            { _id: { $in: orderIds } },
+            { $set: { is_payment: true, status: 'COMPLETED' } }
+        );
+        
+        // Trích xuất danh sách các bàn cần giải phóng
+        const tableNumbers = [...new Set(orders.map(o => String(o.table_number)))];
+        
+        // Gửi socket update
+        if (listSocket.io) {
+            const activeOrders = await Order.find({ status: { $ne: 'COMPLETED' }, is_payment: false });
+            const admins = await Admin.find({ socket_id: { $exists: true, $ne: null } });
+            for (const ad of admins) {
+                listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', activeOrders);
+                listSocket.updateOrder.to(ad.socket_id).emit('notification', {
+                    message: `Đã thanh toán chung cho bàn: ${tableNumbers.join(', ')}`,
+                    time: "Vừa xong",
+                    type: "payment",
+                    status: 'COMPLETED',
+                    createdAt: new Date()
+                });
+            }
+        }
+        
+        res.status(200).json({ 
+            success: true, 
+            message: "Thanh toán chung thành công", 
+            tableNumbers: tableNumbers 
+        });
+    } catch (error) {
+        console.error("Lỗi multiPay:", error);
+        res.status(500).json({ success: false, message: "Lỗi server khi thanh toán chung." });
     }
 };

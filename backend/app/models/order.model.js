@@ -71,29 +71,33 @@ module.exports = mongoose => {
             type: String,
             default: '',
         },
-        split_bills: {
-            type: [{
-                split_id: String,
-                payos_order_code: Number,
-                split_type: String,
-                user_name: String,
-                items: [{
-                    product_id: mongoose.Schema.Types.ObjectId,
-                    product_name: String,
-                    qty: Number,
-                    price: Number
+            split_bills: {
+                type: [{
+                    split_id: String,
+                    payos_order_code: Number,
+                    split_type: String,
+                    user_name: String,
+                    items: [{
+                        product_id: mongoose.Schema.Types.ObjectId,
+                        product_name: String,
+                        qty: Number,
+                        price: Number
+                    }],
+                    percent: Number,
+                    amount: Number,
+                    is_payment: { type: Boolean, default: false },
+                    payment_method: String,
+                    paid_at: Date,
+                    payos_checkout_url: String,
+                    payos_qr_code: String
                 }],
-                percent: Number,
-                amount: Number,
-                is_payment: { type: Boolean, default: false },
-                payment_method: String,
-                paid_at: Date,
-                payos_checkout_url: String,
-                payos_qr_code: String
-            }],
-            default: []
-        }
-      },
+                default: []
+            },
+            linked_tables: {
+                type: [String],
+                default: []
+            }
+          },
       { timestamps: true }
     );
   

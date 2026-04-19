@@ -4,14 +4,16 @@ import { Container, Row, Col, Button, Table, Modal, Form, InputGroup } from 'rea
 import { QRCodeSVG } from 'qrcode.react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { FaRegEdit, FaSearch, FaUtensils, FaPlus, FaEye, FaEyeSlash, FaTimesCircle, FaSortAmountDownAlt, FaSortAmountUp } from 'react-icons/fa';
+import { FaRegEdit, FaSearch, FaUtensils, FaPlus, FaEye, FaEyeSlash, FaTimesCircle, FaSortAmountDownAlt, FaSortAmountUp, FaRegIdCard, FaCalendarAlt, FaCrown, FaLink, FaLayerGroup, FaCircle, FaMoneyBillWave } from 'react-icons/fa';
 import { MdDelete, MdCancel } from 'react-icons/md';
 import { IoMdClose } from "react-icons/io";
 import { socket } from '../../../socket.js';
 import './table.scss';
-import { completeReservation, cancelReservation, mergeTable, unmergeTable } from '../../../actions/table.js';
+import { completeReservation, cancelReservation, mergeTable, unmergeTable, unmergeAllSlaves } from '../../../actions/table.js';
 import { Table as AntTable, Tag } from 'antd';
 import { useNavigate } from 'react-router-dom';
+
+const CLIENT_URL = window.location.origin;
 
 const TableManagement = () => {
     const navigate = useNavigate();
@@ -88,6 +90,7 @@ const TableManagement = () => {
 
     const totalPages = Math.ceil(filteredTables.length / itemsPerPage);
     const [showViewModal, setShowViewModal] = useState(false);
+    const [showScheduleModal, setShowScheduleModal] = useState(false);
     const [viewTable, setViewTable] = useState(null);
     const [reservationInfo, setReservationInfo] = useState(null);
     const [allReservations, setAllReservations] = useState([]);
@@ -95,6 +98,18 @@ const TableManagement = () => {
     const [mergeToTable, setMergeToTable] = useState('');
     const [showPaymentMergeModal, setShowPaymentMergeModal] = useState(false);
     const [paymentMergeOrders, setPaymentMergeOrders] = useState([]);
+    const [selectedMergeTable, setSelectedMergeTable] = useState('');
+    const [selectedSlaveTables, setSelectedSlaveTables] = useState([]);
+    const [selectedSplitTables, setSelectedSplitTables] = useState([]);
+
+    const [showMergeBillsModal, setShowMergeBillsModal] = useState(false);
+    const [selectedMergeBillsTable, setSelectedMergeBillsTable] = useState(null);
+    const [slaveTablesToMerge, setSlaveTablesToMerge] = useState([]);
+    
+    // New state for multi-payment
+    const [selectedMultiPayTables, setSelectedMultiPayTables] = useState([]);
+    const [showMoveModal, setShowMoveModal] = useState(false);
+    const [moveToTable, setMoveToTable] = useState('');
     const [socketTables, setSocketTables] = useState([]);
     const socketRef = useRef(socket);
     const user = JSON.parse(sessionStorage.getItem("user"));
@@ -135,7 +150,8 @@ const TableManagement = () => {
 
     useEffect(() => {
         fetchTables(sortOrder);
-    }, [socketTables]);
+    }, [socketTables, sortOrder]);
+
 
     const fetchTables = async (order = sortOrder) => {
         setLoading(true);
@@ -156,6 +172,12 @@ const TableManagement = () => {
             console.error("Error fetching tables:", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const emitTableChange = () => {
+        if (socketRef.current) {
+            socketRef.current.emit('tableStatusChanged');
         }
     };
 
@@ -280,6 +302,16 @@ const TableManagement = () => {
         setViewTable(null);
     };
 
+    const handleShowScheduleModal = (table) => {
+        setViewTable(table);
+        setShowScheduleModal(true);
+    };
+
+    const handleCloseScheduleModal = () => {
+        setShowScheduleModal(false);
+        setViewTable(null);
+    };
+
     const handleCompleteReservation = async (tableId) => {
         if (window.confirm('Bạn có chắc chắn muốn đánh dấu bàn này là đã hoàn thành?')) {
             try {
@@ -295,9 +327,6 @@ const TableManagement = () => {
         }
     };
 
-    const emitTableChange = () => {
-        socketRef.current.emit('tableChange');
-    };
 
     const getSlaveTablesForMaster = (masterNumber) => {
         return tables.filter(t => String(t.merged_into) === String(masterNumber)).map(t => t.tableNumber);
@@ -313,6 +342,19 @@ const TableManagement = () => {
         } catch (error) {
             toast.error(error.message || 'Lỗi khi tách bàn');
             console.error("Error unmerging table:", error);
+        }
+    };
+
+    const handleUnmergeAllSlaves = async (masterTableNumber) => {
+        if (!window.confirm(`Xác nhận phân rã toàn bộ bàn con của Bàn ${masterTableNumber}? Tất cả bàn con sẽ trở về trạng thái Trống.`)) return;
+        try {
+            const result = await unmergeAllSlaves(accessToken, masterTableNumber);
+            toast.success(result.message);
+            fetchTables();
+            emitTableChange();
+        } catch (error) {
+            toast.error(error.message || 'Lỗi khi phân rã bàn');
+            console.error("Error unmerging all slaves:", error);
         }
     };
 
@@ -378,25 +420,59 @@ const TableManagement = () => {
                     throw new Error(errorData.message || 'Lỗi khi cập nhật trạng thái bàn');
                 }
 
+                const updatedTable = await response.json();
+
                 fetchTables(sortOrder);
                 emitTableChange();
-                toast.success('Đã chuyển trạng thái bàn sang đang sử dụng!');
+                toast.success(`Đã mở bàn thành công! Mã PIN: ${updatedTable.session_pin || '----'}`, { autoClose: 5000 });
             } catch (error) {
                 toast.error('Lỗi khi cập nhật trạng thái: ' + error.message);
             }
         }
     };
 
-    const getStatusBadgeClass = (status) => {
+    const getStatusColorClass = (status) => {
         switch (status) {
             case 'Trống':
-                return 'bg-success px-3 py-2 rounded-pill';
+                return 'text-success';
             case 'Đã đặt':
-                return 'bg-warning text-dark px-3 py-2 rounded-pill';
+                return 'text-warning';
             case 'Đang sử dụng':
-                return 'bg-danger px-3 py-2 rounded-pill';
+                return 'text-danger';
             default:
-                return 'bg-secondary px-3 py-2 rounded-pill';
+                return 'text-secondary';
+        }
+    };
+
+    const handleMergeBillsSubmit = async () => {
+        if (!selectedMergeBillsTable || slaveTablesToMerge.length === 0) {
+            toast.warning('Vui lòng chọn ít nhất một bàn để gộp hóa đơn!');
+            return;
+        }
+        try {
+            const resp = await fetch('/api/payment/merge-bills', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${accessToken}`
+                },
+                body: JSON.stringify({
+                    mainTableNumber: selectedMergeBillsTable,
+                    slaveTableNumbers: slaveTablesToMerge
+                })
+            });
+            const data = await resp.json();
+            if (data.success) {
+                toast.success('Gộp hóa đơn thành công!');
+                setShowMergeBillsModal(false);
+                setSlaveTablesToMerge([]);
+                fetchTables();
+            } else {
+                toast.error(data.message || 'Lỗi gộp hóa đơn');
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('Lỗi kết nối khi gộp hóa đơn');
         }
     };
 
@@ -405,8 +481,13 @@ const TableManagement = () => {
             const response = await fetch(`/api/order/guest/table/${tableNumber}`);
             const data = await response.json();
             if (response.ok && data && data.length > 0) {
-                setPaymentMergeOrders(data.map(d => d.order));
-                setShowPaymentMergeModal(true);
+                if (data.length === 1) {
+                    // Nếu chỉ có 1 khách (1 đơn hàng), chuyển thẳng đến chi tiết đơn hàng
+                    navigate(`/staff/order/detail/${data[0].order.id || data[0].order._id}`);
+                } else {
+                    setPaymentMergeOrders(data.map(d => d.order));
+                    setShowPaymentMergeModal(true);
+                }
             } else {
                 toast.warning('Không tìm thấy đơn hàng chưa thanh toán cho bàn này!');
             }
@@ -431,7 +512,7 @@ const TableManagement = () => {
             } else {
                 toast.error(data.message || 'Lỗi gộp hóa đơn');
             }
-        } catch(e) {
+        } catch (e) {
             toast.error('Lỗi kết nối gộp đơn');
         }
     }
@@ -637,10 +718,13 @@ const TableManagement = () => {
                     <Table striped bordered hover className="mt-3 text-center align-middle">
                         <thead className="table-success">
                             <tr>
-                                <th>Số bàn</th>
-                                <th>Trạng thái</th>
-                                <th>Sức chứa</th>
+                                <th style={{ width: '100px' }}>Số bàn</th>
+                                <th style={{ width: '150px' }}>Trạng thái</th>
+                                <th style={{ width: '100px' }}>Sức chứa</th>
+                                <th style={{ width: '100px' }}>Cấu hình</th>
+                                <th style={{ width: '100px' }}>Lịch đặt</th>
                                 <th style={{ width: '400px' }}>Hành động</th>
+                                <th style={{ width: '90px' }}>Mã PIN</th>
                                 <th style={{ width: '200px' }}>Ghi chú</th>
                             </tr>
                         </thead>
@@ -648,79 +732,142 @@ const TableManagement = () => {
                             {currentTables.map((table) => (
                                 <tr key={table._id}>
                                     <td>
-                                        Bàn {highlight(table.tableNumber, true)}
+                                        <div className="d-flex align-items-center justify-content-center gap-2">
+                                            {table.status === 'Đang sử dụng' && table.hasOrders && !table.isPaid && !table.merged_into && (
+                                                <Form.Check 
+                                                    type="checkbox"
+                                                    checked={selectedMultiPayTables.includes(table.tableNumber)}
+                                                    onChange={(e) => {
+                                                        if (e.target.checked) {
+                                                            setSelectedMultiPayTables([...selectedMultiPayTables, table.tableNumber]);
+                                                        } else {
+                                                            setSelectedMultiPayTables(selectedMultiPayTables.filter(t => t !== table.tableNumber));
+                                                        }
+                                                    }}
+                                                    title="Chọn để thanh toán chung"
+                                                    style={{ transform: 'scale(1.2)' }}
+                                                />
+                                            )}
+                                            <div className="fw-300" style={{ fontSize: '1.1rem' }}>
+                                                Bàn {highlight(table.tableNumber, true)}
+                                            </div>
+                                        </div>
                                         {table.reservationNote && !table.merged_into && (
                                             <div className="mt-1 text-muted" style={{ fontSize: '13px', fontStyle: 'italic' }}>
                                                 (Ghi chú: {table.reservationNote})
                                             </div>
                                         )}
                                         {table.merged_into && (
-                                            <div className="mt-1">
-                                                <span className="badge bg-secondary p-1">
-                                                    Đã gộp (→ Bàn {table.merged_into})
+                                            <div className="mt-1 d-flex justify-content-center">
+                                                <span className="badge rounded-pill bg-light text-secondary border d-flex align-items-center gap-1 shadow-sm" style={{ padding: '4px 10px', fontSize: '11px' }}>
+                                                    <FaLink style={{ fontSize: '10px' }} /> Đã gộp → Bàn {table.merged_into}
                                                 </span>
                                             </div>
                                         )}
                                         {getSlaveTablesForMaster(table.tableNumber).length > 0 && (
-                                            <div className="mt-1">
-                                                <span className="badge p-1" style={{ backgroundColor: '#17a2b8' }}>
-                                                    MASTER (Gồm: {getSlaveTablesForMaster(table.tableNumber).join(', ')})
+                                            <div className="mt-1 d-flex justify-content-center">
+                                                <span className="badge rounded-pill d-flex align-items-center gap-1 shadow-sm" style={{ backgroundColor: '#0c5b7b', color: '#fff', padding: '4px 10px', fontSize: '11px' }}>
+                                                    <FaCrown style={{ color: '#ffd700', fontSize: '13px' }} /> MASTER
+                                                    <small className="ms-1" style={{ opacity: 1, fontSize: '13px' }}>({getSlaveTablesForMaster(table.tableNumber).join(', ')})</small>
                                                 </span>
                                             </div>
                                         )}
                                     </td>
-                                    <td>
-                                        <div className="d-flex flex-column align-items-center">
-                                            <span className={`badge ${getStatusBadgeClass(table.status)}`}>
+                                    <td className="text-start ps-4">
+                                        <div className="d-flex align-items-center gap-2 fw-bold" style={{ fontSize: '14px' }}>
+                                            <FaCircle className={getStatusColorClass(table.status)} style={{ fontSize: '8px' }} />
+                                            <span className={getStatusColorClass(table.status)}>
                                                 {table.status}
                                             </span>
                                         </div>
                                     </td>
                                     <td>{highlight(table.seatingCapacity, true)}</td>
-                                    <td className="text-start">
-                                        <div className="d-flex align-items-center justify-content-start gap-1">
-                                            <button className="btn btn-sm btn-link p-1" title="Xem chi tiết" onClick={() => handleShowViewModal(table)}>
-                                                <FaEye className='icon-view fs-5 text-info' />
+                                    <td>
+                                        <div className="d-flex align-items-center justify-content-center gap-1">
+                                            <button className="btn btn-sm btn-link p-1" title="Cấu hình bàn & QR" onClick={() => handleShowViewModal(table)}>
+                                                <FaRegIdCard className='icon-view fs-5 text-info' />
                                             </button>
-                                            <button className="btn btn-sm btn-link p-1" title="Sửa thông tin" onClick={() => handleShowEditModal(table)}>
+                                            <button className="btn btn-sm btn-link p-1" title="Sửa thông số" onClick={() => handleShowEditModal(table)}>
                                                 <FaRegEdit className='icon-update fs-5 text-success' />
                                             </button>
-
-
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div className="d-flex align-items-center justify-content-center">
+                                            <button className="btn btn-sm btn-link p-1" title="Lịch đặt bàn" onClick={() => handleShowScheduleModal(table)}>
+                                                <FaCalendarAlt className='fs-5 text-primary' />
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td className="text-start">
+                                        <div className="d-flex align-items-center justify-content-start gap-2">
                                             {table.merged_into && (
                                                 <Button
                                                     variant="secondary"
                                                     size="sm"
                                                     onClick={() => handleUnmergeTable(table.tableNumber)}
-                                                    className="ms-1 fw-500 text-white"
-                                                    style={{ fontSize: '11px', borderRadius: '20px' }}
+                                                    className="fw-500 text-white"
+                                                    style={{ fontSize: '11px', borderRadius: '20px', minWidth: '90px' }}
                                                 >
                                                     Tách bàn
                                                 </Button>
                                             )}
 
-                                            {!table.merged_into && getSlaveTablesForMaster(table.tableNumber).length === 0 && (
+                                            {!table.merged_into && (
                                                 <Button
                                                     variant="info"
                                                     size="sm"
-                                                    onClick={() => { setSelectedTable(table); setShowMergeModal(true); setMergeToTable(''); }}
-                                                    className="ms-1 fw-500 text-white"
-                                                    style={{ fontSize: '11px', borderRadius: '20px' }}
+                                                    onClick={() => {
+                                                        setSelectedTable(table);
+                                                        setShowMergeModal(true);
+                                                        setMergeToTable('');
+                                                    }}
+                                                    className="fw-500 text-white"
+                                                    style={{ fontSize: '11px', borderRadius: '20px', minWidth: '90px' }}
                                                 >
                                                     Gộp bàn
                                                 </Button>
                                             )}
 
-                                            {(table.status === 'Đang sử dụng') && !table.merged_into && !table.isPaid && (
-                                                <Button
-                                                    variant="primary"
-                                                    size="sm"
-                                                    onClick={() => handlePaymentRedirect(table.tableNumber)}
-                                                    className="ms-1 fw-bold text-white"
-                                                    style={{ fontSize: '11px', borderRadius: '20px', padding: '4px 10px' }}
-                                                >
-                                                    Thanh toán
-                                                </Button>
+                                            {table.status === 'Đang sử dụng' && !table.merged_into && (
+                                                <>
+                                                    {getSlaveTablesForMaster(table.tableNumber).length > 0 ? (
+                                                        <Button
+                                                            variant="danger"
+                                                            size="sm"
+                                                            onClick={() => handleUnmergeAllSlaves(table.tableNumber)}
+                                                            className="fw-500 text-white"
+                                                            style={{ fontSize: '11px', borderRadius: '20px', minWidth: '90px' }}
+                                                            title="Giải phóng toàn bộ bàn con đang gộp vào bàn này"
+                                                        >
+                                                            Phân rã
+                                                        </Button>
+                                                    ) : (
+                                                        <Button
+                                                            variant="dark"
+                                                            size="sm"
+                                                            onClick={() => { setSelectedTable(table); setShowMoveModal(true); setMoveToTable(''); }}
+                                                            className="fw-500 text-white"
+                                                            style={{ fontSize: '11px', borderRadius: '20px', minWidth: '90px' }}
+                                                        >
+                                                            Chuyển bàn
+                                                        </Button>
+                                                    )}
+                                                </>
+                                            )}
+
+                                            {(table.status === 'Đang sử dụng') && !table.merged_into && table.hasOrders && !table.isPaid && (
+                                                <>
+                                                    <Button
+                                                        variant="primary"
+                                                        size="sm"
+                                                        onClick={() => handlePaymentRedirect(table.tableNumber)}
+                                                        className="fw-bold text-white mb-1"
+                                                        style={{ fontSize: '11px', borderRadius: '20px', padding: '4px 10px', minWidth: '90px' }}
+                                                    >
+                                                        Thanh toán
+                                                    </Button>
+                                                </>
                                             )}
 
                                             {(table.status === 'Trống' || table.status === 'Đã đặt' || table.status === 'Hoàn thành') && !table.merged_into && getSlaveTablesForMaster(table.tableNumber).length === 0 && (
@@ -728,40 +875,52 @@ const TableManagement = () => {
                                                     variant="warning"
                                                     size="sm"
                                                     onClick={() => handleStartUsingTable(table)}
-                                                    className="ms-2 px-3 fw-500"
-                                                    style={{ fontSize: '12px', borderRadius: '20px' }}
+                                                    className="fw-500"
+                                                    style={{ fontSize: '12px', borderRadius: '20px', minWidth: '90px' }}
                                                 >
                                                     Sử dụng
                                                 </Button>
                                             )}
+
                                             {table.status === 'Đang sử dụng' && !table.merged_into && (
                                                 <Button
                                                     variant="success"
                                                     size="sm"
                                                     onClick={() => handleCompleteReservation(table._id)}
-                                                    className="ms-2 px-3 fw-500"
-                                                    style={{ fontSize: '12px', borderRadius: '20px' }}
+                                                    className={`fw-500 ${table.isPaid ? 'pulse-button' : ''}`}
+                                                    style={{ fontSize: '12px', borderRadius: '20px', minWidth: '90px' }}
+                                                    title={table.isPaid ? "Khách đã thanh toán, dọn bàn để đón khách mới" : "Xác nhận khách đã xong, dọn bàn và reset PIN"}
                                                 >
-                                                    Hoàn thành
+                                                    Giải phóng
                                                 </Button>
                                             )}
+
                                             {table.status === 'Đã đặt' && (
                                                 <Button
                                                     variant="outline-danger"
                                                     size="sm"
                                                     onClick={() => handleCancelReservation(table.activeReservationId)}
-                                                    className="ms-1 fw-500"
-                                                    style={{ fontSize: '11px', borderRadius: '20px' }}
+                                                    className="fw-500"
+                                                    style={{ fontSize: '11px', borderRadius: '20px', minWidth: '90px' }}
                                                 >
                                                     Hủy đặt
                                                 </Button>
                                             )}
                                         </div>
                                     </td>
+                                    <td>
+                                        {table.status === 'Đang sử dụng' && table.session_pin ? (
+                                            <span className="badge bg-white text-dark p-1" style={{ letterSpacing: '2px', fontSize: '1rem' }}>
+                                                {table.session_pin}
+                                            </span>
+                                        ) : (
+                                            <span className="text-muted">---</span>
+                                        )}
+                                    </td>
                                     <td className="text-start">
                                         <div className="d-flex flex-column">
                                             <span style={{ color: table.isPaid ? '#198754' : '#6c757d', fontSize: '13px', fontWeight: table.isPaid ? '500' : 'normal' }}>
-                                                {table.isPaid && <span className="me-1">Đã thanh toán, chuẩn bị dọn bàn để đón khách kế tiếp</span>}{table.note}
+                                                {table.note}
                                                 {table.confirmationCode && (
                                                     <span className="d-block mt-1">
                                                         Mã đặt: <strong>{highlight(table.confirmationCode, false)}</strong>
@@ -779,6 +938,35 @@ const TableManagement = () => {
                             ))}
                         </tbody>
                     </Table>
+
+                    {selectedMultiPayTables.length >= 2 && (
+                        <div className="d-flex justify-content-end mb-3 mt-2">
+                            <div className="bg-white p-2 px-3 rounded shadow-sm border border-primary d-flex align-items-center gap-3">
+                                <div className="fw-bold text-primary">Đã chọn {selectedMultiPayTables.length} bàn</div>
+                                <Button 
+                                    variant="primary" 
+                                    size="sm"
+                                    className="fw-bold px-3 rounded-pill"
+                                    onClick={() => {
+                                        navigate(`/staff/order/multi-payment?tables=${selectedMultiPayTables.join(',')}`);
+                                    }}
+                                >
+                                    <FaMoneyBillWave className="me-2" />
+                                    Thanh toán chung
+                                </Button>
+                                <Button 
+                                    variant="outline-secondary" 
+                                    size="sm"
+                                    className="rounded-circle p-1"
+                                    onClick={() => setSelectedMultiPayTables([])}
+                                    style={{ width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                >
+                                    <IoMdClose size={14} />
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+
                     {totalPages > 1 && (
                         <div className="admin-pagination">
                             <button
@@ -828,7 +1016,7 @@ const TableManagement = () => {
                     <div className="alert alert-info">
                         Bàn này có <strong>{paymentMergeOrders.length}</strong> phiên gọi món đang hoạt động. Bạn hãy chọn khách hàng muốn thanh toán hoặc gộp tất cả.
                     </div>
-                    
+
                     <Table hover responsive className="mt-3 align-middle">
                         <thead className="table-light">
                             <tr>
@@ -845,9 +1033,9 @@ const TableManagement = () => {
                                     <td>{order.total_item}</td>
                                     <td className="text-danger fw-bold">{order.total_price.toLocaleString()} đ</td>
                                     <td className="text-center">
-                                        <Button 
-                                            variant="success" 
-                                            size="sm" 
+                                        <Button
+                                            variant="success"
+                                            size="sm"
                                             onClick={() => navigate(`/staff/order/detail/${order._id || order.id}`)}
                                         >
                                             Tính tiền riêng
@@ -871,7 +1059,7 @@ const TableManagement = () => {
             {/* Modal Sửa */}
             <Modal show={showEditModal} onHide={handleCloseEditModal}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Sửa bàn</Modal.Title>
+                    <h4 style={{ color: '#0b607fff' }}>Sửa bàn {selectedTable?.tableNumber}</h4>
                 </Modal.Header>
                 <Modal.Body>
                     {selectedTable && (
@@ -941,28 +1129,53 @@ const TableManagement = () => {
                 </Modal.Footer>
             </Modal>
 
-            {/* Modal Gộp Bàn */}
-            <Modal show={showMergeModal} onHide={() => setShowMergeModal(false)}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Gộp bàn {selectedTable?.tableNumber}</Modal.Title>
+            <Modal show={showMergeModal} onHide={() => setShowMergeModal(false)} centered>
+                <Modal.Header closeButton style={{ backgroundColor: '#f8fafc' }}>
+                    <Modal.Title className="fw-bold" style={{ color: '#0b607f', fontSize: '18px' }}>
+                        Gộp thêm bàn vào Bàn {selectedTable?.tableNumber}
+                    </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
+                    {selectedTable && (
+                        <div className="master-table-info bg-light p-3 rounded mb-4 border">
+                            <h6 className="fw-bold text-secondary mb-3"><FaUtensils className="me-2" />Thông tin bàn chính (Master)</h6>
+                            <div className="d-flex justify-content-between mb-2">
+                                <span>Số bàn:</span>
+                                <span className="fw-bold">Bàn {selectedTable.tableNumber}</span>
+                            </div>
+                            <div className="d-flex justify-content-between mb-2">
+                                <span>Sức chứa:</span>
+                                <span>{selectedTable.seatingCapacity} người</span>
+                            </div>
+                            <div className="d-flex justify-content-between">
+                                <span>Vị trí:</span>
+                                <span>{selectedTable.location}</span>
+                            </div>
+                        </div>
+                    )}
+
                     <Form.Group>
-                        <Form.Label>Chọn bàn đích (Bàn này sẽ gộp vào)</Form.Label>
+                        <Form.Label className="fw-500"><FaPlus className="me-2 text-success" />Chọn bàn phụ cần gộp vào (Slave)</Form.Label>
                         <Form.Select
                             value={mergeToTable}
                             onChange={(e) => setMergeToTable(e.target.value)}
+                            className="shadow-sm"
+                            style={{ borderRadius: '10px', padding: '10px' }}
                         >
-                            <option value="">-- Chọn bàn đích --</option>
+                            <option value="">-- Chọn bàn trống --</option>
                             {tables.filter(t =>
+                                t.status === 'Trống' &&
                                 !t.merged_into &&
                                 t.tableNumber !== selectedTable?.tableNumber
                             ).map(t => (
                                 <option key={t._id} value={t.tableNumber}>
-                                    Bàn {t.tableNumber} - {t.status} - {t.location}
+                                    Bàn {t.tableNumber} - Sức chứa: {t.seatingCapacity} - {t.location}
                                 </option>
                             ))}
                         </Form.Select>
+                        <Form.Text className="text-muted mt-2 d-block">
+                            * Chỉ những bàn đang <strong>Trống</strong> mới có thể gộp vào bàn đang sử dụng.
+                        </Form.Text>
                     </Form.Group>
                 </Modal.Body>
                 <Modal.Footer>
@@ -970,207 +1183,262 @@ const TableManagement = () => {
                     <Button variant="primary" onClick={async () => {
                         if (!mergeToTable) return toast.error('Vui lòng chọn bàn đích!');
                         try {
-                            await mergeTable(accessToken, {
-                                fromTable: selectedTable.tableNumber,
-                                toTable: Number(mergeToTable)
+                            const response = await fetch('/api/tables/merge', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${accessToken}`
+                                },
+                                body: JSON.stringify({
+                                    fromTable: mergeToTable, // Bàn Slave (chọn từ list)
+                                    toTable: selectedTable.tableNumber // Bàn Master (bàn click nút)
+                                })
                             });
-                            toast.success(`Đã gộp bàn ${selectedTable.tableNumber} vào bàn ${mergeToTable}`);
-                            setShowMergeModal(false);
-                            fetchTables();
+                            const data = await response.json();
+                            if (data.success) {
+                                toast.success(data.message);
+                                setShowMergeModal(false);
+                                fetchTables();
+                                emitTableChange();
+                            } else {
+                                toast.error(data.message || 'Lỗi gộp bàn');
+                            }
                         } catch (e) {
-                            toast.error(e.message || 'Lỗi gộp bàn');
+                            toast.error('Lỗi kết nối server');
                         }
                     }}>Thực hiện gộp</Button>
                 </Modal.Footer>
             </Modal>
 
-            {/* Modal Xem Chi Tiết */}
-            <Modal show={showViewModal} onHide={handleCloseViewModal} size="xl" className="custom-detail-modal">
+            {/* Modal Cấu hình bàn & QR */}
+            <Modal show={showViewModal} onHide={handleCloseViewModal} centered size="md">
                 <Modal.Header closeButton>
-                    <Modal.Title className="title-admin">Chi tiết bàn</Modal.Title>
+                    <Modal.Title className="title-admin text-info">
+                        Cấu hình bàn {viewTable?.tableNumber}
+                    </Modal.Title>
                 </Modal.Header>
-                <Modal.Body style={{ padding: '25px', paddingTop: 0 }}>
+                <Modal.Body>
                     {viewTable && (
-                        <div className="table-details">
-                            <Row>
-                                {/* Cột trái: Thông tin và QR Code */}
-                                <Col md={5} lg={4} className="border-end pl-0">
-                                    <div className="info-section mb-4">
-                                        <h6 className="fw-bold mb-3 d-flex align-items-center text-success">
-                                            <FaUtensils className="me-2" /> Thông tin bàn
-                                        </h6>
-                                        <div className="bg-light p-3 rounded">
-                                            <div className="mb-2"><strong>Số bàn:</strong> Bàn {viewTable.tableNumber}</div>
-                                            <div className="mb-2"><strong>Trạng thái:</strong> <span className={`badge ${getStatusBadgeClass(viewTable.status)}`}>{viewTable.status}</span></div>
-                                            <div className="mb-2"><strong>Sức chứa:</strong> {viewTable.seatingCapacity} người</div>
-                                            <div className="mb-0"><strong>Vị trí:</strong> {viewTable.location}</div>
-                                        </div>
-                                    </div>
+                        <div className="table-details text-center">
+                            <div className="bg-light p-3 rounded mb-4 text-start">
+                                <div className="mb-2"><strong>Số bàn:</strong> Bàn {viewTable.tableNumber}</div>
+                                <div className="mb-2"><strong>Trạng thái:</strong>
+                                    <span className={`ms-2 fw-bold ${getStatusColorClass(viewTable.status)}`}>
+                                        <FaCircle className="me-1" style={{ fontSize: '8px' }} />
+                                        {viewTable.status}
+                                    </span>
+                                </div>
+                                <div className="mb-2"><strong>Sức chứa:</strong> {viewTable.seatingCapacity} người</div>
+                                <div className="mb-0"><strong>Vị trí:</strong> {viewTable.location}</div>
+                            </div>
 
-                                    <div className="qr-section text-center p-3 bg-light rounded shadow-sm">
-                                        <h6 className="fw-bold mb-3">Mã quét gọi món (QR Code)</h6>
-                                        <div className="d-flex justify-content-center py-2 bg-white rounded p-2 mb-2" style={{ minHeight: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            {viewTable.qrCode ? (
-                                                <img
-                                                    src={viewTable.qrCode}
-                                                    alt={`QR Code bàn ${viewTable.tableNumber}`}
-                                                    style={{ width: '180px', height: '180px', objectFit: 'contain' }}
-                                                    onError={(e) => {
-                                                        // Fallback nếu ảnh từ backend bị lỗi
-                                                        e.target.style.display = 'none';
-                                                        e.target.nextSibling.style.display = 'block';
-                                                    }}
-                                                />
-                                            ) : null}
-                                            <div style={{ display: viewTable.qrCode ? 'none' : 'block' }}>
-                                                <QRCodeSVG
-                                                    value={`${CLIENT_URL}/menu?table=${viewTable.tableNumber}`}
-                                                    size={180}
-                                                    level="H"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="mt-2 text-muted" style={{ fontSize: '13px' }}>Khách quét mã để xem menu và đặt món</div>
-                                    </div>
-                                </Col>
-
-                                {/* Cột phải: Lịch đặt bàn */}
-                                <Col md={7} lg={8} className="pr-0">
-                                    <div className="reservation-schedule d-flex flex-column h-100">
-                                        <div className="flex-grow-0">
-                                            <h6 className="fw-bold mb-3 d-flex align-items-center text-primary">
-                                                <FaSearch className="me-2" /> Lịch đặt bàn sắp tới
-                                            </h6>
-                                            <div className="table-responsive">
-                                                <AntTable
-                                                    columns={[
-                                                        {
-                                                            title: 'Mã đặt',
-                                                            dataIndex: 'confirmationCode',
-                                                            key: 'confirmationCode',
-                                                            align: 'center',
-                                                            render: (text) => <span className="fw-bold text-primary">{text}</span>
-                                                        },
-                                                        {
-                                                            title: 'Khách hàng',
-                                                            dataIndex: 'customerName',
-                                                            key: 'customerName',
-                                                            align: 'center',
-                                                            render: (text) => <span className="fw-bold">{text || 'Khách vãng lai'}</span>
-                                                        },
-                                                        {
-                                                            title: 'Thời gian',
-                                                            key: 'time',
-                                                            render: (_, record) => (
-                                                                <div className="small">
-                                                                    <div className="fw-bold">{new Date(record.use_date).toLocaleDateString('vi-VN')}</div>
-                                                                    <div className="text-muted">{new Date(record.reservationTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</div>
-                                                                </div>
-                                                            )
-                                                        },
-                                                        {
-                                                            title: 'Trạng thái',
-                                                            dataIndex: 'status',
-                                                            key: 'status',
-                                                            align: 'center',
-                                                            render: (status) => {
-                                                                let color = 'default';
-                                                                if (status === 'Đã đặt') color = 'warning';
-                                                                if (status === 'Đang sử dụng') color = 'error';
-                                                                if (status === 'Trống') color = 'success';
-                                                                if (status === 'Đã hủy') color = 'default';
-                                                                return <Tag color={color} style={{ borderRadius: '10px' }}>{status}</Tag>;
-                                                            }
-                                                        },
-                                                        {
-                                                            title: 'Hủy đặt',
-                                                            key: 'actions',
-                                                            align: 'center',
-                                                            render: (_, record) => (
-                                                                record.status === 'Đã đặt' && (
-                                                                    <Button
-                                                                        variant="outline-danger"
-                                                                        size="sm"
-                                                                        className="p-1 px-2 border-0"
-                                                                        title="Hủy đặt bàn này"
-                                                                        onClick={() => handleCancelReservation(record._id)}
-                                                                        style={{ borderRadius: '5px', backgroundColor: '#fff5f5' }}
-                                                                    >
-                                                                        <MdCancel className="fs-5" />
-                                                                    </Button>
-                                                                )
-                                                            )
-                                                        }
-                                                    ]}
-                                                    dataSource={(viewTable.reservationList || []).filter(r => {
-                                                        const resDate = new Date(r.use_date);
-                                                        const today = new Date();
-                                                        today.setHours(0, 0, 0, 0);
-                                                        return r.status === 'Đã đặt' && resDate >= today;
-                                                    })}
-                                                    rowKey="_id"
-                                                    pagination={{ pageSize: 3, size: 'small' }}
-                                                    size="small"
-                                                    bordered
-                                                    locale={{ emptyText: 'Chưa có lịch đặt sắp tới' }}
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="customer-info-today mt-4">
-                                            <h6 className="fw-bold mb-3 d-flex align-items-center text-success">
-                                                <FaRegEdit className="me-2" /> Thông tin khách đặt hôm nay
-                                            </h6>
-                                            {reservationInfo ? (
-                                                <div className="bg-light p-3 rounded border shadow-sm">
-                                                    <Row className="g-3">
-                                                        <Col sm={6}>
-                                                            <div className="mb-2"><strong>Tên khách:</strong> {reservationInfo.customerName}</div>
-                                                            <div className="mb-2"><strong>Điện thoại:</strong> {reservationInfo.phoneNumber}</div>
-                                                            <div className="mb-0"><strong>Email:</strong> {reservationInfo.email}</div>
-                                                        </Col>
-                                                        <Col sm={6}>
-                                                            <div className="mb-2"><strong>Giờ đến:</strong> <span className="text-primary fw-bold">{reservationInfo.use_time}</span></div>
-                                                            <div className="mb-2"><strong>Mã xác nhận:</strong> <span className="text-danger fw-bold">{reservationInfo.confirmationCode}</span></div>
-                                                            <div className="mb-0 text-truncate"><strong>Yêu cầu:</strong> {reservationInfo.specialRequests || 'Không có'}</div>
-                                                        </Col>
-                                                    </Row>
-                                                </div>
-                                            ) : (
-                                                <div className="bg-light p-3 rounded text-center text-muted border">
-                                                    Hiện chưa có khách đặt chỗ trực tuyến trong ngày
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <div className="modal-actions d-flex justify-content-between mt-auto pt-4 border-top">
-                                            <Button
-                                                variant="danger"
-                                                onClick={() => {
-                                                    handleCloseViewModal();
-                                                    handleDeleteTable(viewTable._id);
-                                                }}
-                                                className="px-4 fw-bold text-white border-0"
-                                                style={{ borderRadius: '10px' }}
-                                            >
-                                                <MdDelete className="me-1" /> Xóa bàn
-                                            </Button>
-                                            <Button
-                                                variant="secondary"
-                                                onClick={handleCloseViewModal}
-                                                className="px-4 fw-bold text-white border-0"
-                                                style={{ borderRadius: '10px', backgroundColor: '#6c757d' }}
-                                            >
-                                                Đóng
-                                            </Button>
-
-                                        </div>
-                                    </div>
-                                </Col>
-                            </Row>
+                            <div className="qr-container bg-white p-4 rounded shadow-sm d-inline-block">
+                                <h6 className="fw-bold mb-3 text-secondary">Mã QR Gọi món</h6>
+                                <QRCodeSVG
+                                    value={`${CLIENT_URL}/menu?table=${viewTable.tableNumber}`}
+                                    size={200}
+                                    level="H"
+                                    includeMargin={true}
+                                />
+                                <p className="mt-2 text-muted small">Khách quét mã để truy cập menu</p>
+                                <Button
+                                    variant="outline-primary"
+                                    size="sm"
+                                    className="mt-2"
+                                    onClick={() => window.print()}
+                                >
+                                    In mã QR
+                                </Button>
+                            </div>
                         </div>
                     )}
                 </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleCloseViewModal}>Đóng</Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/* Modal Lịch đặt bàn */}
+            <Modal show={showScheduleModal} onHide={handleCloseScheduleModal} size="lg" centered>
+                <Modal.Header closeButton className="bg-primary text-white">
+                    <Modal.Title>
+                        Lịch đặt bàn {viewTable?.tableNumber}
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {viewTable && (
+                        <div className="reservation-scroll-container" style={{ maxHeight: '500px', overflowY: 'auto' }}>
+                            <AntTable
+                                dataSource={[...(viewTable.reservationList || [])].sort((a, b) => {
+                                    const statusOrder = { 'Đang sử dụng': 1, 'Đã đặt': 2, 'Hoàn thành': 3, 'Đã hủy': 4 };
+                                    if (statusOrder[a.status] !== statusOrder[b.status]) {
+                                        return statusOrder[a.status] - statusOrder[b.status];
+                                    }
+                                    // Cùng trạng thái thì sắp xếp theo thời gian (gần hiện tại nhất lên đầu)
+                                    return new Date(a.reservationTime) - new Date(b.reservationTime);
+                                })}
+                                pagination={false}
+                                rowKey="_id"
+                                sticky={true}
+                                columns={[
+                                    {
+                                        title: 'Mã đặt',
+                                        dataIndex: 'confirmationCode',
+                                        key: 'confirmationCode',
+                                        render: (text) => <span className="fw-bold text-primary">{text}</span>
+                                    },
+                                    {
+                                        title: 'Khách hàng',
+                                        dataIndex: 'customerName',
+                                        key: 'customerName',
+                                        render: (text) => <span className="fw-bold">{text || 'Khách vãng lai'}</span>
+                                    },
+                                    {
+                                        title: 'Số điện thoại',
+                                        dataIndex: 'phoneNumber',
+                                        key: 'phoneNumber',
+                                    },
+                                    {
+                                        title: 'Thời gian',
+                                        key: 'time',
+                                        render: (_, record) => (
+                                            <div>
+                                                <div className="fw-bold">{new Date(record.use_date).toLocaleDateString('vi-VN')}</div>
+                                                <div className="text-muted small">{new Date(record.reservationTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</div>
+                                            </div>
+                                        )
+                                    },
+                                    {
+                                        title: 'Trạng thái',
+                                        dataIndex: 'status',
+                                        key: 'status',
+                                        render: (status) => {
+                                            let color = 'blue';
+                                            if (status === 'Đã đặt') color = 'orange';
+                                            if (status === 'Đang sử dụng') color = 'red';
+                                            if (status === 'Hoàn thành') color = 'green';
+                                            if (status === 'Đã hủy') color = 'default';
+                                            return <Tag color={color}>{status}</Tag>
+                                        }
+                                    }
+                                ]}
+                            />
+                        </div>
+                    )}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleCloseScheduleModal}>Đóng</Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/* Modal Chuyển Bàn */}
+            <Modal show={showMoveModal} onHide={() => setShowMoveModal(false)}>
+                <Modal.Header closeButton>
+                    <h4 style={{ color: '#007bff' }}>Chuyển bàn {selectedTable?.tableNumber}</h4>
+                </Modal.Header>
+                <Modal.Body>
+                    <div className="alert alert-warning">
+                        Dữ liệu đơn hàng và phiên gọi món sẽ được chuyển sang bàn mới.
+                    </div>
+                    <Form.Group>
+                        <Form.Label>Chọn bàn trống để chuyển đến</Form.Label>
+                        <Form.Select
+                            value={moveToTable}
+                            onChange={(e) => setMoveToTable(e.target.value)}
+                        >
+                            <option value="">-- Chọn bàn trống --</option>
+                            {tables.filter(t =>
+                                t.status === 'Trống' &&
+                                !t.merged_into &&
+                                t.tableNumber !== selectedTable?.tableNumber
+                            ).map(t => (
+                                <option key={t._id} value={t.tableNumber}>
+                                    Bàn {t.tableNumber} - {t.location}
+                                </option>
+                            ))}
+                        </Form.Select>
+                    </Form.Group>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowMoveModal(false)}>Đóng</Button>
+                    <Button variant="success" onClick={async () => {
+                        if (!moveToTable) return toast.error('Vui lòng chọn bàn đích!');
+                        try {
+                            const response = await fetch('/api/tables/move-table', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${accessToken}`
+                                },
+                                body: JSON.stringify({
+                                    fromTable: selectedTable.tableNumber,
+                                    toTable: moveToTable
+                                })
+                            });
+                            const data = await response.json();
+                            if (data.success) {
+                                toast.success(data.message);
+                                setShowMoveModal(false);
+                                fetchTables();
+                                emitTableChange();
+                            } else {
+                                toast.error(data.message || 'Lỗi khi chuyển bàn');
+                            }
+                        } catch (e) {
+                            toast.error('Lỗi kết nối server');
+                        }
+                    }}>Xác nhận chuyển</Button>
+                </Modal.Footer>
+            </Modal>
+            <Modal show={showMergeBillsModal} onHide={() => { setShowMergeBillsModal(false); setSlaveTablesToMerge([]); }}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Gộp Hóa Đơn - Bàn {selectedMergeBillsTable}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <div className="alert alert-info">
+                        Chọn các bàn khác để gộp chung hóa đơn. (Sẽ thanh toán một lần tại Bàn {selectedMergeBillsTable})
+                    </div>
+                    <Form.Group>
+                        <Form.Label>Chọn các bàn cần gộp</Form.Label>
+                        <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                            {tables.filter(t =>
+                                t.status === 'Đang sử dụng' &&
+                                !t.merged_into &&
+                                t.hasOrders &&
+                                !t.isPaid &&
+                                t.tableNumber !== selectedMergeBillsTable
+                            ).map(t => (
+                                <Form.Check
+                                    key={t._id}
+                                    type="checkbox"
+                                    id={`merge-bill-${t.tableNumber}`}
+                                    label={`Bàn ${t.tableNumber} - ${t.location}`}
+                                    checked={slaveTablesToMerge.includes(t.tableNumber)}
+                                    onChange={(e) => {
+                                        if (e.target.checked) {
+                                            setSlaveTablesToMerge([...slaveTablesToMerge, t.tableNumber]);
+                                        } else {
+                                            setSlaveTablesToMerge(slaveTablesToMerge.filter(tb => tb !== t.tableNumber));
+                                        }
+                                    }}
+                                />
+                            ))}
+                            {tables.filter(t =>
+                                t.status === 'Đang sử dụng' &&
+                                !t.merged_into &&
+                                t.hasOrders &&
+                                !t.isPaid &&
+                                t.tableNumber !== selectedMergeBillsTable
+                            ).length === 0 && (
+                                <div className="text-muted fst-italic">Không có bàn nào khác đang sử dụng có thể gộp.</div>
+                            )}
+                        </div>
+                    </Form.Group>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => { setShowMergeBillsModal(false); setSlaveTablesToMerge([]); }}>Đóng</Button>
+                    <Button variant="primary" onClick={handleMergeBillsSubmit}>Xác nhận Gộp Bill</Button>
+                </Modal.Footer>
             </Modal>
         </div>
     );

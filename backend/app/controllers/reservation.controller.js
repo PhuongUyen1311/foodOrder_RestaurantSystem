@@ -190,6 +190,12 @@ exports.createReservation = async (req, res) => {
       reservation: savedReservation
     });
 
+    // Phát tín hiệu cập nhật qua socket để nhân viên thấy ngay lịch đặt mới
+    const io = req.app.get('socketio');
+    if (io) {
+        io.emit('tableStatusChanged');
+    }
+
   } catch (error) {
 
     console.error("❌ LỖI KHI TẠO ĐẶT BÀN:", error);
@@ -229,13 +235,23 @@ exports.completeReservation = async (req, res) => {
       table.merged_into = null;
       table.status = 'Trống';
       table.isAvailable = true;
+      table.session_start = null;
+      table.session_pin = Math.floor(1000 + Math.random() * 9000).toString();
       await table.save();
     }
 
     // 4. Reset luôn bàn MASTER
     masterTable.status = 'Trống';
     masterTable.isAvailable = true;
+    masterTable.session_start = null;
+    masterTable.session_pin = Math.floor(1000 + Math.random() * 9000).toString();
     await masterTable.save();
+
+    // 5. Phát tín hiệu cập nhật qua socket
+    const io = req.app.get('socketio');
+    if (io) {
+        io.emit('tableStatusChanged');
+    }
 
     res.status(200).send({ message: 'Đã hoàn tất và giải phóng bàn thành công' });
   } catch (error) {

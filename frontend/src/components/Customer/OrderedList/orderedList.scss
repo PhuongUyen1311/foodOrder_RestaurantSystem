@@ -137,9 +137,30 @@
                 }
 
                 .item-price {
-                    width: 100px;
+                    width: 70px;
                     text-align: right;
                     font-weight: 500;
+                    margin-right: 15px;
+                }
+
+                .item-badge {
+                    font-weight: 600;
+                    &.new {
+                        background-color: #f1f2f6;
+                        color: #2f3542;
+                    }
+                    &.preparing {
+                        background-color: #fff8e1;
+                        color: #f57c00;
+                    }
+                    &.served {
+                        background-color: #e8f5e9;
+                        color: #2e7d32;
+                    }
+                    &.cancel {
+                        background-color: #ffebee;
+                        color: #c62828;
+                    }
                 }
             }
         }

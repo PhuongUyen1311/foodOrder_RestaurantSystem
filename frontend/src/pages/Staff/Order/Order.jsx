@@ -245,7 +245,7 @@ function Order(props) {
                                         <td>{guest_name ? guest_name : (first_name + ' ' + last_name)}</td>
                                         <td>
                                             <span className={order_source === 'online' ? 'admin-badge admin-badge--info' : 'admin-badge admin-badge--warning'}>
-                                                {order_source === 'online' ? 'Đặt hàng online' : `Bàn ${table_number}${guest_name ? ` - ${guest_name}` : ''}`}
+                                                {order_source === 'online' ? 'Đặt hàng online' : `Bàn ${table_number}`}
                                             </span>
                                         </td>
                                         <td>{total_item}</td>

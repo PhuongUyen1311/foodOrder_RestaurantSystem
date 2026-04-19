@@ -159,11 +159,11 @@ function HistoryOrder(props) {
                                                 <Row>
                                                     {items && (
                                                         items.orderItems.map((orderItem, index) => {
-                                                            const { product_image, product_name, price, qty } = orderItem;
+                                                            const { product_image, product_name, price, qty, status: itemStatus } = orderItem;
 
                                                             return (
-                                                                <Col xs={6} key={index}>
-                                                                    <div className="product-item">
+                                                                <Col xs={12} md={6} key={index}>
+                                                                    <div className="product-item compact-item">
                                                                         <img
                                                                             src={
                                                                                 product_image
@@ -175,11 +175,18 @@ function HistoryOrder(props) {
                                                                                 e.target.src = "/images/no-image.png";
                                                                             }} />
                                                                         <div className="product-item-info">
-                                                                            <label>Tên sản phẩm: <span>{product_name}</span></label>
-                                                                            <label>Số lượng: <span>{qty}</span></label>
-                                                                            <label>Giá tiền: <span>
-                                                                                {price.toLocaleString('vi', { style: 'currency', currency: 'VND' })}
-                                                                            </span></label>
+                                                                            <div className="d-flex justify-content-between align-items-start">
+                                                                                <span className="product-name fw-bold">{product_name}</span>
+                                                                                <span className={`item-status-badge ${itemStatus?.toLowerCase() || 'new'}`}>
+                                                                                    {itemStatus === 'SERVED' ? 'Đã lên món' : itemStatus === 'CANCELED' ? 'Đã hủy' : itemStatus === 'CONFIRMED' ? 'Đã nhận' : 'Đang chờ'}
+                                                                                </span>
+                                                                            </div>
+                                                                            <div className="product-item-details d-flex justify-content-between mt-1">
+                                                                                <span className="text-muted">SL: <span className="text-dark fw-500">{qty}</span></span>
+                                                                                <span className="product-subtotal text-success fw-bold">
+                                                                                    {(price * qty).toLocaleString('vi', { style: 'currency', currency: 'VND' })}
+                                                                                </span>
+                                                                            </div>
                                                                         </div>
                                                                     </div>
                                                                 </Col>

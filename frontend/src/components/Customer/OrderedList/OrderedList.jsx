@@ -68,17 +68,19 @@ function OrderedList() {
     }, [isOrderedList]);
 
     const handlePayment = () => {
-        // Collect all items from all unpaid orders for the table
+        // Collect all items from all unpaid orders for the table, excluding CANCELED items
         const allItems = [];
         orders.forEach(group => {
             group.orderItems.forEach(item => {
-                allItems.push({
-                    product_id: item.product_id,
-                    product_name: item.product_name,
-                    price: item.price,
-                    qty: item.qty,
-                    total_price: item.total_price
-                });
+                if (item.status !== 'CANCELED') {
+                    allItems.push({
+                        product_id: item.product_id,
+                        product_name: item.product_name,
+                        price: item.price,
+                        qty: item.qty,
+                        total_price: item.total_price
+                    });
+                }
             });
         });
 
@@ -87,8 +89,15 @@ function OrderedList() {
             return;
         }
 
+        let currentSessionId = null;
+        const sessionStr = sessionStorage.getItem('guest_session');
+        if (sessionStr) {
+            const sessionObj = JSON.parse(sessionStr);
+            currentSessionId = sessionObj.sessionId;
+        }
+
         dispatch(visibilityOrderedList(false));
-        navigate('/checkout', { state: { guestItems: allItems, isFullTablePayment: true, orderSource: 'table' } });
+        navigate('/checkout', { state: { guestItems: allItems, isFullTablePayment: true, orderSource: 'table', sessionId: currentSessionId } });
     };
 
     const getStatusText = (status) => {
@@ -111,7 +120,12 @@ function OrderedList() {
         }
     };
 
-    const totalBill = orders.reduce((sum, group) => sum + group.order.total_price, 0);
+    const totalBill = orders.reduce((sum, group) => {
+        const activeItemsTotal = group.orderItems
+            .filter(item => item.status !== 'CANCELED')
+            .reduce((s, i) => s + i.total_price, 0);
+        return sum + activeItemsTotal;
+    }, 0);
 
     return (
         <>
@@ -155,21 +169,19 @@ function OrderedList() {
                                             </div>
                                             <div className="order-items">
                                                 {batches[bNum].map((item, itemIdx) => (
-                                                    <div key={itemIdx} className="order-item d-flex align-items-center flex-wrap">
-                                                        <span className="item-name flex-grow-1" style={{width: '50%'}}>{item.product_name}</span>
-                                                        <span className="item-qty text-center" style={{width: '15%'}}>x{item.qty}</span>
-                                                        <span className="item-price text-end" style={{width: '35%'}}>
+                                                    <div key={itemIdx} className="order-item d-flex align-items-center mb-2">
+                                                        <span className="item-name flex-grow-1" style={{ width: '40%' }}>{item.product_name}</span>
+                                                        <span className="item-qty text-center" style={{ width: '10%' }}>x{item.qty}</span>
+                                                        <span className="item-price text-end me-3" style={{ width: '25%' }}>
                                                             {item.total_price.toLocaleString('vi', { style: 'currency', currency: 'VND' })}
                                                         </span>
-                                                        <div className="w-100 mt-1 d-flex justify-content-start">
-                                                            <span className={`badge border ${item.status === 'CANCELED' ? 'bg-danger text-white' : 'bg-light text-dark'}`} style={{fontSize: '11px'}}>
-                                                                Trạng thái: {
-                                                                    item.status === 'CANCELED' ? 'Đã hủy (Sự cố)' :
-                                                                    item.status === 'SERVED' ? 'Đã phục vụ' :
-                                                                    item.status === 'PREPARING' ? 'Đang chuẩn bị' : 'Chờ xác nhận'
-                                                                }
-                                                            </span>
-                                                        </div>
+                                                        <span className={`item-badge px-2 py-1 ${item.status === 'CANCELED' ? 'cancel' : item.status === 'SERVED' ? 'served' : item.status === 'PREPARING' ? 'preparing' : 'new'}`} style={{ width: '25%', textAlign: 'center', fontSize: '11px', borderRadius: '4px' }}>
+                                                            {
+                                                                item.status === 'CANCELED' ? 'Đã hủy' :
+                                                                item.status === 'SERVED' ? 'Đã lên' :
+                                                                item.status === 'PREPARING' ? 'Đang nấu' : 'Chờ xác nhận'
+                                                            }
+                                                        </span>
                                                     </div>
                                                 ))}
                                             </div>

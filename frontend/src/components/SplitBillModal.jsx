@@ -4,12 +4,15 @@ import { toast } from 'react-toastify';
 
 export default function SplitBillModal({ show, onHide, order, orderItems, onSuccess }) {
     const [tab, setTab] = useState('item');
+    const [printMode, setPrintMode] = useState(false);
+    const [shareItemModal, setShareItemModal] = useState({ show: false, itemIndex: null, selectedUsers: [], qty: 1 });
     const [numPeople, setNumPeople] = useState(2);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    
+    const [exclusiveItems, setExclusiveItems] = useState({}); // { itemIndex: userIndex } (-1 = split)
+
     // Original items from order 
     const [itemsState, setItemsState] = useState([]);
-    
+
     // Array of users
     const [users, setUsers] = useState([]);
 
@@ -24,29 +27,44 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
 
     useEffect(() => {
         if (order && show) {
-            setupInitialState();
+            setupInitialState(tab);
         }
     }, [order, show, orderItems]);
 
-    const setupInitialState = () => {
-        let iState = orderItems.map(i => ({ 
-            ...i, 
-            unit_price: i.price / i.qty, 
-            leftQty: i.qty 
-        }));
+    const setupInitialState = (currentTab = tab) => {
+        let iState = orderItems.map(i => {
+            const unitPrice = i.price || 0;
+            const totalPrice = i.total_price || (i.price * i.qty) || 0;
+            return {
+                ...i,
+                unit_price: unitPrice,
+                leftQty: i.qty,
+                leftPrice: totalPrice,
+                original_price: totalPrice,
+                price: totalPrice // override for compatibility with old sum logic
+            };
+        });
         setItemsState(iState);
-        
+
         let sumRaw = iState.reduce((acc, it) => acc + (it.price || 0), 0);
         setRawItemsTotal(sumRaw);
 
-        // Khởi tạo mặc định chia 2 người với số tiền được tính sẵn
         const n = 2;
-        const baseAmt = Math.floor(order.total_price / n);
-        const u1 = { id: 1, name: 'Khách 1', amount: baseAmt, percent: ((baseAmt / order.total_price) * 100).toFixed(1), items: [] };
-        const u2 = { id: 2, name: 'Khách 2', amount: order.total_price - baseAmt, percent: (((order.total_price - baseAmt) / order.total_price) * 100).toFixed(1), items: [] };
+        let u1, u2;
+
+        if (currentTab === 'item') {
+            u1 = { id: 1, name: 'Khách 1', amount: 0, percent: 0, items: [] };
+            u2 = { id: 2, name: 'Khách 2', amount: 0, percent: 0, items: [] };
+        } else {
+            const baseAmt = Math.floor(order.total_price / n);
+            u1 = { id: 1, name: 'Khách 1', amount: baseAmt, percent: ((baseAmt / order.total_price) * 100).toFixed(1), items: [] };
+            u2 = { id: 2, name: 'Khách 2', amount: order.total_price - baseAmt, percent: (((order.total_price - baseAmt) / order.total_price) * 100).toFixed(1), items: [] };
+        }
 
         setUsers([u1, u2]);
         setNumPeople(2);
+        setExclusiveItems({});
+        setAssignQtys({});
     };
 
     const handleNumPeopleChange = (e) => {
@@ -54,22 +72,77 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
         if (n < 2) n = 2;
         if (n > 20) n = 20;
         setNumPeople(n);
-        
-        let newUsers = [];
-        const baseAmt = Math.floor(order.total_price / n);
-        let currentSum = 0;
-        
-        for (let i = 0; i < n; i++) {
-            let amt = baseAmt;
-            if (i === n - 1) {
-                // Last user takes the remainder
-                amt = order.total_price - currentSum;
-            }
-            currentSum += amt;
-            const pct = (amt / order.total_price) * 100;
-            newUsers.push({ id: i + 1, name: `Người ${i + 1}`, amount: amt, percent: pct.toFixed(1), items: [] });
-        }
+
+        // Clean up exclusive items if user index is out of bounds
+        const newExcl = { ...exclusiveItems };
+        Object.keys(newExcl).forEach(k => {
+            if (newExcl[k] >= n) newExcl[k] = -1;
+        });
+        setExclusiveItems(newExcl);
+
+        const newUsers = calculateEvenSplit(n, newExcl, users);
         setUsers(newUsers);
+    };
+
+    const handleExclusiveItemChange = (itemIdx, userIdx) => {
+        const newExcl = { ...exclusiveItems, [itemIdx]: userIdx };
+        setExclusiveItems(newExcl);
+        const newUsers = calculateEvenSplit(numPeople, newExcl, users);
+        setUsers(newUsers);
+    };
+
+    const calculateEvenSplit = (n, exclItems, currentUsers) => {
+        let userExclAmounts = new Array(n).fill(0);
+        let totalExclAmount = 0;
+        let exclItemDetails = new Array(n).fill(0).map(() => []);
+
+        Object.entries(exclItems).forEach(([itemIdxStr, userIdxStr]) => {
+            const itemIdx = parseInt(itemIdxStr);
+            const userIdx = parseInt(userIdxStr);
+            if (userIdx !== -1 && userIdx < n) {
+                const item = itemsState[itemIdx];
+                if (item) {
+                    const itemPrice = item.price;
+                    userExclAmounts[userIdx] += itemPrice;
+                    totalExclAmount += itemPrice;
+                    exclItemDetails[userIdx].push({
+                        product_id: item.product_id,
+                        product_name: `[Riêng] ${item.product_name}`,
+                        qty: item.qty,
+                        unit_price: item.unit_price,
+                        price: itemPrice
+                    });
+                }
+            }
+        });
+
+        const remainingTotal = order.total_price - totalExclAmount;
+        const baseAmt = Math.floor(remainingTotal / n);
+        let currentSum = 0;
+        let newUsersList = [];
+
+        for (let i = 0; i < n; i++) {
+            let shareAmt = baseAmt;
+            if (i === n - 1) {
+                shareAmt = remainingTotal - currentSum;
+            }
+            if (shareAmt < 0) shareAmt = 0; // Failsafe if excl items > total
+            currentSum += shareAmt;
+
+            const totalUserAmt = shareAmt + userExclAmounts[i];
+            const pct = (totalUserAmt / order.total_price) * 100;
+
+            const oldName = (currentUsers && currentUsers[i] && currentUsers[i].name) ? currentUsers[i].name : `Người ${i + 1}`;
+
+            newUsersList.push({
+                id: i + 1,
+                name: oldName,
+                amount: totalUserAmt,
+                percent: pct.toFixed(1),
+                items: exclItemDetails[i]
+            });
+        }
+        return newUsersList;
     };
 
     const handleAddUser = () => {
@@ -80,22 +153,23 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
 
     const handleDeleteUser = (userIndex) => {
         let targetUser = users[userIndex];
-        
-        // Trả lại các món đã gán vào kho leftQty
+
+        // Trả lại các món đã gán vào kho leftQty và leftPrice
         let newItemsState = [...itemsState];
         if (targetUser.items && targetUser.items.length > 0) {
-             targetUser.items.forEach(ui => {
-                 let pIdx = newItemsState.findIndex(is => is.product_id === ui.product_id);
-                 if (pIdx > -1) {
-                     newItemsState[pIdx].leftQty += ui.qty;
-                 }
-             });
+            targetUser.items.forEach(ui => {
+                let pIdx = newItemsState.findIndex(is => is.product_id === ui.product_id);
+                if (pIdx > -1) {
+                    newItemsState[pIdx].leftQty += ui.qty;
+                    newItemsState[pIdx].leftPrice += ui.price;
+                }
+            });
         }
-        
+
         // Xóa user
         let newUsers = [...users];
         newUsers.splice(userIndex, 1);
-        
+
         recalcItemSplitAmounts(newUsers);
         setItemsState(newItemsState);
     };
@@ -106,11 +180,11 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
         if (pct < 0) pct = 0;
         if (pct > 100) pct = 100;
         let amt = Math.floor((pct / 100) * order.total_price);
-        
+
         let newUsers = [...users];
         newUsers[index].percent = pct;
         newUsers[index].amount = amt;
-        
+
         // Nếu người đang sửa là người cuối cùng, ta cần điều chỉnh người áp chót để bù trừ
         // Nếu không, chỉ điều chỉnh người cuối cùng
         redistributeToTarget(index, newUsers);
@@ -121,11 +195,11 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
         let amt = parseInt(value) || 0;
         if (amt < 0) amt = 0;
         if (amt > order.total_price) amt = order.total_price;
-        
+
         let newUsers = [...users];
         newUsers[index].amount = amt;
         newUsers[index].percent = parseFloat(((amt / order.total_price) * 100).toFixed(1));
-        
+
         redistributeToTarget(index, newUsers);
         setUsers(newUsers);
     };
@@ -157,26 +231,35 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
         let newItemsState = [...itemsState];
         let p = newItemsState[itemIndex];
         let addQty = assignQtys[itemIndex] || 1;
-        
+
         if (p.leftQty <= 0) return;
         if (addQty > p.leftQty) addQty = p.leftQty;
 
+        let addPrice = 0;
+        if (addQty === p.leftQty) {
+            addPrice = p.leftPrice;
+        } else {
+            addPrice = p.unit_price * addQty;
+        }
+
         p.leftQty -= addQty;
-        
+        p.leftPrice -= addPrice;
+
         let newUsers = [...users];
         let tUser = newUsers[userIndex];
-        const existIdx = tUser.items.findIndex(i => i.product_id === p.product_id);
-        
+        const existIdx = tUser.items.findIndex(i => i.product_id === p.product_id && !i.isShared);
+
         if (existIdx > -1) {
             tUser.items[existIdx].qty += addQty;
-            tUser.items[existIdx].price += (addQty * p.unit_price);
+            tUser.items[existIdx].price += addPrice;
         } else {
             tUser.items.push({
                 product_id: p.product_id,
                 product_name: p.product_name,
                 qty: addQty,
                 unit_price: p.unit_price,
-                price: addQty * p.unit_price
+                price: addPrice,
+                isShared: false
             });
         }
 
@@ -188,25 +271,89 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
         let newUsers = [...users];
         let tUser = newUsers[userIndex];
         let itemToRemove = tUser.items[uItemIndex];
-        
+
         let newItemsState = [...itemsState];
         let pIdx = newItemsState.findIndex(is => is.product_id === itemToRemove.product_id);
 
         if (removeQty > itemToRemove.qty) removeQty = itemToRemove.qty;
 
+        let removePrice = 0;
+        if (removeQty === itemToRemove.qty) {
+            removePrice = itemToRemove.price;
+        } else {
+            removePrice = itemToRemove.unit_price * removeQty;
+        }
+
         if (pIdx > -1) {
             newItemsState[pIdx].leftQty += removeQty;
+            newItemsState[pIdx].leftPrice += removePrice;
         }
-        
+
         if (itemToRemove.qty > removeQty) {
             tUser.items[uItemIndex].qty -= removeQty;
-            tUser.items[uItemIndex].price -= (removeQty * itemToRemove.unit_price);
+            tUser.items[uItemIndex].price -= removePrice;
         } else {
             tUser.items.splice(uItemIndex, 1);
         }
-        
+
         recalcItemSplitAmounts(newUsers);
         setItemsState(newItemsState);
+    };
+
+    const handleShareItemSubmit = () => {
+        const { itemIndex, selectedUsers, qty: shareQty } = shareItemModal;
+        if (selectedUsers.length < 2) {
+            alert('Vui lòng chọn ít nhất 2 người để chia sẻ món này.');
+            return;
+        }
+
+        let newItemsState = [...itemsState];
+        let p = newItemsState[itemIndex];
+
+        if (p.leftQty < shareQty) {
+            alert('Số lượng món không đủ để chia.');
+            return;
+        }
+
+        let sharePrice = 0;
+        if (shareQty === p.leftQty) {
+            sharePrice = p.leftPrice;
+        } else {
+            sharePrice = p.unit_price * shareQty;
+        }
+
+        p.leftQty -= shareQty;
+        p.leftPrice -= sharePrice;
+
+        let newUsers = [...users];
+        const sharedPricePerUser = Math.floor(sharePrice / selectedUsers.length);
+        const remainder = sharePrice - (sharedPricePerUser * selectedUsers.length);
+
+        // Calculate share label
+        let shareLabel = "";
+        if (shareQty % selectedUsers.length === 0) {
+            shareLabel = `[Share ${shareQty / selectedUsers.length}]`;
+        } else {
+            // Simplest fraction
+            shareLabel = `[Share ${shareQty}/${selectedUsers.length}]`;
+        }
+
+        selectedUsers.forEach((userIndex, idx) => {
+            let tUser = newUsers[userIndex];
+            const finalPrice = sharedPricePerUser + (idx === 0 ? remainder : 0); // Người đầu tiên chịu số dư
+            tUser.items.push({
+                product_id: p.product_id,
+                product_name: `${shareLabel} ${p.product_name}`,
+                qty: 1, // virtual qty
+                unit_price: finalPrice,
+                price: finalPrice,
+                isShared: true
+            });
+        });
+
+        recalcItemSplitAmounts(newUsers);
+        setItemsState(newItemsState);
+        setShareItemModal({ show: false, itemIndex: null, selectedUsers: [], qty: 1 });
     };
 
     // Recalculates amount ensuring exact match with order.total_price
@@ -252,34 +399,34 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
 
     const handleSplit = async () => {
         if (!users || users.length === 0) return;
-        
+
         let sum = users.reduce((acc, u) => acc + (parseInt(u.amount) || 0), 0);
         if (Math.abs(sum - order.total_price) > 10) {
             toast.error(`Tổng chia không bằng tổng bill ! Vui lòng kiểm tra lại.`);
             return;
         }
-        
+
         // Validate amounts and names
         let nameSet = new Set();
         for (let u of users) {
-             if (!u.name || u.name.trim() === '') {
-                 toast.error('Có một khách chưa được đặt tên!');
-                 return;
-             }
-             if (nameSet.has(u.name.trim().toLowerCase())) {
-                 toast.error(`Tên khách "${u.name}" bị trùng lặp!`);
-                 return;
-             }
-             nameSet.add(u.name.trim().toLowerCase());
-             
-             if (u.amount === 0 && (!u.items || u.items.length === 0)) {
-                 toast.error(`Khách "${u.name}" chưa có món nào hoặc số tiền bằng 0!`);
-                 return;
-             }
-             if (u.amount < 0) {
-                 toast.error('Số tiền không hợp lệ!');
-                 return;
-             }
+            if (!u.name || u.name.trim() === '') {
+                toast.error('Có một khách chưa được đặt tên!');
+                return;
+            }
+            if (nameSet.has(u.name.trim().toLowerCase())) {
+                toast.error(`Tên khách "${u.name}" bị trùng lặp!`);
+                return;
+            }
+            nameSet.add(u.name.trim().toLowerCase());
+
+            if (u.amount === 0 && (!u.items || u.items.length === 0)) {
+                toast.error(`Khách "${u.name}" chưa có món nào hoặc số tiền bằng 0!`);
+                return;
+            }
+            if (u.amount < 0) {
+                toast.error('Số tiền không hợp lệ!');
+                return;
+            }
         }
 
         // Must assign all items if tab is item split
@@ -290,7 +437,7 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
                 return;
             }
         }
-        
+
         setIsSubmitting(true);
 
         const data = users.filter(u => u.amount > 0).map(u => ({
@@ -299,7 +446,7 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
             percent: u.percent,
             items: u.items
         }));
-        
+
         try {
             const resp = await fetch('/api/payment/split', {
                 method: 'POST',
@@ -318,7 +465,7 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
             } else {
                 toast.error(resData.message || 'Lỗi chia hóa đơn');
             }
-        } catch(e) {
+        } catch (e) {
             toast.error('Lỗi server. Vui lòng thử lại!');
         } finally {
             setIsSubmitting(false);
@@ -329,7 +476,7 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
 
     const currentSum = users.reduce((acc, u) => acc + (parseInt(u.amount) || 0), 0);
     const diff = order.total_price - currentSum;
-    
+
     // Valid condition
     let isSumValid = Math.abs(diff) <= 10;
     if (tab === 'item') {
@@ -342,281 +489,427 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
     const progressVal = (currentSum / order.total_price) * 100;
 
     return (
-        <Modal show={show} onHide={onHide} size="xl" backdrop="static" dialogClassName="modal-90w" scrollable>
-            <Modal.Header closeButton className="bg-light py-2">
-                <Modal.Title className="w-100 d-flex justify-content-between align-items-center">
-                    <span>Chia hóa đơn - #{order.id}</span>
-                    <h5 className="mb-0 text-danger fw-bold me-4 px-3 py-1 bg-white border border-danger rounded shadow-sm">
-                        Tổng Bill: {order.total_price.toLocaleString()} VNĐ
-                    </h5>
-                </Modal.Title>
-            </Modal.Header>
-            <Modal.Body className="p-0 bg-light">
-                <Tabs activeKey={tab} onSelect={(k) => { setTab(k); setupInitialState(); }} className="px-3 pt-2 bg-white border-bottom shadow-sm" variant="pills">
-                    <Tab eventKey="item" title="Chia Theo Món" className="p-3">
-                        <div className="d-flex w-100 h-100">
-                            {/* CỘT TRÁI: DANH SÁCH MÓN */}
-                            <div className="w-50 pe-3 border-end d-flex flex-column" style={{ height: '50vh', minHeight: '350px' }}>
-                                <div className="d-flex justify-content-between align-items-end mb-2">
-                                    <h5 className="fw-bold fs-6 text-primary mb-0">Danh Sách Món</h5>
-                                    <small className="text-secondary fst-italic">Phải chia hết 100% món ăn</small>
-                                </div>
-                                <div className="flex-grow-1 overflow-auto pe-1">
-                                    {itemsState.map((it, idx) => (
-                                        <div key={idx} className={`d-flex align-items-center p-3 mb-2 border rounded shadow-sm ${it.leftQty === 0 ? 'bg-light opacity-50' : 'bg-white'}`}>
-                                            <div className="flex-grow-1">
-                                                <div className="fw-bold">{it.product_name}</div>
-                                                <div className="text-secondary small">{it.unit_price.toLocaleString()} đ/cái</div>
-                                            </div>
-                                            <div className="text-center px-2 border-end border-start mx-2">
-                                                <div className="small text-muted mb-1" style={{fontSize: '11px'}}>Tồn/Tổng</div>
-                                                <b className="fs-6 text-primary">{it.leftQty}</b><span className="text-muted small">/{it.qty}</span>
-                                            </div>
-                                            <div className="d-flex flex-column align-items-end gap-1" style={{width: '200px'}}>
-                                                <div className="d-flex align-items-center gap-1 mb-1">
-                                                    <span className="text-muted fw-medium" style={{fontSize: '11px'}}>SL chuyển:</span>
-                                                    <Form.Control 
-                                                        type="number" size="sm" style={{width: '50px', textAlign: 'center', borderColor: '#0d6efd', fontSize: '12px', padding: '2px'}}
-                                                        min="1" max={it.leftQty}
-                                                        value={assignQtys[idx] || 1}
-                                                        onChange={(e) => {
-                                                            let val = parseInt(e.target.value);
-                                                            if (isNaN(val) || val < 1) val = 1;
-                                                            if (val > it.leftQty) val = it.leftQty;
-                                                            setAssignQtys(prev => ({...prev, [idx]: val}))
-                                                        }}
-                                                        disabled={it.leftQty <= 0}
-                                                    />
+        <React.Fragment>
+            <Modal show={show} onHide={onHide} size="xl" backdrop="static" dialogClassName="modal-90w" scrollable>
+                <Modal.Header closeButton className="bg-light py-2">
+                    <Modal.Title className="w-100 d-flex justify-content-between align-items-center">
+                        <span>Chia hóa đơn - #{order.id}</span>
+                        <h5 className="mb-0 text-danger fw-bold me-4 px-3 py-1 bg-white border border-danger rounded shadow-sm">
+                            Tổng Bill: {order.total_price.toLocaleString()} VNĐ
+                        </h5>
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="p-0 bg-light">
+                    <Tabs activeKey={tab} onSelect={(k) => { setTab(k); setupInitialState(k); }} className="px-3 pt-2 bg-white border-bottom shadow-sm" variant="pills">
+                        <Tab eventKey="item" title="Chia Theo Món" className="p-3">
+                            <div className="d-flex w-100 h-100">
+                                {/* CỘT TRÁI: DANH SÁCH MÓN */}
+                                <div className="w-50 pe-3 border-end d-flex flex-column" style={{ height: '50vh', minHeight: '350px' }}>
+                                    <div className="d-flex justify-content-between align-items-end mb-2">
+                                        <h5 className="fw-bold fs-6 text-primary mb-0">Danh Sách Món</h5>
+                                        <small className="text-secondary fst-italic">Phải chia hết 100% món ăn</small>
+                                    </div>
+                                    <div className="flex-grow-1 overflow-auto pe-1">
+                                        {itemsState.map((it, idx) => (
+                                            <div key={idx} className={`d-flex align-items-center p-3 mb-2 border rounded shadow-sm ${it.leftQty === 0 ? 'bg-light opacity-50' : 'bg-white'}`}>
+                                                <div className="flex-grow-1">
+                                                    <div className="fw-bold">{it.product_name}</div>
+                                                    <div className="text-secondary small">Giá: {it.unit_price?.toLocaleString()} đ/món</div>
                                                 </div>
-                                                <div className="d-flex flex-wrap gap-1 justify-content-end">
-                                                    {users.map((u, ui) => (
-                                                        <Button 
-                                                            key={ui} size="sm" variant="outline-primary"
-                                                            className="text-truncate px-2 py-0 fw-bold" style={{maxWidth: '85px', fontSize: '11px'}}
-                                                            disabled={it.leftQty <= 0} 
-                                                            onClick={() => {
-                                                                handleAssignItem(idx, ui);
-                                                                setAssignQtys(prev => ({...prev, [idx]: 1})); 
+                                                <div className="text-center px-2 border-end border-start mx-2">
+                                                    <div className="small text-muted mb-1" style={{ fontSize: '11px' }}>Tồn/Tổng</div>
+                                                    <b className="fs-6 text-primary">{it.leftQty}</b><span className="text-muted small">/{it.qty}</span>
+                                                </div>
+                                                <div className="d-flex flex-column align-items-end gap-1" style={{ width: '200px' }}>
+                                                    <div className="d-flex align-items-center gap-1 mb-1">
+                                                        <span className="text-muted fw-medium" style={{ fontSize: '11px' }}>SL chuyển:</span>
+                                                        <Form.Control
+                                                            type="number" size="sm" style={{ width: '50px', textAlign: 'center', borderColor: '#0d6efd', fontSize: '12px', padding: '2px' }}
+                                                            min="1" max={it.leftQty}
+                                                            value={assignQtys[idx] || 1}
+                                                            onChange={(e) => {
+                                                                let val = parseInt(e.target.value);
+                                                                if (isNaN(val) || val < 1) val = 1;
+                                                                if (val > it.leftQty) val = it.leftQty;
+                                                                setAssignQtys(prev => ({ ...prev, [idx]: val }))
                                                             }}
-                                                            title={`Gán món cho ${u.name}`}
+                                                            disabled={it.leftQty <= 0}
+                                                        />
+                                                    </div>
+                                                    <div className="d-flex flex-wrap gap-1 justify-content-end">
+                                                        {users.map((u, ui) => (
+                                                            <Button
+                                                                key={ui} size="sm" variant="outline-primary"
+                                                                className="text-truncate px-2 py-0 fw-bold" style={{ maxWidth: '85px', fontSize: '11px' }}
+                                                                disabled={it.leftQty <= 0}
+                                                                onClick={() => {
+                                                                    handleAssignItem(idx, ui);
+                                                                    setAssignQtys(prev => ({ ...prev, [idx]: 1 }));
+                                                                }}
+                                                                title={`Gán món cho ${u.name}`}
+                                                            >
+                                                                {u.name} <span className="ms-1">+</span>
+                                                            </Button>
+                                                        ))}
+                                                        <Button
+                                                            size="sm" variant="outline-warning"
+                                                            className="text-truncate px-2 py-0 fw-bold text-dark" style={{ fontSize: '11px' }}
+                                                            disabled={it.leftQty <= 0}
+                                                            onClick={() => setShareItemModal({
+                                                                show: true,
+                                                                itemIndex: idx,
+                                                                selectedUsers: [],
+                                                                qty: it.leftQty // Default to all remaining
+                                                            })}
+                                                            title="Chia đều món này cho nhiều người"
                                                         >
-                                                            {u.name} <span className="ms-1">+</span>
+                                                            Chia món
                                                         </Button>
-                                                    ))}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
 
-                            {/* CỘT PHẢI: DANH SÁCH NGƯỜI */}
-                            <div className="w-50 ps-3 d-flex flex-column" style={{ height: '50vh', minHeight: '350px' }}>
-                                <div className="d-flex justify-content-between align-items-center mb-2">
-                                    <h5 className="fw-bold fs-6 text-success mb-0">Hóa Đơn Tách Nhỏ</h5>
-                                    <Button variant="success" size="sm" onClick={handleAddUser} className="d-flex align-items-center shadow-sm fw-bold px-2 py-1" style={{fontSize: '12px'}}>
-                                        <span className="me-1">+</span> Thêm Người Trả
-                                    </Button>
-                                </div>
-                                <div className="flex-grow-1 overflow-auto pe-1">
-                                    {users.map((u, ui) => (
-                                        <div key={ui} className="mb-3 border rounded shadow-sm bg-white overflow-hidden">
-                                            <div className="bg-success bg-opacity-10 p-2 px-3 border-bottom d-flex justify-content-between align-items-center">
-                                                <div className="d-flex align-items-center flex-grow-1">
-                                                    <span className="me-2 text-success">👤</span>
-                                                    <Form.Control 
-                                                        value={u.name} 
-                                                        onChange={e => {
-                                                            let nu = [...users]; nu[ui].name = e.target.value; setUsers(nu);
-                                                        }}
-                                                        className="fw-bold border-bottom border-success border-top-0 border-start-0 border-end-0 bg-transparent px-1 text-success fs-6 shadow-none py-0"
-                                                        style={{width: '200px', outline: 'none', borderRadius: 0}}
-                                                        placeholder="Nhập tên người trả..."
-                                                    />
+                                {/* CỘT PHẢI: DANH SÁCH NGƯỜI */}
+                                <div className="w-50 ps-3 d-flex flex-column" style={{ height: '50vh', minHeight: '350px' }}>
+                                    <div className="d-flex justify-content-between align-items-center mb-2">
+                                        <h5 className="fw-bold fs-6 text-success mb-0">Hóa Đơn Tách Nhỏ</h5>
+                                        <Button variant="success" size="sm" onClick={handleAddUser} className="d-flex align-items-center shadow-sm fw-bold px-2 py-1" style={{ fontSize: '12px' }}>
+                                            <span className="me-1">+</span> Thêm Người Trả
+                                        </Button>
+                                    </div>
+                                    <div className="flex-grow-1 overflow-auto pe-1">
+                                        {users.map((u, ui) => (
+                                            <div key={ui} className="mb-3 border rounded shadow-sm bg-white overflow-hidden">
+                                                <div className="bg-success bg-opacity-10 p-2 px-3 border-bottom d-flex justify-content-between align-items-center">
+                                                    <div className="d-flex align-items-center flex-grow-1">
+                                                        <span className="me-2 text-success">👤</span>
+                                                        <Form.Control
+                                                            value={u.name}
+                                                            onChange={e => {
+                                                                let nu = [...users]; nu[ui].name = e.target.value; setUsers(nu);
+                                                            }}
+                                                            className="fw-bold border-bottom border-success border-top-0 border-start-0 border-end-0 bg-transparent px-1 text-success fs-6 shadow-none py-0"
+                                                            style={{ width: '200px', outline: 'none', borderRadius: 0 }}
+                                                            placeholder="Nhập tên người trả..."
+                                                        />
+                                                    </div>
+                                                    <span className="fs-6 fw-bold text-danger">{u.amount.toLocaleString()} đ</span>
                                                 </div>
-                                                <span className="fs-6 fw-bold text-danger">{u.amount.toLocaleString()} đ</span>
-                                            </div>
-                                            <div className="p-2">
-                                                {u.items.length === 0 ? (
-                                                    <div className="text-center text-muted py-2 fst-italic bg-light rounded border border-dashed" style={{fontSize: '12px'}}>
-                                                        Hãy chọn số lượng món ở bên trái và bấm <b className="text-primary">+ {u.name}</b> để gán vào hóa đơn này.
-                                                    </div>
-                                                ) : (
-                                                    <div className="d-flex flex-column gap-2">
-                                                    {u.items.map((it, ixx) => (
-                                                        <div key={ixx} className="d-flex justify-content-between align-items-center p-2 bg-light border rounded">
-                                                            <div className="w-50 text-truncate fw-medium text-dark" title={it.product_name}>
-                                                                {it.product_name}
-                                                            </div>
-                                                            <div className="d-flex align-items-center bg-white border rounded shadow-sm">
-                                                                <Button variant="light" size="sm" className="border-0 px-2 py-1 text-danger fw-bold" onClick={() => handleRemoveIndividualItem(ui, ixx, 1)}>
-                                                                    -
-                                                                </Button>
-                                                                <span className="px-3 fw-bold text-primary">{it.qty}</span>
-                                                                <Button variant="light" size="sm" className="border-0 px-2 py-1 text-success fw-bold" onClick={() => {
-                                                                    let gIdx = itemsState.findIndex(is => is.product_id === it.product_id);
-                                                                    if (gIdx > -1) {
-                                                                        setAssignQtys(prev => ({...prev, [gIdx]: 1}));
-                                                                        handleAssignItem(gIdx, ui);
-                                                                    }
-                                                                }}>
-                                                                    +
-                                                                </Button>
-                                                            </div>
-                                                            <div className="text-end fw-bold" style={{width: '90px'}}>
-                                                                {it.price.toLocaleString()} đ
-                                                            </div>
+                                                <div className="p-2">
+                                                    {u.items.length === 0 ? (
+                                                        <div className="text-center text-muted py-2 fst-italic bg-light rounded border border-dashed" style={{ fontSize: '12px' }}>
+                                                            Hãy chọn số lượng món ở bên trái và bấm <b className="text-primary">+ {u.name}</b> để gán vào hóa đơn này.
                                                         </div>
-                                                    ))}
-                                                    </div>
-                                                )}
+                                                    ) : (
+                                                        <div className="d-flex flex-column gap-2">
+                                                            {u.items.map((it, ixx) => (
+                                                                <div key={ixx} className="d-flex justify-content-between align-items-center p-2 bg-light border rounded">
+                                                                    <div className="w-50 text-truncate fw-medium text-dark" title={it.product_name}>
+                                                                        {it.product_name}
+                                                                    </div>
+                                                                    <div className="d-flex align-items-center bg-white border rounded shadow-sm">
+                                                                        <Button variant="light" size="sm" className="border-0 px-2 py-1 text-danger fw-bold" onClick={() => handleRemoveIndividualItem(ui, ixx, 1)}>
+                                                                            -
+                                                                        </Button>
+                                                                        <span className="px-3 fw-bold text-primary">{it.qty}</span>
+                                                                        <Button variant="light" size="sm" className="border-0 px-2 py-1 text-success fw-bold" onClick={() => {
+                                                                            let gIdx = itemsState.findIndex(is => is.product_id === it.product_id);
+                                                                            if (gIdx > -1) {
+                                                                                setAssignQtys(prev => ({ ...prev, [gIdx]: 1 }));
+                                                                                handleAssignItem(gIdx, ui);
+                                                                            }
+                                                                        }}>
+                                                                            +
+                                                                        </Button>
+                                                                    </div>
+                                                                    <div className="text-end fw-bold" style={{ width: '90px' }}>
+                                                                        {it.price.toLocaleString()} đ
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                            {(() => {
+                                                                const itemsSum = u.items.reduce((s, it) => s + (it.price || 0), 0);
+                                                                const adjustment = u.amount - itemsSum;
+                                                                if (adjustment !== 0) {
+                                                                    return (
+                                                                        <div className="d-flex justify-content-between align-items-center p-2 bg-warning bg-opacity-10 border border-warning rounded mt-1">
+                                                                            <div className="fw-medium text-warning-emphasis" style={{ fontSize: '13px' }} title="Khoản điều chỉnh phân bổ do tổng các món không khớp với tổng tiền phải thanh toán của đơn hàng (có thể do gộp bàn, phí, hoặc VAT).">
+                                                                                <i className="fa-solid fa-scale-balanced me-1"></i> Phân bổ chênh lệch Bill
+                                                                            </div>
+                                                                            <div className="text-end fw-bold text-warning-emphasis" style={{ width: '90px', fontSize: '13px' }}>
+                                                                                {adjustment > 0 ? '+' : ''}{adjustment.toLocaleString()} đ
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                }
+                                                                return null;
+                                                            })()}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="bg-light px-3 py-1 border-top d-flex justify-content-between align-items-center">
+                                                    <small className="text-muted fw-medium" style={{ fontSize: '11px' }}>Trọng số: {u.percent}% / {u.items.length} món</small>
+                                                    <Button variant="outline-danger" size="sm" className="px-2 py-0 text-decoration-none d-flex align-items-center fw-bold rounded" style={{ fontSize: '11px' }} onClick={() => handleDeleteUser(ui)}>
+                                                        <span className="me-1">✖</span> Xóa Hóa Đơn Này
+                                                    </Button>
+                                                </div>
                                             </div>
-                                            <div className="bg-light px-3 py-1 border-top d-flex justify-content-between align-items-center">
-                                                <small className="text-muted fw-medium" style={{fontSize: '11px'}}>Trọng số: {u.percent}% / {u.items.length} món</small>
-                                                <Button variant="outline-danger" size="sm" className="px-2 py-0 text-decoration-none d-flex align-items-center fw-bold rounded" style={{fontSize: '11px'}} onClick={() => handleDeleteUser(ui)}>
-                                                    <span className="me-1">✖</span> Xóa Hóa Đơn Này
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </Tab>
-                    
-                    <Tab eventKey="even" title="Chia Đều" className="p-4 bg-white">
-                        <div className="w-50 mx-auto">
-                            <Form.Group className="mb-4">
-                                <Form.Label className="fw-bold fs-5 text-center w-100">Chia đều cho bao nhiêu người?</Form.Label>
-                                <Form.Control type="number" min="2" max="20" size="lg" value={numPeople} onChange={handleNumPeopleChange} className="text-center fs-3 fw-bold text-primary" />
-                            </Form.Group>
-                            <Table bordered hover className="text-center shadow-sm">
-                                <thead className="table-primary"><tr><th>Tên Người Trả</th><th>Số Tiền Phải Trả</th></tr></thead>
+                        </Tab>
+
+                        <Tab eventKey="even" title="Chia Đều" className="p-4 bg-white">
+                            <div className="row">
+                                <div className="col-md-5 border-end">
+                                    <Form.Group className="mb-4 text-center">
+                                        <Form.Label className="fw-bold fs-5">Chia đều cho bao nhiêu người?</Form.Label>
+                                        <Form.Control type="number" min="2" max="20" size="lg" value={numPeople} onChange={handleNumPeopleChange} className="text-center fs-3 fw-bold text-primary mx-auto" style={{ width: '150px' }} />
+                                    </Form.Group>
+
+                                    <Table bordered hover className="text-center shadow-sm">
+                                        <thead className="table-primary">
+                                            <tr style={{ fontSize: '13px' }}>
+                                                <th>Tên Người Trả</th>
+                                                <th>Số Tiền</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {users.map((u, ui) => (
+                                                <tr key={u.id}>
+                                                    <td className="align-middle">
+                                                        <Form.Control
+                                                            size="sm"
+                                                            className="fw-bold text-center border-0 shadow-none bg-transparent"
+                                                            value={u.name}
+                                                            onChange={e => {
+                                                                let nu = [...users]; nu[ui].name = e.target.value; setUsers(nu);
+                                                            }}
+                                                        />
+                                                    </td>
+                                                    <td className="text-danger fw-bold align-middle" style={{ fontSize: '16px' }}>{u.amount.toLocaleString()} đ</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </Table>
+                                    <div className="mt-3 p-3 bg-light rounded border border-dashed">
+                                        <small className="text-muted d-block text-center fst-italic">
+                                            Hệ thống sẽ tự động chia đều số tiền còn lại sau khi trừ đi các món trả riêng.
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <div className="col-md-7 ps-4">
+                                    <h6 className="fw-bold text-primary mb-3 d-flex align-items-center">
+                                        <i className="fa-solid fa-star me-2"></i> Gán trả riêng cho từng món (nếu có)
+                                    </h6>
+                                    <div className="overflow-auto pe-2" style={{ maxHeight: '450px' }}>
+                                        <Table size="sm" hover className="align-middle">
+                                            <thead className="bg-light sticky-top">
+                                                <tr className="text-muted" style={{ fontSize: '12px' }}>
+                                                    <th>Tên món ăn</th>
+                                                    <th className="text-end">Đơn giá</th>
+                                                    <th className="text-center" style={{ width: '40px' }}>SL</th>
+                                                    <th className="text-end">Thành tiền</th>
+                                                    <th className="text-center" style={{ width: '140px' }}>Người trả riêng</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {itemsState.map((it, idx) => (
+                                                    <tr key={idx} className={exclusiveItems[idx] !== undefined && exclusiveItems[idx] !== -1 ? 'table-warning' : ''}>
+                                                        <td style={{ fontSize: '13px' }} className="fw-medium">{it.product_name}</td>
+                                                        <td className="text-end text-muted" style={{ fontSize: '12px' }}>{it.unit_price.toLocaleString()}</td>
+                                                        <td className="text-center text-muted" style={{ fontSize: '12px' }}>{it.qty}</td>
+                                                        <td className="text-end fw-bold" style={{ fontSize: '13px' }}>{it.price.toLocaleString()} đ</td>
+                                                        <td className="text-center">
+                                                            <Form.Select
+                                                                size="sm"
+                                                                style={{ fontSize: '11px', fontWeight: exclusiveItems[idx] !== -1 ? 'bold' : 'normal' }}
+                                                                value={exclusiveItems[idx] !== undefined ? exclusiveItems[idx] : -1}
+                                                                onChange={(e) => handleExclusiveItemChange(idx, parseInt(e.target.value))}
+                                                                className={exclusiveItems[idx] !== -1 ? 'border-primary text-primary' : ''}
+                                                            >
+                                                                <option value="-1">Chia đều</option>
+                                                                {users.map((u, ui) => (
+                                                                    <option key={ui} value={ui}>{u.name}</option>
+                                                                ))}
+                                                            </Form.Select>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </Table>
+                                    </div>
+                                </div>
+                            </div>
+                        </Tab>
+
+                        <Tab eventKey="percent" title="Định Mức Tùy Chỉnh (% / Số Tiền)" className="p-4 bg-white">
+                            <Button variant="success" size="sm" onClick={handleAddUser} className="mb-3 shadow-sm d-flex align-items-center fw-bold">
+                                <span className="me-1">+</span> Thêm Người Trả
+                            </Button>
+                            <Table bordered hover className="align-middle shadow-sm text-center">
+                                <thead className="table-dark">
+                                    <tr>
+                                        <th style={{ width: '35%' }}>Tên Khách Hàng (Click để sửa)</th>
+                                        <th style={{ width: '20%' }}>Chiếm Tỷ Lệ (%)</th>
+                                        <th style={{ width: '35%' }}>Số Tiền Thực Tế (đ)</th>
+                                        <th style={{ width: '10%' }}>Hành động</th>
+                                    </tr>
+                                </thead>
                                 <tbody>
-                                    {users.map((u, ui) => (
+                                    {users.map((u, i) => (
                                         <tr key={u.id}>
-                                            <td className="align-middle">
-                                                 <Form.Control className="fw-bold text-center border-0 shadow-none bg-transparent" value={u.name} onChange={e => {
-                                                     let nu = [...users]; nu[ui].name = e.target.value; setUsers(nu);
-                                                 }} />
+                                            <td>
+                                                <Form.Control className="fw-bold fs-6" value={localEdits[`${i}_name`] !== undefined ? localEdits[`${i}_name`] : u.name}
+                                                    onChange={e => setLocalEdits({ ...localEdits, [`${i}_name`]: e.target.value })}
+                                                    onBlur={e => {
+                                                        let nu = [...users]; nu[i].name = e.target.value; setUsers(nu);
+                                                        setLocalEdits(prev => { const n = { ...prev }; delete n[`${i}_name`]; return n; });
+                                                    }}
+                                                    onKeyDown={e => e.key === 'Enter' && e.target.blur()}
+                                                />
                                             </td>
-                                            <td className="text-danger fs-5 fw-bold align-middle">{u.amount.toLocaleString()} đ</td>
+                                            <td>
+                                                <div className="input-group">
+                                                    <Form.Control type="number" className="text-center fw-bold text-primary" step="0.1"
+                                                        value={localEdits[`${i}_percent`] !== undefined ? localEdits[`${i}_percent`] : u.percent}
+                                                        onChange={e => setLocalEdits({ ...localEdits, [`${i}_percent`]: e.target.value })}
+                                                        onBlur={e => {
+                                                            handlePercentChange(i, e.target.value);
+                                                            setLocalEdits(prev => { const n = { ...prev }; delete n[`${i}_percent`]; return n; });
+                                                        }}
+                                                        onKeyDown={e => e.key === 'Enter' && e.target.blur()}
+                                                    />
+                                                    <span className="input-group-text bg-primary text-white">%</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className="input-group">
+                                                    <Form.Control type="number" className="text-end text-danger fw-bold fs-5"
+                                                        value={localEdits[`${i}_amount`] !== undefined ? localEdits[`${i}_amount`] : u.amount}
+                                                        onChange={e => setLocalEdits({ ...localEdits, [`${i}_amount`]: e.target.value })}
+                                                        onBlur={e => {
+                                                            handleAmountChange(i, e.target.value);
+                                                            setLocalEdits(prev => { const n = { ...prev }; delete n[`${i}_amount`]; return n; });
+                                                        }}
+                                                        onKeyDown={e => e.key === 'Enter' && e.target.blur()}
+                                                    />
+                                                    <span className="input-group-text bg-danger text-white fw-bold">VNĐ</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <Button variant="outline-danger" size="sm" onClick={() => handleDeleteUser(i)}>
+                                                    Xóa
+                                                </Button>
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </Table>
-                        </div>
-                    </Tab>
-                    
-                    <Tab eventKey="percent" title="Định Mức Tùy Chỉnh (% / Số Tiền)" className="p-4 bg-white">
-                        <Button variant="success" size="sm" onClick={handleAddUser} className="mb-3 shadow-sm d-flex align-items-center fw-bold">
-                            <span className="me-1">+</span> Thêm Người Trả
-                        </Button>
-                        <Table bordered hover className="align-middle shadow-sm text-center">
-                            <thead className="table-dark">
-                                <tr>
-                                    <th style={{width: '35%'}}>Tên Khách Hàng (Click để sửa)</th>
-                                    <th style={{width: '20%'}}>Chiếm Tỷ Lệ (%)</th>
-                                    <th style={{width: '35%'}}>Số Tiền Thực Tế (đ)</th>
-                                    <th style={{width: '10%'}}>Hành động</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {users.map((u, i) => (
-                                    <tr key={u.id}>
-                                        <td>
-                                            <Form.Control className="fw-bold fs-6" value={localEdits[`${i}_name`] !== undefined ? localEdits[`${i}_name`] : u.name} 
-                                                onChange={e => setLocalEdits({...localEdits, [`${i}_name`]: e.target.value})}
-                                                onBlur={e => {
-                                                    let nu = [...users]; nu[i].name = e.target.value; setUsers(nu);
-                                                    setLocalEdits(prev => { const n = {...prev}; delete n[`${i}_name`]; return n; });
-                                                }}
-                                                onKeyDown={e => e.key === 'Enter' && e.target.blur()}
-                                            />
-                                        </td>
-                                        <td>
-                                            <div className="input-group">
-                                                <Form.Control type="number" className="text-center fw-bold text-primary" step="0.1" 
-                                                    value={localEdits[`${i}_percent`] !== undefined ? localEdits[`${i}_percent`] : u.percent} 
-                                                    onChange={e => setLocalEdits({...localEdits, [`${i}_percent`]: e.target.value})}
-                                                    onBlur={e => {
-                                                        handlePercentChange(i, e.target.value);
-                                                        setLocalEdits(prev => { const n = {...prev}; delete n[`${i}_percent`]; return n; });
-                                                    }}
-                                                    onKeyDown={e => e.key === 'Enter' && e.target.blur()}
-                                                />
-                                                <span className="input-group-text bg-primary text-white">%</span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div className="input-group">
-                                                <Form.Control type="number" className="text-end text-danger fw-bold fs-5" 
-                                                    value={localEdits[`${i}_amount`] !== undefined ? localEdits[`${i}_amount`] : u.amount} 
-                                                    onChange={e => setLocalEdits({...localEdits, [`${i}_amount`]: e.target.value})}
-                                                    onBlur={e => {
-                                                        handleAmountChange(i, e.target.value);
-                                                        setLocalEdits(prev => { const n = {...prev}; delete n[`${i}_amount`]; return n; });
-                                                    }}
-                                                    onKeyDown={e => e.key === 'Enter' && e.target.blur()}
-                                                />
-                                                <span className="input-group-text bg-danger text-white fw-bold">VNĐ</span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <Button variant="outline-danger" size="sm" onClick={() => handleDeleteUser(i)}>
-                                                Xóa
-                                            </Button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </Table>
-                        <div className="text-muted text-center mt-3 fst-italic">
-                            Lưu ý: Mọi thay đổi % sẽ tự nhảy số tiền ngay lập tức. Tổng số tiền phải đúng 100% Bill.
-                        </div>
-                    </Tab>
-                </Tabs>
-                
-                {/* STATUS PROGRESS BAR FOOTER */}
-                <div className="bg-white p-2 border-top shadow-sm z-3 position-relative">
-                    <div className="d-flex justify-content-between align-items-end mb-1">
-                        <div style={{width: '60%'}}>
-                            <div className="d-flex justify-content-between mb-1">
-                                <span className="fw-bold" style={{fontSize: '13px'}}>Tiến độ phân bổ:</span>
-                                <span className={`fw-bold ${isSumValid ? 'text-success' : 'text-danger'}`} style={{fontSize: '13px'}}>{Math.min(progressVal, 100).toFixed(1)}%</span>
+                            <div className="text-muted text-center mt-3 fst-italic">
+                                Lưu ý: Mọi thay đổi % sẽ tự nhảy số tiền ngay lập tức. Tổng số tiền phải đúng 100% Bill.
                             </div>
-                            <ProgressBar variant={isSumValid ? "success" : "danger"} now={progressVal} style={{height: '10px', borderRadius: '10px'}} />
+                        </Tab>
+                    </Tabs>
+
+                    {/* STATUS PROGRESS BAR FOOTER */}
+                    <div className="bg-white p-2 border-top shadow-sm z-3 position-relative">
+                        <div className="d-flex justify-content-between align-items-end mb-1">
+                            <div style={{ width: '60%' }}>
+                                <div className="d-flex justify-content-between mb-1">
+                                    <span className="fw-bold" style={{ fontSize: '13px' }}>Tiến độ phân bổ:</span>
+                                    <span className={`fw-bold ${isSumValid ? 'text-success' : 'text-danger'}`} style={{ fontSize: '13px' }}>{Math.min(progressVal, 100).toFixed(1)}%</span>
+                                </div>
+                                <ProgressBar variant={isSumValid ? "success" : "danger"} now={progressVal} style={{ height: '10px', borderRadius: '10px' }} />
+                            </div>
+                            <div className="text-end border p-1 px-2 rounded bg-light border-2">
+                                <h6 className="text-muted mb-0 text-uppercase fw-bold" style={{ fontSize: '10px' }}>Đã phân bổ</h6>
+                                <h4 className={`mb-0 fw-bold ${!isSumValid ? 'text-danger' : 'text-success'}`}>{currentSum.toLocaleString()} VNĐ</h4>
+                            </div>
                         </div>
-                        <div className="text-end border p-1 px-2 rounded bg-light border-2">
-                            <h6 className="text-muted mb-0 text-uppercase fw-bold" style={{fontSize: '10px'}}>Đã phân bổ</h6>
-                            <h4 className={`mb-0 fw-bold ${!isSumValid ? 'text-danger' : 'text-success'}`}>{currentSum.toLocaleString()} VNĐ</h4>
-                        </div>
+                        {/* HINT ERRORS IF ANY */}
+                        {!isSumValid && (
+                            <div className={`mt-1 py-1 px-3 rounded fw-bold text-center border ${diff > 0 || (tab === 'item' && itemsState.some(i => i.leftQty > 0)) ? 'bg-warning bg-opacity-25 border-warning text-warning-emphasis' : 'bg-danger bg-opacity-25 border-danger text-danger'}`} style={{ fontSize: '13px' }}>
+                                {tab === 'item' && itemsState.some(i => i.leftQty > 0)
+                                    ? `⚠️ VẪN CÒN MÓN CHƯA ĐƯỢC CHIA - BẠN CẦN PHÂN BỔ HẾT TỒN KHO!`
+                                    : diff > 0
+                                        ? `⚠️ CHƯA CHIA ĐỦ TIỀN - CÒN THIẾU ${diff.toLocaleString()} VNĐ`
+                                        : `❌ LỖI VƯỢT QUÁ BILL GỐC - ĐANG DƯ RA ${Math.abs(diff).toLocaleString()} VNĐ`
+                                }
+                            </div>
+                        )}
+                        {hasEmptyOrZeroUser && (
+                            <div className="mt-1 py-1 px-3 rounded fw-bold text-center border bg-danger bg-opacity-10 border-danger text-danger" style={{ fontSize: '13px' }}>
+                                ❌ CÓ KHÁCH ĐANG BỊ TRỐNG TÊN HOẶC CHƯA CHIA TIỀN TRONG DANH SÁCH
+                            </div>
+                        )}
                     </div>
-                    {/* HINT ERRORS IF ANY */}
-                    {!isSumValid && (
-                        <div className={`mt-1 py-1 px-3 rounded fw-bold text-center border ${diff > 0 || (tab==='item'&&itemsState.some(i=>i.leftQty>0)) ? 'bg-warning bg-opacity-25 border-warning text-warning-emphasis' : 'bg-danger bg-opacity-25 border-danger text-danger'}`} style={{fontSize: '13px'}}>
-                            {tab === 'item' && itemsState.some(i => i.leftQty > 0) 
-                                ? `⚠️ VẪN CÒN MÓN CHƯA ĐƯỢC CHIA - BẠN CẦN PHÂN BỔ HẾT TỒN KHO!`
-                                : diff > 0 
-                                    ? `⚠️ CHƯA CHIA ĐỦ TIỀN - CÒN THIẾU ${diff.toLocaleString()} VNĐ` 
-                                    : `❌ LỖI VƯỢT QUÁ BILL GỐC - ĐANG DƯ RA ${Math.abs(diff).toLocaleString()} VNĐ`
-                            }
+                </Modal.Body>
+                <Modal.Footer className="bg-light py-2">
+                    <Button variant="secondary" size="md" className="px-4 fw-bold" onClick={onHide} disabled={isSubmitting}>Hủy Bỏ</Button>
+                    <Button variant={isSumValid ? "success" : "secondary"} size="md" className="px-5 fw-bold d-flex align-items-center" disabled={!isSumValid || isSubmitting} onClick={handleSplit}>
+                        {isSubmitting ? <Spinner size="sm" className="me-2" /> : null}
+                        Xác nhận chia & Thanh toán
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            <Modal show={shareItemModal.show} onHide={() => setShareItemModal({ show: false, itemIndex: null, selectedUsers: [] })}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Chia Sẻ Món</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <div className="alert alert-info py-2" style={{ fontSize: '14px' }}>
+                        Chọn các khách hàng cùng dùng chung món <b>{shareItemModal.itemIndex !== null ? itemsState[shareItemModal.itemIndex].product_name : ''}</b>. Giá món sẽ được chia đều cho những người được chọn.
+                    </div>
+
+                    <Form.Group className="mb-3">
+                        <Form.Label className="fw-bold">Số lượng muốn chia:</Form.Label>
+                        <div className="d-flex align-items-center">
+                            <Form.Control
+                                type="number"
+                                className="text-center mx-2"
+                                style={{ width: '80px' }}
+                                value={shareItemModal.qty}
+                                onChange={(e) => {
+                                    const val = parseInt(e.target.value) || 1;
+                                    const max = shareItemModal.itemIndex !== null ? itemsState[shareItemModal.itemIndex].leftQty : 1;
+                                    setShareItemModal(prev => ({ ...prev, qty: Math.min(max, Math.max(1, val)) }));
+                                }}
+                            />
+                            <span className="ms-3 text-muted">/{shareItemModal.itemIndex !== null ? itemsState[shareItemModal.itemIndex].leftQty : 0} món còn lại</span>
                         </div>
-                    )}
-                    {hasEmptyOrZeroUser && (
-                        <div className="mt-1 py-1 px-3 rounded fw-bold text-center border bg-danger bg-opacity-10 border-danger text-danger" style={{fontSize: '13px'}}>
-                            ❌ CÓ KHÁCH ĐANG BỊ TRỐNG TÊN HOẶC CHƯA CHIA TIỀN TRONG DANH SÁCH
-                        </div>
-                    )}
-                </div>
-            </Modal.Body>
-            <Modal.Footer className="bg-light py-2">
-                <Button variant="secondary" size="md" className="px-4 fw-bold" onClick={onHide} disabled={isSubmitting}>Hủy Bỏ</Button>
-                <Button variant={isSumValid ? "success" : "secondary"} size="md" className="px-5 fw-bold d-flex align-items-center" disabled={!isSumValid || isSubmitting} onClick={handleSplit}>
-                    {isSubmitting ? <Spinner size="sm" className="me-2"/> : null} 
-                    Xác nhận chia & Thanh toán
-                </Button>
-            </Modal.Footer>
-        </Modal>
+                    </Form.Group>
+
+                    <Form.Label className="fw-bold">Chọn khách hàng:</Form.Label>
+                    <Form.Group className="border rounded p-2 bg-light">
+                        {users.map((u, idx) => (
+                            <Form.Check
+                                key={idx}
+                                type="checkbox"
+                                label={u.name}
+                                checked={shareItemModal.selectedUsers.includes(idx)}
+                                onChange={(e) => {
+                                    if (e.target.checked) {
+                                        setShareItemModal(prev => ({ ...prev, selectedUsers: [...prev.selectedUsers, idx] }));
+                                    } else {
+                                        setShareItemModal(prev => ({ ...prev, selectedUsers: prev.selectedUsers.filter(i => i !== idx) }));
+                                    }
+                                }}
+                            />
+                        ))}
+                    </Form.Group>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShareItemModal({ show: false, itemIndex: null, selectedUsers: [], qty: 1 })}>Hủy</Button>
+                    <Button variant="primary" onClick={handleShareItemSubmit}>Xác nhận chia món</Button>
+                </Modal.Footer>
+            </Modal>
+        </React.Fragment>
     );
 }

@@ -43,6 +43,7 @@ function Checkout(props) {
     const guestItemsFromState = location.state?.guestItems || [];
     const isFullTablePayment = location.state?.isFullTablePayment || false;
     const passedOrderSource = location.state?.orderSource;
+    const sessionId = location.state?.sessionId;
 
     const cartItems = isFullTablePayment
         ? guestItemsFromState
@@ -134,7 +135,7 @@ function Checkout(props) {
             let data;
             if (isFullTablePayment) {
                 // Đối với thanh toán tại bàn bằng tiền mặt, cập nhật phương thức nhưng chưa is_payment
-                data = await fetchPayGuestOrdersByTable(tableNumber, 'tiền mặt');
+                data = await fetchPayGuestOrdersByTable(tableNumber, 'tiền mặt', sessionId);
             } else if (accessToken) {
                 data = await fetchOrder(cartId, orderSource, tableNumber, selectedItemIds, 'tiền mặt');
             } else {
@@ -163,7 +164,7 @@ function Checkout(props) {
             // Transfer
             let data;
             if (isFullTablePayment) {
-                data = await fetchTablePayment(tableNumber);
+                data = await fetchTablePayment(tableNumber, sessionId);
             } else if (accessToken) {
                 data = await fetchPayment(cartId, selectedItemIds);
             } else {
@@ -197,7 +198,12 @@ function Checkout(props) {
         let data;
         // CREATE ORDER FIRST with dummy payment method 'chia bill' (handled as 'tiền mặt' internally for creation)
         if (isFullTablePayment) {
-            setSplitOrderPayload({ id: 'TABLE_' + tableNumber, total_price: cartTotalPrice, items: [...cartItems] });
+            setSplitOrderPayload({ 
+                id: 'TABLE_' + tableNumber, 
+                total_price: cartTotalPrice, 
+                items: [...cartItems],
+                sessionId: sessionId 
+            });
             setShowSplit(true);
             return;
         } else if (accessToken) {

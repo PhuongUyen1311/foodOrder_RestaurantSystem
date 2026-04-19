@@ -13,6 +13,7 @@ const ProductBOM = require("../models/productBom.model");
 const Ingredient = db.ingredient;
 const Product = db.product;
 const { checkAllProductsAvailability } = require("../services/product.service");
+const { refreshTableSession } = require("./table.controller");
 
 /**
  * Helper function to check if ingredients are sufficient
@@ -149,9 +150,9 @@ exports.createCashOrder = async (req, res) => {
         if (listSocket.io) {
             const activeOrders = await Order.find({ status: { $ne: 'COMPLETED' }, is_payment: false });
             const admins = await Admin.find({ socket_id: { $exists: true, $ne: null } });
-            
-            const messageStr = typeOrder === 'chia bill' 
-                ? `Khách yêu cầu chia bill mới!` 
+
+            const messageStr = typeOrder === 'chia bill'
+                ? `Khách yêu cầu chia bill mới!`
                 : (tableNumber ? `Có đơn hàng mới từ bàn ${tableNumber}!` : `Có đơn hàng online mới!`);
 
             for (const ad of admins) {
@@ -160,7 +161,10 @@ exports.createCashOrder = async (req, res) => {
                     time: "Vừa xong",
                     tableNumber: tableNumber,
                     orderId: order.id,
-                    type: "order"
+                    batchNum: 1,
+                    type: "order",
+                    status: 'NEW',
+                    createdAt: order.createdAt
                 });
                 listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', activeOrders);
             }
@@ -175,7 +179,7 @@ exports.createCashOrder = async (req, res) => {
 
 exports.createGuestOrder = async (req, res) => {
     try {
-        let { items, tableNumber, typeOrder, guest_name, session_id } = req.body;
+        let { items, tableNumber, typeOrder, guest_name, session_id, phone } = req.body;
         if (!items || items.length === 0) {
             return res.status(400).send({ success: false, message: "No items provided." });
         }
@@ -197,32 +201,32 @@ exports.createGuestOrder = async (req, res) => {
         let order;
         // Kiểm tra xem khách này đã có order chưa thanh toán ở bàn này chưa
         if (session_id) {
-            order = await Order.findOne({ 
-                session_id: session_id, 
-                table_number: tableNumber, 
-                is_payment: false, 
-                status: { $ne: 'COMPLETED' } 
+            order = await Order.findOne({
+                session_id: session_id,
+                table_number: tableNumber,
+                is_payment: false,
+                status: { $ne: 'COMPLETED' }
             });
         }
-        
+
         // Nếu k tìm thấy bằng session_id, thử tìm bằng guest_name + tableNumber
         if (!order && guest_name) {
-            order = await Order.findOne({ 
-                guest_name: guest_name, 
-                table_number: tableNumber, 
-                is_payment: false, 
-                status: { $ne: 'COMPLETED' } 
+            order = await Order.findOne({
+                guest_name: guest_name,
+                table_number: tableNumber,
+                is_payment: false,
+                status: { $ne: 'COMPLETED' }
             });
         }
-        
+
         let batch_num = 1;
 
         if (order) {
-            // ... (rest of merging logic remains same)
             // Ensure session_id and guest_name are updated if they were missing
             if (!order.session_id && session_id) order.session_id = session_id;
             if (!order.guest_name && guest_name) order.guest_name = guest_name;
-            
+            if (!order.phone && phone) order.phone = phone;
+
             // Append items to existing order
             const existingItems = await OrderItem.find({ order_id: order._id }).sort({ batch_num: -1 });
             if (existingItems.length > 0) {
@@ -231,7 +235,7 @@ exports.createGuestOrder = async (req, res) => {
 
             let addTotal = 0;
             let addItemQty = 0;
-            
+
             for (let i = 0; i < items.length; i++) {
                 const item = items[i];
                 const _product = await db.product.findById(item.product_id || item.id);
@@ -259,7 +263,7 @@ exports.createGuestOrder = async (req, res) => {
             await order.save();
         } else {
             // Create new order
-            order = await convertHelper.createOrderFromGuestItems(items, typeOrder, tableNumber, guest_name);
+            order = await convertHelper.createOrderFromGuestItems(items, typeOrder, tableNumber, guest_name, phone);
             if (order) {
                 order.session_id = session_id;
                 await order.save();
@@ -277,18 +281,22 @@ exports.createGuestOrder = async (req, res) => {
         if (listSocket.io) {
             const activeOrders = await Order.find({ status: { $ne: 'COMPLETED' }, is_payment: false });
             const admins = await Admin.find({ socket_id: { $exists: true, $ne: null } });
-            
-            const messageStr = typeOrder === 'chia bill' 
-                ? `Khách yêu cầu chia bill mới!` 
-                : (tableNumber ? `Có đơn đặt hàng mới tại bàn ${tableNumber}!` : `Có đơn đặt hàng khách ẩn danh mới!`);
+
+            const messageStr = typeOrder === 'chia bill'
+                ? `Khách yêu cầu chia bill mới!`
+                : (tableNumber ? `Đơn đặt món mới BÀN ${tableNumber}!` : `Có đơn đặt món khách ẩn danh mới!`);
 
             for (const ad of admins) {
                 listSocket.updateOrder.to(ad.socket_id).emit('notification', {
                     message: messageStr,
                     time: "Vừa xong",
                     tableNumber: tableNumber,
+                    guestName: order.guest_name,
                     orderId: order.id,
-                    type: "order"
+                    batchNum: batch_num,
+                    type: "order",
+                    status: 'NEW',
+                    createdAt: order.createdAt
                 });
                 listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', activeOrders);
             }
@@ -454,6 +462,15 @@ exports.getGuestOrdersByTable = async (req, res) => {
 
         const { sessionId } = req.query;
 
+        const Table = db.table;
+        const table = await Table.findOne({ tableNumber: tableNumber });
+        if (!table) {
+            return res.status(404).json({ success: false, message: "Bàn không tồn tại." });
+        }
+
+        // We can optionally verify the session here if needed, 
+        // but for now we focus on the Join flow which requires the PIN.
+
         let query = {
             table_number: tableNumber,
             order_source: 'table',
@@ -485,7 +502,7 @@ exports.getGuestOrdersByTable = async (req, res) => {
 exports.payGuestOrdersByTable = async (req, res) => {
     try {
         const { tableNumber } = req.params;
-        const { paymentMethod } = req.body;
+        const { paymentMethod, sessionId } = req.body;
         if (!tableNumber) {
             return res.status(400).send({ success: false, message: "No table number provided." });
         }
@@ -500,8 +517,13 @@ exports.payGuestOrdersByTable = async (req, res) => {
             updateData.is_payment = true;
         }
 
+        let query = { table_number: tableNumber, order_source: 'table', is_payment: false };
+        if (sessionId) {
+            query.session_id = sessionId;
+        }
+
         const result = await Order.updateMany(
-            { table_number: tableNumber, order_source: 'table', is_payment: false },
+            query,
             { $set: updateData }
         );
 
@@ -524,6 +546,20 @@ exports.payGuestOrdersByTable = async (req, res) => {
         }
 
         res.status(200).send({ success: true, message: "Guest orders updated with payment method." });
+
+        // Refresh session if all orders are paid - DISABLED automatic refresh
+        /*
+        if (updateData.is_payment) {
+            const unpaidCount = await Order.countDocuments({ 
+                table_number: tableNumber, 
+                order_source: 'table', 
+                is_payment: false 
+            });
+            if (unpaidCount === 0) {
+                await refreshTableSession(tableNumber);
+            }
+        }
+        */
     } catch (error) {
         console.error(error);
         res.status(500).send({ success: false, message: "An error occurred while updating orders." });
@@ -552,6 +588,20 @@ exports.updateIsPayment = async (req, res) => {
 
         await order.save();
 
+        if (isPayment && order.order_source === 'table') {
+            // DISABLED automatic refresh on single order payment
+            /*
+            const unpaidCount = await Order.countDocuments({ 
+                table_number: order.table_number, 
+                order_source: 'table', 
+                is_payment: false 
+            });
+            if (unpaidCount === 0) {
+                await refreshTableSession(order.table_number);
+            }
+            */
+        }
+
         // Gửi socket update list cho admin
         const listOrder = await Order.find({ status: { $ne: 'COMPLETED' }, is_payment: false });
         const admin = await Admin.find({ socket_id: { $exists: true, $ne: null } });
@@ -570,16 +620,18 @@ exports.updateIsPayment = async (req, res) => {
 exports.callStaff = async (req, res) => {
     try {
         const { tableNumber, message, orderId } = req.body;
-        
+
         // Gửi socket cho toàn bộ admin/staff
         const admins = await Admin.find({});
         for (const ad of admins) {
             if (ad.socket_id) {
                 listSocket.updateOrder.to(ad.socket_id).emit('notification', {
-                    message: message || `Bàn số ${tableNumber} yêu cầu hỗ trợ!`,
+                    message: message || `Bàn số ${tableNumber} yêu cầu hỗ trợ thanh toán!`,
                     time: "Vừa xong",
                     tableNumber,
-                    orderId
+                    orderId,
+                    type: "support",
+                    createdAt: new Date()
                 });
             }
         }
@@ -595,14 +647,14 @@ exports.getActiveGuests = async (req, res) => {
     try {
         const { tableNumber } = req.params;
         const orders = await Order.find({ table_number: tableNumber, is_payment: false, status: { $ne: 'COMPLETED' } });
-        
+
         const guests = [];
         orders.forEach(o => {
             if (o.guest_name && !guests.includes(o.guest_name)) {
                 guests.push(o.guest_name);
             }
         });
-        
+
         res.status(200).json({ success: true, guests: guests });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Lỗi lấy danh sách khách' });
@@ -611,31 +663,97 @@ exports.getActiveGuests = async (req, res) => {
 
 exports.joinGuestSession = async (req, res) => {
     try {
-        const { tableNumber, username, phoneCode } = req.body;
-        if (!username || !phoneCode) {
-            return res.status(400).json({ success: false, message: "Vui lòng cung cấp username và số điện thoại." });
+        const { tableNumber, username, phoneCode, pin } = req.body;
+        if (!phoneCode) {
+            return res.status(400).json({ success: false, message: "Vui lòng cung cấp số điện thoại." });
         }
 
-        // Kiểm tra xem khách có chọn username cũ không
-        const existingOrder = await Order.findOne({ table_number: tableNumber, guest_name: username, is_payment: false, status: { $ne: 'COMPLETED' } });
-        
-        if (existingOrder) {
-            // Đây là tình huống khách bấm vào tài khoản cũ
-            // check phoneCode (bài test xác thực)
-            // Trong DB, mình lưu phoneCode thế nào? Thực ra mình dùng "session_id" hoặc tạo order.guest_phone
-            // Nhưng lúc tạo order, ta ko lưu phone! Ta cần phải lưu số điện thoại đâu đó.
-            // Để đơn giản, ta sẽ lưu phoneCode vào session_id cho dễ verify. 
-            // Hoặc mình có thể dùng session_id = phoneCode luôn! Vừa làm ID vừa làm mật khẩu.
-            if (existingOrder.session_id !== phoneCode) {
-                return res.status(400).json({ success: false, message: "Số điện thoại xác thực không đúng!" });
-            }
-            return res.status(200).json({ success: true, username: username, code: phoneCode, sessionId: phoneCode });
-        } else {
-            // Khách mới toanh
-            return res.status(200).json({ success: true, username: username, code: phoneCode, sessionId: phoneCode });
+        // Validate phone number format
+        const phoneRegex = /^(0[3|5|7|8|9])[0-9]{8}$/;
+        if (!phoneRegex.test(phoneCode)) {
+            return res.status(400).json({ success: false, message: 'Số điện thoại không đúng định dạng (10 chữ số, ví dụ: 0912345678).' });
         }
+
+        const Table = db.table;
+        const table = await Table.findOne({ tableNumber: tableNumber });
+        if (!table) {
+            return res.status(404).json({ success: false, message: "Bàn không tồn tại." });
+        }
+
+        if (table.session_pin && table.session_pin !== pin) {
+            return res.status(403).json({ success: false, message: "Mã PIN không chính xác. Vui lòng liên hệ nhân viên để lấy mã." });
+        }
+
+        // 1. Tìm tên khách hàng gần nhất đã dùng số điện thoại này
+        const lastOrderWithPhone = await Order.findOne({ phone: phoneCode }).sort({ createdAt: -1 });
+        const suggestedName = lastOrderWithPhone ? lastOrderWithPhone.guest_name : null;
+
+        // 2. Nếu khách chưa nhập tên nhưng ta tìm thấy tên cũ -> Trả về gợi ý
+        if (!username && suggestedName) {
+            return res.status(200).json({ 
+                success: true, 
+                needName: false, 
+                suggestedName: suggestedName,
+                message: "Tìm thấy thông tin cũ của bạn." 
+            });
+        }
+
+        // 3. Kiểm tra tính xác thực của tên đã chọn (nếu có)
+        if (username) {
+            const orderByName = await Order.findOne({ 
+                table_number: tableNumber, 
+                guest_name: username,
+                is_payment: false, 
+                status: { $ne: 'COMPLETED' } 
+            });
+
+            if (orderByName) {
+                // Nếu đơn hàng này đã được gắn với một số điện thoại khác -> Yêu cầu xác thực đúng
+                if (orderByName.phone && orderByName.phone !== phoneCode) {
+                    return res.status(401).json({ 
+                        success: false, 
+                        message: "Tên này đã được đăng ký bởi một số điện thoại khác. Vui lòng nhập đúng số điện thoại của bạn hoặc chọn tên khác." 
+                    });
+                }
+                
+                // Trả về sessionId cũ để khách tiếp tục phiên
+                return res.status(200).json({ 
+                    success: true, 
+                    username: orderByName.guest_name, 
+                    code: phoneCode, 
+                    sessionId: orderByName.session_id || phoneCode 
+                });
+            }
+        }
+
+        // 4. Kiểm tra xem số điện thoại này đã có phiên ở bàn này chưa (phòng trường hợp khách dùng tên khác nhưng cùng phone)
+        const orderByPhone = await Order.findOne({ 
+            table_number: tableNumber, 
+            phone: phoneCode,
+            is_payment: false, 
+            status: { $ne: 'COMPLETED' } 
+        });
+
+        if (orderByPhone) {
+            return res.status(200).json({ 
+                success: true, 
+                username: orderByPhone.guest_name, 
+                code: phoneCode, 
+                sessionId: orderByPhone.session_id || phoneCode 
+            });
+        }
+
+        // 5. Nếu chưa có phiên nào và cũng chưa có username -> Yêu cầu nhập tên
+        if (!username) {
+            return res.status(200).json({ success: true, needName: true });
+        }
+
+        // 6. Khách mới hoàn toàn cho bàn này -> Tạo ID ngẫu nhiên
+        const randomId = Math.random().toString(36).substring(2, 8);
+        return res.status(200).json({ success: true, username: username, code: phoneCode, sessionId: randomId });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Lỗi tạo phiên' });
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Lỗi xác thực định danh' });
     }
 };
 
@@ -643,12 +761,12 @@ exports.updateOrderItemStatus = async (req, res) => {
     try {
         const { id, itemId } = req.params;
         const { status } = req.body;
-        
+
         const item = await OrderItem.findOne({ _id: itemId, order_id: id });
         if (!item) {
             return res.status(404).json({ success: false, message: "Không tìm thấy món trong đơn." });
         }
-        
+
         if (status === 'CANCELED' && item.status !== 'CANCELED') {
             const Order = db.order;
             const orderDoc = await Order.findById(id);
@@ -669,7 +787,26 @@ exports.updateOrderItemStatus = async (req, res) => {
         await item.save();
 
         if (listSocket.io) {
+            // Calculate batch status
+            const batchItems = await OrderItem.find({ order_id: id, batch_num: item.batch_num });
+            const nonCanceled = batchItems.filter(i => i.status !== 'CANCELED');
+
+            let batchStatus = 'NEW';
+            if (nonCanceled.length > 0) {
+                const allServed = nonCanceled.every(i => i.status === 'SERVED');
+                const someServed = nonCanceled.some(i => i.status === 'SERVED');
+                const anyPreparing = nonCanceled.some(i => ['PROCESSING', 'CONFIRMED', 'PREPARING'].includes(i.status));
+                const allNew = nonCanceled.every(i => i.status === 'NEW');
+
+                if (allServed) batchStatus = 'SERVED';
+                else if (someServed) batchStatus = 'SERVING';
+                else if (anyPreparing) batchStatus = 'CONFIRMED';
+                else if (allNew) batchStatus = 'NEW';
+                else batchStatus = 'CONFIRMED'; // Fallback
+            }
+
             listSocket.io.emit('itemStatusUpdated', { orderId: id, itemId: itemId, status: status });
+            listSocket.io.emit('batchStatusUpdated', { orderId: id, batchNum: item.batch_num, status: batchStatus });
         }
 
         res.status(200).json({ success: true, message: "Đã cập nhật trạng thái món", item });
@@ -705,7 +842,7 @@ exports.mergeOrders = async (req, res) => {
                 guestNames.push(o.guest_name);
             }
             idsToDelete.push(o._id);
-            
+
             // Chuyển items sang mainOrder
             await OrderItem.updateMany({ order_id: o._id }, { $set: { order_id: mainOrder._id } });
         }
@@ -722,5 +859,73 @@ exports.mergeOrders = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: "Lỗi gộp đơn hàng." });
+    }
+};
+
+exports.getOrdersByMultiTables = async (req, res) => {
+    try {
+        const { tables } = req.query;
+        if (!tables) {
+            return res.status(400).send({ success: false, message: "Missing tables parameter" });
+        }
+        
+        const tableNumbers = tables.split(',').map(t => t.trim());
+        
+        // Find active orders for these tables
+        const orders = await Order.find({
+            table_number: { $in: tableNumbers },
+            is_payment: false
+        }).sort({ createdAt: -1 });
+        
+        if (!orders || orders.length === 0) {
+            return res.status(404).send({ success: false, message: "Không tìm thấy đơn hàng nào cho các bàn này" });
+        }
+        
+        const orderIds = orders.map(o => o._id);
+        const orderItems = await OrderItem.find({ order_id: { $in: orderIds }, is_active: true });
+        
+        // Calculate totals
+        const totalAmount = orders.reduce((sum, o) => sum + o.total_price, 0);
+        
+        // Group items
+        // Format: { productId: { name, totalQty, byTable: { table1: qty1, table2: qty2 } } }
+        const groupedMap = {};
+        
+        for (const item of orderItems) {
+            const order = orders.find(o => o._id.toString() === item.order_id.toString());
+            if (!order) continue;
+            
+            const pId = item.product_id ? item.product_id.toString() : (item.id ? item.id.toString() : 'unknown');
+            if (!groupedMap[pId]) {
+                groupedMap[pId] = {
+                    product_id: pId,
+                    product_name: item.product_name || 'Không xác định',
+                    total_qty: 0,
+                    unit_price: item.price,
+                    byTable: {}
+                };
+            }
+            
+            groupedMap[pId].total_qty += item.qty;
+            
+            const tNum = order.table_number;
+            if (!groupedMap[pId].byTable[tNum]) {
+                groupedMap[pId].byTable[tNum] = 0;
+            }
+            groupedMap[pId].byTable[tNum] += item.qty;
+        }
+        
+        const groupedItems = Object.values(groupedMap);
+        
+        res.send({
+            success: true,
+            orders: orders,
+            groupedItems: groupedItems,
+            totalAmount: totalAmount,
+            tableNumbers: tableNumbers
+        });
+    } catch (err) {
+        console.error("Lỗi getOrdersByMultiTables:", err);
+        res.status(500).send({ success: false, message: "Lỗi server." });
     }
 };

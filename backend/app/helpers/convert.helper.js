@@ -128,7 +128,7 @@ exports.getArrayDate = async (startDate, endDate, typeGet) => {
     return arrayDate;
 };
 
-exports.createOrderFromGuestItems = async (items, typeOrder, tableNumber, guestName = null) => {
+exports.createOrderFromGuestItems = async (items, typeOrder, tableNumber, guestName = null, phone = null) => {
     if (!items || items.length === 0) {
         return false;
     }
@@ -142,6 +142,7 @@ exports.createOrderFromGuestItems = async (items, typeOrder, tableNumber, guestN
         first_name: guestName || "Khách",
         last_name: guestName ? "" : "vãng lai",
         guest_name: guestName,
+        phone: phone,
         total_item: total_item,
         total_price: total_price,
         status: "NEW",

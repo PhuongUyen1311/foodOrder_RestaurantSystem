@@ -23,6 +23,14 @@ module.exports = mongoose => {
         merged_into: {
             type: String,
             default: null
+        },
+        session_pin: {
+            type: String,
+            default: null
+        },
+        session_start: {
+            type: Date,
+            default: null
         }
       }
     );

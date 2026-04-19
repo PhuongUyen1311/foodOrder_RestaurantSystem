@@ -9,6 +9,9 @@ module.exports = app => {
     router.post("/table", payment.createTablePaymentUrl);
     router.post("/split", payment.splitBill);
     router.post("/split/pay", payment.createSplitPaymentUrl);
+    router.post("/split/undo", payment.undoSplit);
+    router.post("/merge-bills", payment.mergeBills);
+    router.post("/multi-pay", payment.multiPay);
 
     // return
     router.post("/webhook", payment.receiveWebhook);

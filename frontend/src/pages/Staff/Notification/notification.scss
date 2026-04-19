@@ -20,10 +20,35 @@
     }
 
     svg {
-        font-size: 22px;
+        font-size: 26px;
         color: #ff9800;
     }
 
+    .notification-filters {
+        .btn-filter {
+            padding: 6px 16px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.2s;
+            cursor: pointer;
+
+            &:hover {
+                border-color: #2196f3;
+                color: #2196f3;
+            }
+
+            &.active {
+                background: #2196f3;
+                color: white;
+                border-color: #2196f3;
+                box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+            }
+        }
+    }
 }
 
 .notification-list {
@@ -45,17 +70,27 @@
 
     border-radius: 10px;
 
-    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
 
     transition: 0.2s;
 
+    &.served-item {
+        opacity: 0.7;
+        background: #f9f9f9;
+        box-shadow: none;
+        border: 1px solid #eee;
+    }
+
+    &.read-item {
+        opacity: 0.85;
+        background: #fafafa;
+        .message {
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+    }
 }
 
-.notification-item:hover {
-
-    transform: translateY(-2px);
-
-}
 
 .notification-icon {
 
@@ -89,6 +124,34 @@
     display: flex;
     flex-direction: column;
     flex-grow: 1;
+
+    .status-badge {
+        font-size: 10px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        font-weight: 700;
+
+        &.new {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        &.served {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        &.confirmed {
+            background: #fff8e1;
+            color: #f57c00;
+        }
+
+        &.processing, &.serving {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+    }
 }
 
 .notification-actions {
@@ -107,7 +170,7 @@
         font-weight: 600;
         cursor: pointer;
         transition: all 0.2s;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 
         svg {
             font-size: 12px;
@@ -116,8 +179,19 @@
         &.view {
             background: #e3f2fd;
             color: #1976d2;
+
             &:hover {
                 background: #bbdefb;
+                transform: translateY(-1px);
+            }
+        }
+
+        &.share {
+            background: #f0f2f5;
+            color: #4b4f56;
+
+            &:hover {
+                background: #e4e6eb;
                 transform: translateY(-1px);
             }
         }
@@ -126,6 +200,7 @@
             background: #fff5f5;
             color: #c0392b;
             border: 1px solid #fab1a0;
+
             &:hover {
                 background: #ff7675;
                 color: white;

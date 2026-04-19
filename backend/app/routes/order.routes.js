@@ -13,6 +13,7 @@ module.exports = app => {
   router.put("/guest/table/:tableNumber/payment", order.payGuestOrdersByTable);
   router.get("/guest/table/:tableNumber/active-guests", order.getActiveGuests);
   router.post("/guest/join", order.joinGuestSession);
+  router.get("/multi-tables", order.getOrdersByMultiTables);
 
   // get order
   router.get("/:orderId", order.getOrder);

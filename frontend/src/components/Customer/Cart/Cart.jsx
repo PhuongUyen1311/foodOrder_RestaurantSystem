@@ -48,15 +48,17 @@ function Cart({ accessToken }) {
             const guestSessionJSON = sessionStorage.getItem('guest_session');
             let guestName = null;
             let sessionId = null;
+            let phone = null;
             if (guestSessionJSON) {
                 try {
                     const parsed = JSON.parse(guestSessionJSON);
                     guestName = parsed.username;
                     sessionId = parsed.sessionId;
+                    phone = parsed.code; // code chính là số điện thoại đã nhập
                 } catch (e) {}
             }
 
-            const data = await fetchGuestOrder(itemsToOrder, tableNumber, 'table', 'cash', guestName, sessionId);
+            const data = await fetchGuestOrder(itemsToOrder, tableNumber, 'table', 'cash', guestName, sessionId, phone);
 
             if (data) {
                 // Cập nhật local storage giỏ hàng sau khi order

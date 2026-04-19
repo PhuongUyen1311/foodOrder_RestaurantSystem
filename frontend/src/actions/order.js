@@ -59,26 +59,27 @@ export const fetchGetGuestOrdersByTable = async (tableNumber, sessionId) => {
     return data;
 }
 
-export const fetchPayGuestOrdersByTable = async (tableNumber, paymentMethod) => {
+export const fetchPayGuestOrdersByTable = async (tableNumber, paymentMethod, sessionId) => {
     const response = await fetch(`/api/order/guest/table/${tableNumber}/payment`, {
         method: 'put',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ paymentMethod })
+        body: JSON.stringify({ paymentMethod, sessionId })
     });
     const data = await response.json();
     return data;
 }
 
-export const fetchGuestOrder = async (items, tableNumber, orderSource, paymentMethod, guest_name, session_id) => {
+export const fetchGuestOrder = async (items, tableNumber, orderSource, paymentMethod, guest_name, session_id, phone = null) => {
     const orderData = {
         items: items,
         tableNumber: tableNumber,
         typeOrder: paymentMethod || "cash",
         orderSource: orderSource,
         guest_name: guest_name,
-        session_id: session_id
+        session_id: session_id,
+        phone: phone
     };
 
     const response = await fetch('/api/order/guest', {
@@ -105,13 +106,13 @@ export const fetchGuestPayment = async (items, tableNumber, orderSource) => {
     return data;
 }
 
-export const fetchTablePayment = async (tableNumber) => {
+export const fetchTablePayment = async (tableNumber, sessionId) => {
     const response = await fetch('/api/payment/table', {
         method: 'post',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ tableNumber, bankCode: "" })
+        body: JSON.stringify({ tableNumber, sessionId, bankCode: "" })
     });
     const data = await response.json();
     return data;
@@ -168,6 +169,18 @@ export const fetchUpdateItemStatus = async (orderId, itemId, status, accessToken
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({ status })
+    });
+    return response.json();
+}
+
+export const fetchUndoSplitPayment = async (orderId, accessToken) => {
+    const response = await fetch(`/api/payment/split/undo`, {
+        method: 'post',
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ orderId })
     });
     return response.json();
 }

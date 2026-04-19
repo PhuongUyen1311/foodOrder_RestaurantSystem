@@ -8,6 +8,7 @@ import {
     FaCircle,
     FaFacebookMessenger
 } from "react-icons/fa";
+import { toast } from 'react-toastify';
 import "./header.scss";
 
 function Header() {
@@ -41,12 +42,38 @@ function Header() {
         // Lắng nghe sự kiện thông báo mới từ socket
         socket.on("notification", (data) => {
             playNotificationSound();
+            
+            // Hiển thị Toast thông báo nhanh
+            const toastMessage = data.message || "Có thông báo mới từ hệ thống!";
+            if (data.type === 'support') {
+                toast.warning(toastMessage);
+            } else {
+                toast.info(toastMessage);
+            }
+            
             setNotifications(prev => {
-                const newList = [{ ...data, id: Date.now() }, ...prev];
+                const newList = [{ ...data, id: Date.now(), isRead: false }, ...prev];
                 localStorage.setItem("admin_notifications", JSON.stringify(newList));
                 // Thông báo cho các tab khác hoặc chính tab này về sự thay đổi
                 window.dispatchEvent(new Event("storage"));
+                window.dispatchEvent(new CustomEvent("adminNotificationsUpdated", { detail: newList }));
                 return newList;
+            });
+        });
+
+        // Lắng nghe cập nhật trạng thái đợt gọi món
+        socket.on("batchStatusUpdated", (data) => {
+            const { orderId, batchNum, status } = data;
+            setNotifications(prev => {
+                const updated = prev.map(n => {
+                    if (n.orderId === orderId && n.batchNum === batchNum) {
+                        return { ...n, status: status };
+                    }
+                    return n;
+                });
+                localStorage.setItem("admin_notifications", JSON.stringify(updated));
+                window.dispatchEvent(new Event("storage"));
+                return updated;
             });
         });
 
@@ -96,8 +123,8 @@ function Header() {
                     className={`header-icon ${location.pathname === "/staff/notification" ? "active" : ""}`}
                 >
                     <FaBell />
-                    {notifications.length > 0 && (
-                        <span className="notification-badge">{notifications.length}</span>
+                    {notifications.filter(n => !n.isRead).length > 0 && (
+                        <span className="notification-badge">{notifications.filter(n => !n.isRead).length}</span>
                     )}
                 </Link>
                 

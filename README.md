@@ -112,9 +112,6 @@ graph TD
 
 The schema was designed for **Analytics-First** storage:
 
-![Dashboard Mockup](C:\Users\jofob\.gemini\antigravity\brain\85f43103-3d0b-493e-8138-eab6a16b3673\luxury_pos_dashboard_mockup_1777484178446.png)
-
-
 *   **Granular Timestamps:** Tracking `created_at`, `served_at`, and `paid_at` to calculate preparation times and turnover rates.
 *   **Categorization:** Every product belongs to a category and sub-category, enabling "Contribution %" analysis.
 *   **Customer ID Tracking:** Identifying returning customers vs. new customers to calculate Retention Rate (CRR).

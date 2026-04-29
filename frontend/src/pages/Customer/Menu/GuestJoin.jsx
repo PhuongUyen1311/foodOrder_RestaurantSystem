@@ -75,7 +75,7 @@ function GuestJoin({ show, tableNumber, onJoined }) {
         }
 
         let username = selectedGuest || newUsername;
-        
+
         setLoading(true);
         try {
             const payload = {
@@ -139,13 +139,13 @@ function GuestJoin({ show, tableNumber, onJoined }) {
     };
 
     const finalizeJoin = (data) => {
-        const sessionObj = { 
-            table: tableNumber, 
-            username: data.username, 
-            code: data.code, 
-            sessionId: data.sessionId 
+        const sessionObj = {
+            table: tableNumber,
+            username: data.username,
+            code: data.code,
+            sessionId: data.sessionId
         };
-        
+
         // Nếu backend trả về tên khác với tên khách vừa nhập (do trùng số phone)
         let nameToUse = selectedGuest || newUsername;
         if (nameToUse && data.username !== nameToUse) {
@@ -247,7 +247,7 @@ function GuestJoin({ show, tableNumber, onJoined }) {
             </style>
             <Modal.Body>
                 <div className="brand-header">
-                    <h4>Healthy Food</h4>
+                    <h4>VietNam Cuisine</h4>
                     <span className="table-badge">Table số {tableNumber}</span>
                 </div>
 

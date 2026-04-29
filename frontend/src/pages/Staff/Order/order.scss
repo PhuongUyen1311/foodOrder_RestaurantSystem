@@ -158,3 +158,38 @@
         .btn-payment { background: $gold; color: #000; }
     }
 }
+
+/* Override for Order Details and Printed Invoice to be Beige (vàng be) */
+.order__detail-container, .bill-container, .print-section {
+    background-color: #f9f4e6 !important; /* Vàng be */
+    color: #333 !important;
+
+    * {
+        color: #333 !important;
+    }
+
+    .text-white, .text-muted {
+        color: #555 !important;
+    }
+
+    .bg-dark, .bg-secondary, .bg-success, .bg-danger {
+        background-color: rgba(197, 160, 89, 0.15) !important;
+    }
+
+    .table {
+        background-color: transparent !important;
+        color: #333 !important;
+        
+        thead th {
+            background-color: rgba(197, 160, 89, 0.2) !important;
+            color: #333 !important;
+            border-bottom: 2px solid #ccc !important;
+        }
+
+        td {
+            color: #333 !important;
+            border-bottom: 1px solid #ddd !important;
+            background-color: transparent !important;
+        }
+    }
+}

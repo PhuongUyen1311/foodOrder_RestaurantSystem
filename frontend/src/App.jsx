@@ -22,8 +22,7 @@ import OrderedList from './components/Customer/OrderedList/OrderedList';
 import Slider from './components/Staff/Slider/Slider';
 import HeaderStaff from './components/Staff/Header/Header';
 import RegisterStaff from './pages/Staff/Resgiter/Resgister';
-import Staff from './pages/Staff/Home/HomeStaff';
-import Charts from './pages/Staff/Charts/Charts';
+import Dashboard from './pages/Staff/Dashboard/Dashboard';
 import Category from './pages/Staff/Category/Category';
 
 import Product from './pages/Staff/Product/Product';
@@ -73,14 +72,13 @@ function App() {
           <HeaderStaff />
           <div className="block-content">
             <Routes>
-              <Route path='/staff' element={<Staff />} />
+              <Route path='/staff' element={<Dashboard />} />
               <Route path='/staff/category' element={<Category />} />
               <Route path='/staff/product' element={<Product />} />
               <Route path='/staff/ingredient' element={<Ingredient />} />
               <Route path='/staff/order' element={<Order />} />
               <Route path='/staff/order/multi-payment' element={<MultiPayment />} />
               <Route path='/staff/order/detail/:orderId' element={<OrderDetail />} />
-              <Route path='/staff/revenue' element={<Charts />} />
               <Route path='/staff/manage' element={<StaffList />} />
               <Route path='/staff/table' element={<Table />} />
               <Route path='/staff/profile' element={<ProfileAdmin />} />

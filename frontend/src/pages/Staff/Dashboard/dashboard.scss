@@ -1,0 +1,155 @@
+.dashboard-container {
+  padding: 20px;
+  background-color: #111;
+  min-height: calc(100vh - 70px);
+  color: #fff;
+}
+
+.title-admin {
+  position: relative;
+
+  &::after {
+    display: none !important;
+  }
+}
+
+.dashboard-tabs {
+  margin-bottom: 20px;
+  border-bottom: 1px solid #333;
+
+  .nav-item {
+    margin-bottom: -1px;
+  }
+
+  .nav-link {
+    border: none;
+    color: #888;
+    font-weight: 500;
+    padding: 10px 20px;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s ease;
+
+    &:hover {
+      color: #c5a059;
+      border-color: transparent;
+    }
+
+    &.active {
+      color: #c5a059;
+      background-color: transparent;
+      border-bottom: 2px solid #c5a059;
+    }
+  }
+}
+
+.stat-card {
+  border: 1px solid rgba(197, 160, 89, 0.2);
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  transition: transform 0.2s;
+  background: #1a1a2e;
+  height: 100%;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(197, 160, 89, 0.15);
+  }
+
+  h5 {
+    color: #888;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  h2 {
+    color: #c5a059;
+    margin-bottom: 0;
+    font-weight: 700;
+  }
+
+  .text-muted {
+    color: #666 !important;
+  }
+}
+
+.chart-card {
+  border: 1px solid rgba(197, 160, 89, 0.2);
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  background: #1a1a2e;
+  height: 100%;
+  margin-bottom: 20px;
+
+  h5 {
+    color: #fff;
+    font-weight: 600;
+    margin-bottom: 15px;
+  }
+
+  .text-muted {
+    color: #888 !important;
+  }
+}
+
+.chart-wrapper {
+  position: relative;
+  height: 300px;
+  width: 100%;
+}
+
+.insights-list {
+  list-style: none;
+  padding: 0;
+
+  li {
+    background: #111;
+    margin-bottom: 10px;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #c5a059;
+    font-size: 15px;
+    color: #ddd;
+  }
+}
+
+.recommendations-list {
+  list-style: none;
+  padding: 0;
+
+  li {
+    background: #111;
+    margin-bottom: 10px;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #1ac073;
+    font-size: 15px;
+    color: #ddd;
+  }
+}
+
+/* Custom Table for Sales Tab */
+.table-light {
+  background-color: #2a2a3e !important;
+  color: #c5a059 !important;
+
+  th {
+    background-color: #2a2a3e !important;
+    color: #c5a059 !important;
+    border-bottom: 1px solid rgba(197, 160, 89, 0.2) !important;
+  }
+}
+
+.table {
+  color: #fff !important;
+
+  td {
+    background-color: transparent !important;
+    border-bottom: 1px solid #333 !important;
+    color: #ddd !important;
+  }
+
+  tr:hover td {
+    background-color: rgba(197, 160, 89, 0.05) !important;
+  }
+}

@@ -143,7 +143,7 @@ const analyzeIntentAndHandle = async (message, res) => {
     // 1. Chào hỏi cơ bản
     const greetings = ['chào', 'hello', 'hi', 'ê', 'bot', 'chào bạn', 'hi bot', 'chào em'];
     if (greetings.includes(msg)) {
-        return sendRuleBasedResponse(res, "Chào buổi lành! Mình là trợ lý thông minh của Healthy Food. Mình có thể lấy thực order, báo giá hoặc tính toán Calories giúp bạn nghen!");
+        return sendRuleBasedResponse(res, "Welcome to VietNam Cuisine Restaurant! How can I help you?");
     }
 
     // 2. Request hiển thị thực order
@@ -155,11 +155,11 @@ const analyzeIntentAndHandle = async (message, res) => {
             name: p.name,
             price: p.price
         }));
-        return sendRuleBasedResponse(res, "Dạ VNDây là các món tủ VNDang bán chạy nhất ở cửa hàng bên mình nha:", actions);
+        return sendRuleBasedResponse(res, "Here are some popular dishes in our restaurant:", actions);
     }
 
-    // 3. Search products...ổ biến
-    const searchMatch = msg.match(/(có|mua|cho|tìm|thèm).* (cơm|gà|bò|trà sữa|nước ép|trà|nước|sandwich|yến mạch|salad|bánh|sinh tố)/);
+    // 3. Search products...
+    const searchMatch = msg.match(/(what|buy|give|find|craving).* (rice|chicken|beef|milk tea|juice|tea|water|sandwich|oatmeal|salad|cake|smoothie)/);
     if (searchMatch) {
         const keyword = searchMatch[2];
         const products = await Product.find({ name: { $regex: keyword, $options: "i" }, is_active: true }).limit(5).select('_id name price').lean();
@@ -175,20 +175,20 @@ const analyzeIntentAndHandle = async (message, res) => {
         }
     }
 
-    // => Bỏ qua nếu là câu hỏi phức tạp (VD: "Ăn gì ngon", "Giảm 5kg")
+    // => Bỏ qua nếu là câu hỏi phức tạp (VD: "What do you eat?", "How to lose 5kg?")
     return false;
 };
 
 const handleFallback = async (reqMessage, res) => {
     try {
-        console.log(`[Fallback Activated] Đang tìm kiếm sản phẩm trực tiếp từ DB với từ khoá: ${reqMessage}`);
+        console.log(`[Fallback Activated] Searching directly from DB for keyword: ${reqMessage}`);
         let products = [];
 
         // Smart Search dựa trên Text
         if (reqMessage) {
             // Filter bớt ký tự special, lấy Array từ
             const keywords = reqMessage
-                .replace(/[^vVnNaA-Za-z0-9àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹVNDĐ \-]/g, "")
+                .replace(/[^vVnNaA-Za-z0-9àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹ\-]/g, "")
                 .split(" ")
                 .filter(w => w.length > 2)
                 .join("|");
@@ -202,9 +202,9 @@ const handleFallback = async (reqMessage, res) => {
             }
         }
 
-        // Nếu AI lười, không ra từ khoá khớp, tung 5 sản phẩm tự VNDộng phòng hờ
+        // If AI is lazy and doesn't return matching keywords, return Top 5 random products
         if (products.length === 0) {
-            console.log("[Fallback Query] Không khớp từ khoá, nhả Top 5 sản phẩm ngẫu nhiên.");
+            console.log("[Fallback Query] No keyword matched, returning Top 5 random products.");
             products = await Product.find({ is_active: true }).limit(5).select('_id name price').lean();
         }
 

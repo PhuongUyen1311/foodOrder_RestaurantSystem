@@ -9,10 +9,10 @@ import Cart from '../../../components/Customer/Cart/Cart';
 import PopupOrderSuccess from '../../../components/Customer/PopupOrderSuccess/PopupOrderSuccess';
 import { fetchGetCart } from '../../../actions/cart';
 import { setCartItems, setCartStore } from '../../../actions/user';
-import { 
-    fetchOrder, fetchPayment, fetchUpdateIsPayment, fetchGuestOrder, 
+import {
+    fetchOrder, fetchPayment, fetchUpdateIsPayment, fetchGuestOrder,
     fetchGuestPayment, fetchPayGuestOrdersByTable, fetchTablePayment,
-    fetchCallStaff, fetchCreateSplitPayment, fetchPaymentStatus 
+    fetchCallStaff, fetchCreateSplitPayment, fetchPaymentStatus
 } from '../../../actions/order';
 import SplitBillModal from '../../../components/SplitBillModal';
 import { socket } from '../../../socket';
@@ -198,11 +198,11 @@ function Checkout(props) {
         let data;
         // CREATE ORDER FIRST with dummy payment method 'chia bill' (handled as 'cash' internally for creation)
         if (isFullTablePayment) {
-            setSplitOrderPayload({ 
-                id: 'TABLE_' + tableNumber, 
-                total_price: cartTotalPrice, 
+            setSplitOrderPayload({
+                id: 'TABLE_' + tableNumber,
+                total_price: cartTotalPrice,
                 items: [...cartItems],
-                sessionId: sessionId 
+                sessionId: sessionId
             });
             setShowSplit(true);
             return;
@@ -297,7 +297,7 @@ function Checkout(props) {
                 setMainOrderQr(null);
                 setShowPopup(true);
                 toast.success("Payment Successful!");
-                
+
                 // Thu dọn giỏ hàng nếu cần
                 if (orderSource === 'table') {
                     sessionStorage.removeItem('guestCart');
@@ -324,7 +324,7 @@ function Checkout(props) {
                         setMainOrderQr(null);
                         setShowPopup(true);
                         toast.success("Payment Successful!");
-                        
+
                         if (orderSource === 'table') {
                             sessionStorage.removeItem('guestCart');
                             localStorage.removeItem('guestHasOrdered');
@@ -345,11 +345,11 @@ function Checkout(props) {
 
     const handleCallStaff = async (customMessage = null, orderId = null) => {
         const now = Date.now();
-        
+
         // Reset count nếu VNDã qua 3 phút
         let currentCount = callStaffCount;
         let currentReset = lastCallReset;
-        
+
         if (now - lastCallReset > 180000) {
             currentCount = 0;
             currentReset = now;
@@ -412,7 +412,7 @@ function Checkout(props) {
                                 <div className="alert alert-warning py-3 mt-3 shadow-sm border-warning">
                                     <h4 className="alert-heading fw-bold">⚠️ Cần nhân viên hỗ trợ</h4>
                                     <p className="mb-0 fs-5">
-                                        Vì hóa order VNDược chia thành <strong>{splitSuccessData.length}</strong> phần (nhiều hơn 3), 
+                                        Vì hóa order VNDược chia thành <strong>{splitSuccessData.length}</strong> phần (nhiều hơn 3),
                                         hệ thống VNDã tự VNDộng gửi yêu cầu hỗ trợ. Quý khách vui lòng VNDợi nhân viên to hỗ trợ thanh toán trực tiếp.
                                     </p>
                                 </div>
@@ -432,14 +432,14 @@ function Checkout(props) {
                                                 <img src="/logos/vietqr_logo.png" alt="VietQR" style={{ height: '25px' }} />
                                                 <img src="/logos/mb_logo.png" alt="MB Bank" style={{ height: '18px' }} />
                                             </div>
-                                            
+
                                             <div className="text-center mb-2 fw-bold text-primary">{sb.user_name}</div>
 
                                             <div className="qr-main-container" style={{ padding: '12px', marginBottom: '12px' }}>
                                                 {splitPaymentLinks[sb.split_id] ? (
-                                                    <QRCodeSVG 
-                                                        value={splitPaymentLinks[sb.split_id]} 
-                                                        size={140} 
+                                                    <QRCodeSVG
+                                                        value={splitPaymentLinks[sb.split_id]}
+                                                        size={140}
                                                         level="H"
                                                         imageSettings={{
                                                             src: "/logos/mb_logo.png",
@@ -458,9 +458,9 @@ function Checkout(props) {
                                             </div>
 
                                             <div className="card-footer-info">
-                                                <div className="account-name" style={{fontSize: '10px'}}>Người nhận: VN</div>
-                                                <div className="user-fullname" style={{fontSize: '14px', marginBottom: '8px'}}>NGUYỄN KHÁNH VĂN</div>
-                                                <div className="amount-display" style={{fontSize: '16px', padding: '6px 12px'}}>
+                                                <div className="account-name" style={{ fontSize: '10px' }}>Người nhận: VN</div>
+                                                <div className="user-fullname" style={{ fontSize: '14px', marginBottom: '8px' }}>NGUYỄN KHÁNH VĂN</div>
+                                                <div className="amount-display" style={{ fontSize: '16px', padding: '6px 12px' }}>
                                                     {sb.amount.toLocaleString()} VND
                                                 </div>
                                             </div>
@@ -472,21 +472,21 @@ function Checkout(props) {
 
                         <div className="text-center mt-4">
                             <div className="d-flex justify-content-center gap-3">
-                                <button 
+                                <button
                                     className="btn btn-warning text-white px-4 py-2 fw-bold shadow-sm"
                                     onClick={() => handleCallStaff()}
                                     disabled={isCallingStaff}
                                 >
                                     {isCallingStaff ? "Đang gọi..." : "🔔 Gọi nhân viên hỗ trợ"}
                                 </button>
-                                <button 
+                                <button
                                     className="btn btn-outline-primary px-4 py-2 fw-bold"
                                     onClick={() => navigate(`/menu?table=${tableNumber || sessionStorage.getItem('tableNumber')}`, { replace: true })}
                                 >
                                     Back Menu
                                 </button>
                             </div>
-                            <p className="mt-4 text-secondary small fst-italic">Healthy Food Restaurant - Hân hạnh phục vụ quý khách!</p>
+                            <p className="mt-4 text-secondary small fst-italic">VietNam Cuisine Restaurant - Plessure to serve you!</p>
                         </div>
                     </div>
                 </Container>
@@ -506,8 +506,8 @@ function Checkout(props) {
                                 <tr>
                                     <th>Products</th>
                                     <th>Quantity</th>
-                                    <th>Số tiền</th>
-                                    <th>Đơn giá</th>
+                                    <th>Price</th>
+                                    <th>Total</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -540,7 +540,7 @@ function Checkout(props) {
                         <div className="checkout-group">
                             <div className="checkout-info">
                                 <div className="order-type-info">
-                                    <label>Hình thức VNDặt hàng:</label>
+                                    <label>Order type:</label>
                                     <span>{orderSource === 'table' ? 'Đặt tại bàn' : 'Đặt hàng online'}</span>
                                 </div>
                                 {orderSource === 'table' && tableNumber && (
@@ -552,10 +552,10 @@ function Checkout(props) {
                             </div>
 
                             <div className="checkout-payment">
-                                <label>Select phương thức thanh toán</label>
+                                <label>Select payment method</label>
                                 <Form.Select name="payment" onChange={handleSelectPayment}>
                                     <option value="">Payment Method</option>
-                                    <option value="cash">Return bằng cash</option>
+                                    <option value="cash">Return by Cash</option>
                                     <option value="transfer">Bank Transfer</option>
                                 </Form.Select>
                             </div>
@@ -567,7 +567,7 @@ function Checkout(props) {
                                 </div>
                                 <hr />
                                 <div className="box-group">
-                                    <label className='title-order'>Số tiền thanh toán</label>
+                                    <label className='title-order'>Total price</label>
                                     <span className='price-order'>{cartTotalPrice.toLocaleString('vi', { style: 'currency', currency: 'VND' })}</span>
                                 </div>
 
@@ -624,15 +624,15 @@ function Checkout(props) {
                             <img src="/logos/mb_logo.png" alt="MB Bank" className="mb-logo-text" />
                         </div>
 
-                        <div 
+                        <div
                             className={`qr-main-container ${isZoomed ? 'zoomed' : ''}`}
                             onClick={() => setIsZoomed(!isZoomed)}
                             style={{ cursor: 'zoom-in' }}
                         >
                             {mainOrderQr ? (
-                                <QRCodeSVG 
-                                    value={mainOrderQr.qrCode} 
-                                    size={isZoomed ? 400 : 250} 
+                                <QRCodeSVG
+                                    value={mainOrderQr.qrCode}
+                                    size={isZoomed ? 400 : 250}
                                     level="H"
                                     imageSettings={{
                                         src: "/logos/mb_logo.png",
@@ -657,8 +657,8 @@ function Checkout(props) {
                         </div>
 
                         <div className="text-center instruction-text">
-                            Quét mã bằng App ngân hàng hoặc Ví VNDiện tử.<br/>
-                            <span className="text-primary fw-bold" style={{cursor:'pointer'}} onClick={() => setIsZoomed(!isZoomed)}>
+                            Quét mã bằng App ngân hàng hoặc Ví VNDiện tử.<br />
+                            <span className="text-primary fw-bold" style={{ cursor: 'pointer' }} onClick={() => setIsZoomed(!isZoomed)}>
                                 {isZoomed ? "Nhấn to thu nhỏ" : "Nhấn vào mã QR to phóng to"}
                             </span>
                         </div>

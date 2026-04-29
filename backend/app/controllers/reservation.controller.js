@@ -20,7 +20,7 @@ const verifyEmailConfig = async () => {
     console.log('Checking email configuration...');
     console.log('Email User:', process.env.EMAIL_USER);
     console.log('Email Pass length:', process.env.EMAIL_PASS?.length);
-    
+
     await transporter.verify();
     console.log('Email configuration is correct');
     return true;
@@ -99,7 +99,7 @@ exports.createReservation = async (req, res) => {
         message: "Thời gian book table phải từ 08:00 to 20:00"
       });
     }
- 
+
     const reservationTime = new Date(`${use_date}T${use_time}`);
     const now = new Date();
     const thirtyMinutesFromNow = new Date(now.getTime() + 30 * 60 * 1000);
@@ -164,7 +164,7 @@ exports.createReservation = async (req, res) => {
 
     // 7. Save reservation
     const savedReservation = await reservation.save();
-    
+
     // Customers có thể book table ngày khác nên ta không update table.isAvailable = false nữa.
     // Status bàn sẽ VNDược tính toán VNDộng dựa trên lịch VNDặt
     // table.isAvailable = false;
@@ -180,28 +180,28 @@ exports.createReservation = async (req, res) => {
 
     } catch (emailError) {
 
-      console.log("⚠ Không gửi VNDược email:", emailError.message);
+      console.log("⚠ Can not send email confirmation", emailError.message);
 
     }
 
     // 10. Return kết quả
     res.status(200).json({
-      message: "Đặt bàn thành công. Mã xác nhận has been gửi tới email của bạn.",
+      message: "Successfull reservation, please check your email for more information",
       reservation: savedReservation
     });
 
     // Phát tín hiệu cập nhật qua socket to nhân viên thấy ngay lịch VNDặt mới
     const io = req.app.get('socketio');
     if (io) {
-        io.emit('tableStatusChanged');
+      io.emit('tableStatusChanged');
     }
 
   } catch (error) {
 
-    console.error("❌ LỖI KHI TẠO ĐẶT BÀN:", error);
+    console.error("❌ Error when creating reservation:", error);
 
     res.status(500).json({
-      message: "Có lỗi xảy ra khi book table",
+      message: "Error when creating reservation",
       error: error.message
     });
 
@@ -224,7 +224,7 @@ exports.completeReservation = async (req, res) => {
     // 1. Tìm thông tin bàn Master
     const masterTable = await db.table.findById(tableId);
     if (!masterTable) {
-        return res.status(404).send({ message: 'Không tìm thấy bàn' });
+      return res.status(404).send({ message: 'Table not found' });
     }
 
     // 2. Tìm tất cả bàn VNDang gộp vào MASTER này
@@ -250,10 +250,10 @@ exports.completeReservation = async (req, res) => {
     // 5. Phát tín hiệu cập nhật qua socket
     const io = req.app.get('socketio');
     if (io) {
-        io.emit('tableStatusChanged');
+      io.emit('tableStatusChanged');
     }
 
-    res.status(200).send({ message: 'Đã hoàn tất và giải phóng bàn thành công' });
+    res.status(200).send({ message: 'Completed and released table successfully' });
   } catch (error) {
     res.status(400).send({ message: error.message });
   }
@@ -265,7 +265,7 @@ exports.getReservationByTableId = async (req, res) => {
     const localISO = new Date(Date.now() - tzoffset).toISOString().split('T')[0];
     const todayDateQuery = new Date(localISO + "T00:00:00.000Z");
 
-    const reservations = await Reservation.find({ 
+    const reservations = await Reservation.find({
       tableId: req.params.tableId,
       status: { $ne: 'Cancelled' },
       use_date: { $gte: todayDateQuery }
@@ -288,7 +288,7 @@ exports.checkinReservation = async (req, res) => {
     if (!table) {
       return res.status(404).json({
         success: false,
-        message: "Không tìm thấy bàn"
+        message: "Table not found"
       });
     }
 
@@ -301,7 +301,7 @@ exports.checkinReservation = async (req, res) => {
     if (!reservation) {
       return res.status(404).json({
         success: false,
-        message: "Không tìm thấy thông tin book table hoặc mã xác nhận không VNDúng"
+        message: "No reservation found or confirmation code is incorrect"
       });
     }
 
@@ -317,7 +317,7 @@ exports.checkinReservation = async (req, res) => {
       });
       return res.status(400).json({
         success: false,
-        message: "Đặt bàn VNDã quá thời gian check-in (30 phút sau giờ VNDặt). Đặt bàn VNDã bị hủy."
+        message: "Reservation has exceeded the check-in time (30 minutes after the reservation time). Reservation has been cancelled."
       });
     }
 
@@ -331,89 +331,89 @@ exports.checkinReservation = async (req, res) => {
 
     res.json({
       success: true,
-      message: "Checkin thành công",
+      message: "Checkin successfully",
       reservation
     });
 
   } catch (error) {
-    console.error("Error khi checkin:", error);
+    console.error("Error when checkin:", error);
 
     res.status(500).json({
       success: false,
-      message: "Có lỗi xảy ra khi xử lý checkin"
+      message: "Error when checkin"
     });
   }
 };
 
 // Kiểm tra trạng thái bàn
 exports.checkTableAvailability = async (req, res) => {
-    try {
-        const { tableNumber } = req.params;
+  try {
+    const { tableNumber } = req.params;
 
-        const table = await Table.findOne({ tableNumber: tableNumber });
-        
-        if (!table) {
-            return res.status(404).json({
-                statusCode: 404,
-                success: false,
-                message: "Không tìm thấy bàn"
-            });
-        }
+    const table = await Table.findOne({ tableNumber: tableNumber });
 
-        // Kiểm tra các VNDiều kiện khả dụng
-        const isAvailable = table.isAvailable;
-        
-        // Kiểm tra xem có order VNDặt trước nào VNDang chờ không
-        const pendingReservation = await Reservation.findOne({
-            tableId: table._id,
-            status: "Reserved"
-        });
-        if (pendingReservation) {
-          return res.status(400).json({
-              statusCode: 400,
-              success: false,
-              message: "Table has been VNDặt trước",
-              table: {
-                number: table.tableNumber,
-                capacity: table.seatingCapacity,
-                status: table.status
-}
-          });
-      }
-
-        if (!isAvailable) {
-            return res.status(400).json({
-                statusCode: 400,
-                success: false,
-                message: "Table VNDang VNDược sử dụng",
-                table: {
-                    number: table.number,
-                    capacity: table.capacity,
-                    status: table.status
-                }
-            });
-        }
-
-        // Table khả dụng
-        return res.status(200).json({
-            statusCode: 200,
-            success: true,
-            message: "Table khả dụng",
-            table: {
-                number: table.number,
-                capacity: table.capacity,
-                status: table.status
-            }
-        });
-
-    } catch (error) {
-        console.error("Error khi kiểm tra trạng thái bàn:", error);
-        return res.status(500).json({
-            statusCode: 500,
-            success: false,
-            message: "Có lỗi xảy ra khi kiểm tra trạng thái bàn"
-        });
+    if (!table) {
+      return res.status(404).json({
+        statusCode: 404,
+        success: false,
+        message: "Table not found"
+      });
     }
+
+    // Kiểm tra các VNDiều kiện khả dụng
+    const isAvailable = table.isAvailable;
+
+    // Kiểm tra xem có order VNDặt trước nào VNDang chờ không
+    const pendingReservation = await Reservation.findOne({
+      tableId: table._id,
+      status: "Reserved"
+    });
+    if (pendingReservation) {
+      return res.status(400).json({
+        statusCode: 400,
+        success: false,
+        message: "Table has been reserved",
+        table: {
+          number: table.tableNumber,
+          capacity: table.seatingCapacity,
+          status: table.status
+        }
+      });
+    }
+
+    if (!isAvailable) {
+      return res.status(400).json({
+        statusCode: 400,
+        success: false,
+        message: "Table in use",
+        table: {
+          number: table.number,
+          capacity: table.capacity,
+          status: table.status
+        }
+      });
+    }
+
+    // Table khả dụng
+    return res.status(200).json({
+      statusCode: 200,
+      success: true,
+      message: "Table available",
+      table: {
+        number: table.number,
+        capacity: table.capacity,
+        status: table.status
+      }
+    });
+
+  } catch (error) {
+    console.error("Error when checking table status:", error);
+    return res.status(500).json({
+      statusCode: 500,
+      success: false,
+      message: "Error when checking table status"
+    });
+  }
 };
 
 exports.cancelReservation = async (req, res) => {
@@ -425,14 +425,14 @@ exports.cancelReservation = async (req, res) => {
 
     if (!reservation) {
       return res.status(404).json({
-        message: "Không tìm thấy book table"
+        message: "No reservation found"
       });
     }
 
     // Không cho hủy khi in use
     if (reservation.status === "In Use") {
       return res.status(400).json({
-        message: "Không thể hủy bàn in use"
+        message: "Cannot cancel in-use reservation"
       });
     }
 
@@ -446,15 +446,15 @@ exports.cancelReservation = async (req, res) => {
       status: "Empty"
     });
     res.status(200).json({
-      message: "Cancel bàn thành công"
+      message: "Cancel reservation successfully"
     });
 
   } catch (error) {
 
-    console.error("Error khi hủy bàn:", error);
+    console.error("Error when cancel reservation:", error);
 
     res.status(500).json({
-      message: "Có lỗi xảy ra khi hủy bàn"
+      message: "Error when cancel reservation"
     });
 
   }
@@ -479,10 +479,10 @@ exports.getReservationsByCustomer = async (req, res) => {
 
   } catch (error) {
 
-    console.error("❌ Error khi lấy lịch sử book table:", error);
+    console.error("Error when get reservation history:", error);
 
     res.status(500).json({
-      message: "An error occurred while processing your request.",
+      message: "Error when get reservation history",
       error: error.message
     });
 

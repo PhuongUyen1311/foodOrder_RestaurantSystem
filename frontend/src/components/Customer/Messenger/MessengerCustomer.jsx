@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { socket } from "../../../socket";
 import axios from "axios";
-import { 
-    FaCommentDots, FaTimes, FaRobot, FaUserTie, 
-    FaPaperPlane, FaImage, FaPaperclip 
+import {
+    FaCommentDots, FaTimes, FaRobot, FaUserTie,
+    FaPaperPlane, FaImage, FaPaperclip
 } from "react-icons/fa";
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -26,7 +26,7 @@ const MessengerCustomer = () => {
     const [isStreaming, setIsStreaming] = useState(false);
     const [previewImage, setPreviewImage] = useState(null);
     const [isStaffTyping, setIsStaffTyping] = useState(false);
-    
+
     const messageListRef = useRef(null);
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -132,7 +132,7 @@ const MessengerCustomer = () => {
         try {
             await axios.put(`${host}/api/messages/read`, {
                 userId: userId,
-                otherId: 'STAFF', 
+                otherId: 'STAFF',
                 conversationType: 'customer'
             });
         } catch (error) { console.error("Mark as read error:", error); }
@@ -214,7 +214,7 @@ const MessengerCustomer = () => {
                             if (parsed.text) fullText += parsed.text;
                             if (parsed.action) actions.push(parsed.action);
                             if (parsed.fallback && parsed.actions) actions.push(...parsed.actions);
-                            
+
                             setAiMessages(prev => {
                                 const newMsgs = [...prev];
                                 const last = newMsgs[newMsgs.length - 1];
@@ -223,7 +223,7 @@ const MessengerCustomer = () => {
                                 return newMsgs;
                             });
                             scrollToBottom();
-                        } catch (e) {}
+                        } catch (e) { }
                     }
                 }
             }
@@ -326,8 +326,8 @@ const MessengerCustomer = () => {
                 <div className={`messenger-window ${!isOpen ? 'hidden' : ''}`}>
                     <div className="window-header">
                         <div className="brand">
-                            <img src="/static/images/logo.png" alt="logo" onError={(e)=>e.target.src=DEFAULT_AVATAR} />
-                            <span>Healthy Food Support</span>
+                            <img src="/static/images/logo.png" alt="logo" onError={(e) => e.target.src = DEFAULT_AVATAR} />
+                            <span>VietNam Cuisine Restaurant Support</span>
                         </div>
                         <FaTimes className="close-btn" onClick={() => setIsOpen(false)} />
                     </div>
@@ -366,12 +366,12 @@ const MessengerCustomer = () => {
                                     <input type="file" hidden accept="image/*" onChange={handleFileUpload} />
                                 </label>
                             )}
-                            <input 
-                                type="text" placeholder="Enter nội dung..." 
+                            <input
+                                type="text" placeholder="Enter nội dung..."
                                 value={inputText} onChange={handleInput}
                                 disabled={isStreaming}
                             />
-                            <button type="submit" disabled={isStreaming} style={{border: 'none', background: 'none'}}>
+                            <button type="submit" disabled={isStreaming} style={{ border: 'none', background: 'none' }}>
                                 <FaPaperPlane className="send-btn" />
                             </button>
                         </form>

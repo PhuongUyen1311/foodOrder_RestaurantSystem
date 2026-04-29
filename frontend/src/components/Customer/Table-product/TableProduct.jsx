@@ -65,9 +65,9 @@ function TableProduct({ cartItems, selectedItems, setSelectedItems }) {
                     // Xử lý cho khách walk-in
                     const guestCart = JSON.parse(sessionStorage.getItem('guestCart')) || [];
                     const updatedCart = guestCart.filter(item => item.id !== cartItemId);
-                    
+
                     sessionStorage.setItem('guestCart', JSON.stringify(updatedCart));
-                    
+
                     // Update Redux store to giao diện (Cart badge, Cart sidebar) thay VNDổi ngay
                     dispatch(setCartItems(updatedCart));
                     dispatch(setCartStore({
@@ -92,7 +92,7 @@ function TableProduct({ cartItems, selectedItems, setSelectedItems }) {
                 itemcart={itemCart}
             />
 
-            <p style={{fontStyle: 'italic', marginBottom: '8px', color: '#666', fontSize: '14px'}}>
+            <p style={{ fontStyle: 'italic', marginBottom: '8px', color: '#666', fontSize: '14px' }}>
                 * Select món to thanh toán
             </p>
 
@@ -100,8 +100,8 @@ function TableProduct({ cartItems, selectedItems, setSelectedItems }) {
                 <thead>
                     <tr>
                         <th style={{ width: '40px', textAlign: 'center' }}>
-                            <input 
-                                type="checkbox" 
+                            <input
+                                type="checkbox"
                                 checked={cartItems?.length > 0 && selectedItems.length === cartItems.length}
                                 onChange={handleSelectAll}
                                 style={{ transform: 'scale(1.2)', cursor: 'pointer' }}
@@ -109,8 +109,8 @@ function TableProduct({ cartItems, selectedItems, setSelectedItems }) {
                         </th>
                         <th>Products</th>
                         <th>Quantity</th>
-                        <th>Số tiền</th>
-                        <th>Thao tác</th>
+                        <th>Price</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -130,8 +130,8 @@ function TableProduct({ cartItems, selectedItems, setSelectedItems }) {
                         return (
                             <tr key={index}>
                                 <td style={{ textAlign: 'center' }}>
-                                    <input 
-                                        type="checkbox" 
+                                    <input
+                                        type="checkbox"
                                         checked={selectedItems.includes(id)}
                                         onChange={(e) => handleSelectItem(e, id)}
                                         style={{ transform: 'scale(1.2)', cursor: 'pointer' }}

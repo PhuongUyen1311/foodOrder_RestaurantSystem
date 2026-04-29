@@ -50,12 +50,12 @@ function Header(props) {
                     {(location.pathname === '/menu' && orderSource === 'table') ? (
                         <div className='header__logo'>
                             <img src={logo} alt="TBayEAT Logo" />
-                            <span className="header__brand-name">Healthy Food</span>
+                            <span className="header__brand-name">VietNam Cuisine Restaurant</span>
                         </div>
                     ) : (
                         <Link to='/' className='header__logo'>
                             <img src={logo} alt="TBayEAT Logo" />
-                            <span className="header__brand-name">Healthy Food</span>
+                            <span className="header__brand-name">VietNam Cuisine Restaurant</span>
                         </Link>
                     )}
                     {orderSource === 'table' && tableNumber && (

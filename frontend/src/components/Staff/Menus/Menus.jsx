@@ -50,12 +50,7 @@ const sliders = [
         icon: <FaShoppingCart />,
         name: 'Orders',
     },
-    {
-        url: '/staff/revenue',
-        icon: <FaChartBar />,
-        name: 'Revenue',
-        role: 'ADMIN'
-    },
+
 ];
 
 function Menus() {

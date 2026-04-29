@@ -276,11 +276,11 @@ function Detail(props) {
                                     <div style={{ marginTop: "10px" }}>
                                         {maxQuantity > 0 ? (
                                             <p style={{ color: "#1ac073", fontWeight: "600", fontSize: "15px" }}>
-                                                <i className="fa fa-check-circle pe-1"></i> Có thể VNDặt tối VNDa: {maxQuantity} món
+                                                <i className="fa fa-check-circle pe-1"></i> Max quantity: {maxQuantity}
                                             </p>
                                         ) : (
                                             <p style={{ color: "red", fontWeight: "600", fontSize: "15px" }}>
-                                                <i className="fa fa-times-circle pe-1"></i> Dish VNDã hết nguyên liệu
+                                                <i className="fa fa-times-circle pe-1"></i> This dish is out of stock
                                             </p>
                                         )}
                                     </div>
@@ -290,7 +290,7 @@ function Detail(props) {
                                             setShowModal(true);
                                         }}
                                     >
-                                        <i className="fa fa-list pe-1"></i> View thành phần
+                                        <i className="fa fa-list pe-1"></i> View ingredients
                                     </button>
                                     <hr className="my-4" />
                                     <div className='product-details__options__group'>
@@ -325,7 +325,7 @@ function Detail(props) {
                             {/* KHU VỰC SẢN PHẨM LIÊN QUAN */}
                             <div className='product-details__related mt-5 mb-5'>
                                 <div className='product-details__related__title mb-4 pb-2'>
-                                    <h3 className="fs-4 fw-bold m-0">Gợi ý cho bạn</h3>
+                                    <h3 className="fs-4 fw-bold m-0">Related products</h3>
                                     <div className="title-underline"></div>
                                 </div>
                                 <div className='product-details__related__list'>

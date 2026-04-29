@@ -147,38 +147,38 @@ const TableReservation = () => {
       <h2 className="mb-4" style={{ paddingTop: "80px", color: "green" }}>Table List</h2>
 
       {tables.length === 0 ? (
-          <div className="alert alert-warning text-center mt-4 p-4 shadow-sm" style={{ fontSize: '18px', borderRadius: '10px' }}>
-              Hiện tại không còn bàn trống. Quý khách vui lòng chờ hoặc thử lại sau!
-          </div>
+        <div className="alert alert-warning text-center mt-4 p-4 shadow-sm" style={{ fontSize: '18px', borderRadius: '10px' }}>
+          Hiện tại không còn bàn trống. Quý khách vui lòng chờ hoặc thử lại sau!
+        </div>
       ) : (
-          <BootstrapTable striped bordered hover>
-            <thead>
-              <tr>
-                <th>Table No.</th>
-                <th>Capacity</th>
-                <th>Location</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
+        <BootstrapTable striped bordered hover>
+          <thead>
+            <tr>
+              <th>Table No.</th>
+              <th>Capacity</th>
+              <th>Location</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
 
-            <tbody>
-              {tables.map((table) => (
-                <tr key={table._id}>
-                  <td>Table {table.tableNumber}</td>
-                  <td>{table.seatingCapacity} người</td>
-                  <td>{table.location}</td>
-                  <td>
-                    <Button
-                      variant="primary"
-                      onClick={() => handleReservation(table)}
-                    >
-                      Đặt bàn
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </BootstrapTable>
+          <tbody>
+            {tables.map((table) => (
+              <tr key={table._id}>
+                <td>Table {table.tableNumber}</td>
+                <td>{table.seatingCapacity} người</td>
+                <td>{table.location}</td>
+                <td>
+                  <Button
+                    variant="primary"
+                    onClick={() => handleReservation(table)}
+                  >
+                    Reserve
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </BootstrapTable>
       )}
 
       {/* Modal book table */}
@@ -190,7 +190,7 @@ const TableReservation = () => {
         contentClassName="reservation-modal-content"
       >
         <Modal.Header closeButton={!isLoading}>
-          <Modal.Title>Đặt bàn {selectedTable?.tableNumber}</Modal.Title>
+          <Modal.Title>Reserve table {selectedTable?.tableNumber}</Modal.Title>
         </Modal.Header>
 
         <Modal.Body style={{ overflowY: 'hidden', padding: '1.5rem' }}>
@@ -199,7 +199,7 @@ const TableReservation = () => {
               {/* Lịch bên trái */}
               <Col md={5}>
                 <div className="mb-3">
-                  <Form.Label className="fw-bold" style={{ fontSize: '13px' }}>(Đỏ = Reserved, Xanh = Empty)</Form.Label>
+                  <Form.Label className="fw-bold" style={{ fontSize: '13px' }}>(Red = Reserved, Green= Empty)</Form.Label>
                   <div style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(7, 1fr)',
@@ -297,7 +297,7 @@ const TableReservation = () => {
                 <Row>
                   <Col sm={6}>
                     <Form.Group className="mb-2">
-                      <Form.Label style={{ fontSize: '14px' }}>Date sử dụng</Form.Label>
+                      <Form.Label style={{ fontSize: '14px' }}>Date </Form.Label>
                       <Form.Control
                         type="date"
                         name="use_date"
@@ -311,7 +311,7 @@ const TableReservation = () => {
                   </Col>
                   <Col sm={6}>
                     <Form.Group className="mb-2">
-                      <Form.Label style={{ fontSize: '14px' }}>Time sử dụng</Form.Label>
+                      <Form.Label style={{ fontSize: '14px' }}>Time</Form.Label>
                       <Form.Control
                         type="time"
                         name="use_time"
@@ -352,7 +352,7 @@ const TableReservation = () => {
                           size="sm"
                           className="me-2"
                         />
-                        Đang xử lý...
+                        Processing...
                       </>
                     ) : (
                       'Confirm book table'

@@ -244,7 +244,9 @@ p {
 }
 
 // Inputs
-input, textarea, select {
+input,
+textarea,
+select {
     background-color: $surface !important;
     border: 1px solid $border !important;
     color: $text !important;

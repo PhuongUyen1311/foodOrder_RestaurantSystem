@@ -9,7 +9,7 @@ const Admin = db.admin;
 
 const login = async ({ email, password, page }) => {
     if (!email || !password || !page) {
-        throw { status: 400, message: "Nội dung không thể trống!" };
+        throw { status: 400, message: "Content cannot be empty!" };
     }
 
     const Model = page === "user" ? Customer : Admin;
@@ -20,18 +20,18 @@ const login = async ({ email, password, page }) => {
             status: 401,
             message:
                 page === "user"
-                    ? `Không tìm thấy khách hàng với email ${email}.`
-                    : `Không tìm thấy quản trị viên với email ${email}.`,
+                    ? `Customer not found with email ${email}.`
+                    : `Admin not found with email ${email}.`,
         };
     }
 
     if (page === "user" && data.is_active === false) {
-        throw { status: 403, message: "Tài khoản của bạn đã bị khóa" };
+        throw { status: 403, message: "Your account has been locked" };
     }
 
     const isPasswordValid = bcrypt.compareSync(password, data.hash_password);
     if (!isPasswordValid) {
-        throw { status: 401, message: "Mật khẩu không chính xác." };
+        throw { status: 401, message: "Incorrect password." };
     }
 
     const payload = buildPayload(data, page);
@@ -48,12 +48,12 @@ const register = async (data) => {
     if (exist) {
         throw {
             status: 401,
-            message: `Khách hàng đã tồn tại với email ${data.email}.`,
+            message: `Customer already exists with email ${data.email}.`,
         };
     }
 
     if (data.password !== data.confirm_password) {
-        throw { status: 400, message: "Xác nhận mật khẩu không khớp!" };
+        throw { status: 400, message: "Confirm password does not match!" };
     }
 
     const hashPassword = bcrypt.hashSync(data.password, SALT_ROUNDS);
@@ -72,7 +72,7 @@ const register = async (data) => {
 
 const refreshToken = async ({ refreshToken, page }) => {
     if (!refreshToken || !page) {
-        throw { status: 400, message: "Thiếu dữ liệu" };
+        throw { status: 400, message: "Missing data" };
     }
 
     const refreshTokenSecret =
@@ -84,7 +84,7 @@ const refreshToken = async ({ refreshToken, page }) => {
     );
 
     if (!decoded) {
-        throw { status: 400, message: "Refresh token không hợp lệ." };
+        throw { status: 400, message: "Invalid refresh token." };
     }
 
     const email = decoded.payload.email;
@@ -93,7 +93,7 @@ const refreshToken = async ({ refreshToken, page }) => {
     const user = await Model.findOne({ email });
 
     if (!user) {
-        throw { status: 401, message: "User không tồn tại" };
+        throw { status: 401, message: "User does not exist" };
     }
 
     const payload = buildPayload(user, page);
@@ -109,12 +109,12 @@ const createAdmin = async (data) => {
     if (exist) {
         throw {
             status: 401,
-            message: `Quản trị viên đã tồn tại với email ${data.email}.`,
+            message: `Admin already exists with email ${data.email}.`,
         };
     }
 
     if (data.password !== data.confirm_password) {
-        throw { status: 400, message: "Xác nhận mật khẩu không khớp!" };
+        throw { status: 400, message: "Confirm password does not match!" };
     }
 
     const hashPassword = bcrypt.hashSync(data.password, SALT_ROUNDS);

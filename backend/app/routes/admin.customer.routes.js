@@ -35,7 +35,7 @@ module.exports = app => {
         console.error("getCustomerById function is missing!");
     }
 
-    // Cập nhật khách hàng
+    // Update khách hàng
     if (adminCustomer.updateCustomer) {
         router.put("/:id", adminCustomer.updateCustomer);
     } else {

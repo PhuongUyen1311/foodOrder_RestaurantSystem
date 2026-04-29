@@ -34,12 +34,12 @@ const TableCheckin = () => {
         return;
       }
 
-      toast.success('Xác nhận bàn thành công! Đang chuyển đến trang đặt món...');
+      toast.success('Confirm bàn thành công! Đang chuyển to trang VNDặt món...');
       setTimeout(() => {
         navigate(`/menu?table=${tableNumber}`);
       }, 1500);
     } catch (error) {
-      console.error('Lỗi:', error);
+      console.error('Error:', error);
       toast.error(error.message || 'Có lỗi xảy ra khi xác nhận bàn');
     } finally {
       setIsLoading(false);
@@ -66,12 +66,12 @@ const TableCheckin = () => {
         return;
       }
 
-      toast.success('Xác nhận bàn thành công! Đang chuyển đến trang đặt món...');
+      toast.success('Confirm bàn thành công! Đang chuyển to trang VNDặt món...');
       setTimeout(() => {
         navigate(`/menu?table=${tableId}`);
       }, 1500);
     } catch (error) {
-      console.error('Lỗi:', error);
+      console.error('Error:', error);
       toast.error(error.message || 'Có lỗi xảy ra khi xác nhận bàn');
     } finally {
       setIsLoading(false);
@@ -86,15 +86,15 @@ const TableCheckin = () => {
       const result = await checkinReservation(tableId, confirmationCode);
       
       if (result.success) {
-        toast.success('Xác nhận đặt bàn thành công! Đang chuyển đến trang đặt món...');
+        toast.success('Confirm book table thành công! Đang chuyển to trang VNDặt món...');
         setTimeout(() => {
           navigate(`/menu?table=${tableId}`);
         }, 1500);
       } else {
-        toast.error(result.message || 'Thông tin đặt bàn không chính xác');
+        toast.error(result.message || 'Thông tin book table không chính xác');
       }
     } catch (error) {
-      console.error('Lỗi:', error);
+      console.error('Error:', error);
       toast.error(error.message || 'Có lỗi xảy ra khi xác nhận');
     } finally {
       setIsLoading(false);
@@ -118,22 +118,22 @@ const TableCheckin = () => {
       
       <Container className="py-5">
         <div className="max-w-md mx-auto">
-          <h2 className="text-center mb-4">Xác Nhận Bàn</h2>
+          <h2 className="text-center mb-4">Xác Receive Table</h2>
 
           <Tabs
             activeKey={key}
             onSelect={(k) => setKey(k)}
             className="mb-4"
           >
-            <Tab eventKey="direct" title="Khách Trực Tiếp">
+            <Tab eventKey="direct" title="Guest Trực Tiếp">
               <Form onSubmit={handleDirectCheckin}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Số bàn</Form.Label>
+                  <Form.Label>Table No.</Form.Label>
                   <Form.Control
                     type="text"
                     value={tableId}
                     onChange={(e) => setTableId(e.target.value)}
-                    placeholder="Nhập số bàn"
+                    placeholder="Enter table number"
                     required
                   />
                 </Form.Group>
@@ -150,21 +150,21 @@ const TableCheckin = () => {
                       Đang xử lý...
                     </>
                   ) : (
-                    'Xác nhận bàn'
+                    'Confirm bàn'
                   )}
                 </Button>
               </Form>
             </Tab>
 
-            <Tab eventKey="reserved" title="Khách Đặt Trước">
+            <Tab eventKey="reserved" title="Guest Đặt Trước">
               <Form onSubmit={handleReservedCheckin}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Số bàn</Form.Label>
+                  <Form.Label>Table No.</Form.Label>
                   <Form.Control
                     type="text"
                     value={tableId}
                     onChange={(e) => setTableId(e.target.value)}
-                    placeholder="Nhập số bàn"
+                    placeholder="Enter table number"
                     required
                   />
                 </Form.Group>
@@ -175,7 +175,7 @@ const TableCheckin = () => {
                     type="text"
                     value={confirmationCode}
                     onChange={(e) => setConfirmationCode(e.target.value)}
-                    placeholder="Nhập mã xác nhận từ email"
+                    placeholder="Enter mã xác nhận từ email"
                     required
                   />
                 </Form.Group>
@@ -192,7 +192,7 @@ const TableCheckin = () => {
                       Đang xử lý...
                     </>
                   ) : (
-                    'Xác nhận đặt bàn'
+                    'Confirm book table'
                   )}
                 </Button>
               </Form>

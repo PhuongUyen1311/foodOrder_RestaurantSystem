@@ -24,12 +24,11 @@ function Banner(props) {
                 <Container>
                     <div className='banner__content'>
                         <h2 className='banner__content__title'>
-                            Khám Phá Ẩm Thực Tại{' '}
-                            <span className='highlight'>HeathyFood</span>
+                            Welcome to{' '}
+                            <span className='highlight'>Vietnam Cuisine</span>
                         </h2>
                         <div className='banner__content__desc'>
-                            Trải nghiệm dịch vụ đặt món tiện lợi với thực đơn đa dạng từ các món ăn lành mạnh, tươi ngon và giàu dinh dưỡng.
-                            Chế biến cẩn thận, giao nhanh chóng để giữ trọn hương vị và chất lượng.
+                            Discover the authentic flavors of Vietnam with our curated selection of traditional dishes. From savory classics to regional specialties, we bring the best of Vietnamese cuisine right to your table.
                         </div>
                         <div className='banner__content__cta'>
                             <div className='banner__content__search-box'>
@@ -41,26 +40,26 @@ function Banner(props) {
                                             onChange={(event) => setKey(event.target.value)}
                                             value={key}
                                             name='key'
-                                            placeholder='Tìm kiếm món ăn yêu thích của bạn...'
+                                            placeholder='Search for favorite dishes...'
                                         />
                                     </div>
                                     <button className='banner__content__btn search-btn' type="submit">
-                                        Tìm Kiếm
+                                        Search
                                     </button>
                                 </form>
                             </div>
                             <div className='banner__content__features'>
                                 <div className='feature-item'>
                                     <i className="fa-solid fa-bowl-food"></i>
-                                    <span>Đa dạng món ăn</span>
+                                    <span>Variety of dishes</span>
                                 </div>
                                 <div className='feature-item'>
                                     <i className="fas fa-shipping-fast"></i>
-                                    <span>Giao hàng nhanh</span>
+                                    <span>Fast delivery</span>
                                 </div>
                                 <div className='feature-item'>
                                     <i className="fas fa-shield-alt"></i>
-                                    <span>Đảm bảo chất lượng</span>
+                                    <span>Quality assurance</span>
                                 </div>
                             </div>
                         </div>

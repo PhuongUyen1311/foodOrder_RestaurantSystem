@@ -10,57 +10,57 @@ exports.getTableByQRCode = async (req, res) => {
     const table = await Table.findOne({ qrCode });
 
     if (!table) {
-      return res.status(404).json({ message: 'Bàn không tồn tại.' });
+      return res.status(404).json({ message: 'Table không tồn tại.' });
     }
 
     if (!table.isAvailable) {
-      return res.status(400).json({ message: 'Bàn đã được đặt hoặc không thể sử dụng' });
+      return res.status(400).json({ message: 'Table has been VNDặt hoặc không thể sử dụng' });
     }
 
     res.json(table);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Lỗi server.' });
+    res.status(500).json({ message: 'Error server.' });
   }
 };
 
-// Thêm bàn mới
+// Add New Table
 exports.addTable = async (req, res) => {
   try {
     const { tableNumber, seatingCapacity, location } = req.body;
     if (!tableNumber || !seatingCapacity || !location) {
-      return res.status(400).json({ message: 'Vui lòng cung cấp đầy đủ thông tin.' });
+      return res.status(400).json({ message: 'Please cung cấp full VNDủ thông tin.' });
     }
 
     if (seatingCapacity < 1) {
-      return res.status(400).json({ message: 'Sức chứa phải lớn hơn 0.' });
+      return res.status(400).json({ message: 'Capacity phải lớn hơn 0.' });
     }
     const session_pin = Math.floor(1000 + Math.random() * 9000).toString(); // Tạo PIN 4 số
     const newTable = new Table({ tableNumber, seatingCapacity, location, session_pin });
     console.log(tableNumber, seatingCapacity, location);
     await newTable.save();
     
-    // Tạo URL cho menu cố định (Static QR)
+    // Tạo URL cho menu cố VNDịnh (Static QR)
     const menuUrl = `${process.env.FRONTEND_URL}/menu?table=${tableNumber}`;
 
     // Tạo mã QR từ URL menu
     const qrCodeDataURL = await QRCode.toDataURL(menuUrl);
 
-    // Cập nhật mã QR vào bảng
+    // Update mã QR vào bảng
     newTable.qrCode = qrCodeDataURL;
     await newTable.save();
 
     res.status(201).json(newTable);
   } catch (error) {
     if (error.code === 11000 && error.keyPattern && error.keyPattern.tableNumber) {
-      return res.status(400).json({ message: 'Số bàn đã tồn tại' });
+      return res.status(400).json({ message: 'Table No. VNDã tồn tại' });
     }
     console.error(error);
-    res.status(400).json({ message: 'Lỗi khi thêm bàn mới.' });
+    res.status(400).json({ message: 'Error khi thêm bàn mới.' });
   }
 };
 
-// Sửa thông tin bàn
+// Edit thông tin bàn
 exports.updateTable = async (req, res) => {
   try {
     const { id } = req.params;
@@ -68,27 +68,27 @@ exports.updateTable = async (req, res) => {
     console.log(updatedData);
     const updatedTable = await Table.findByIdAndUpdate(id, updatedData, { new: true });
     if (!updatedTable) {
-      return res.status(404).json({ message: 'Bàn không tồn tại.' });
+      return res.status(404).json({ message: 'Table không tồn tại.' });
     }
     res.json(updatedTable);
   } catch (error) {
     console.error(error);
-    res.status(400).json({ message: 'Lỗi khi cập nhật thông tin bàn.' });
+    res.status(400).json({ message: 'Error khi cập nhật thông tin bàn.' });
   }
 };
 
-// Xóa bàn
+// Delete bàn
 exports.deleteTable = async (req, res) => {
   try {
     const { id } = req.params;
     const deletedTable = await Table.findByIdAndDelete(id);
     if (!deletedTable) {
-      return res.status(404).json({ message: 'Bàn không tồn tại.' });
+      return res.status(404).json({ message: 'Table không tồn tại.' });
     }
-    res.json({ message: 'Xóa bàn thành công.' });
+    res.json({ message: 'Delete bàn thành công.' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Lỗi khi xóa bàn.' });
+    res.status(500).json({ message: 'Error khi xóa bàn.' });
   }
 };
 
@@ -110,7 +110,7 @@ exports.getTablesListInternal = async (sortBy, order) => {
     { $sort: sortCriteria }
   ]);
 
-  // Tìm các lịch đặt bàn của ngày hôm nay
+  // Tìm các lịch book table của ngày hôm nay
   const tzoffset = (new Date()).getTimezoneOffset() * 60000;
   const localISO = new Date(Date.now() - tzoffset).toISOString().split('T')[0];
   const todayDateQuery = new Date(localISO + "T00:00:00.000Z");
@@ -118,19 +118,19 @@ exports.getTablesListInternal = async (sortBy, order) => {
   const now = new Date();
   const expiryLimit = new Date(now.getTime() - 30 * 60 * 1000); // Giữ bàn trong 30 phút
 
-  // Tự động hủy các đơn đặt bàn quá 2 tiếng
+  // Tự VNDộng hủy các order book table quá 2 tiếng
   await db.reservation.updateMany(
     {
       use_date: todayDateQuery,
-      status: 'Đã đặt',
+      status: 'Reserved',
       reservationTime: { $lt: expiryLimit }
     },
-    { status: 'Đã hủy' }
+    { status: 'Cancelled' }
   );
 
   const todayReservations = await db.reservation.find({
     use_date: todayDateQuery,
-    status: { $nin: ['Đã hủy', 'Hoàn thành'] }
+    status: { $nin: ['Cancelled', 'Completed'] }
   });
 
   const fortyFiveMinutesFromNow = new Date(now.getTime() + 45 * 60 * 1000);
@@ -142,12 +142,12 @@ exports.getTablesListInternal = async (sortBy, order) => {
   }).sort({ createdAt: -1 });
 
   return tables.map(table => {
-    // Trong hàm aggregate, document trả về đã là plain JS object
+    // Trong hàm aggregate, document trả về VNDã là plain JS object
     const t = { ...table };
     t.note = ""; // Khởi tạo ghi chú trống
     t.nextReservationTime = null;
 
-    // Tìm reservation của bàn này trong hôm nay (không bao gồm 'Đã hủy', 'Hoàn thành')
+    // Tìm reservation của bàn này trong hôm nay (không bao gồm 'Cancelled', 'Completed')
     const res = todayReservations.find(r => r.tableId.toString() === t._id.toString());
 
     if (res) {
@@ -159,42 +159,42 @@ exports.getTablesListInternal = async (sortBy, order) => {
       const diffMs = resTime - now;
       const diffMinutes = Math.floor(diffMs / 60000);
 
-      if (res.status === 'Đang sử dụng') {
-        t.note = `"${t.customerName}" bắt đầu sử dụng bàn`;
-        t.status = 'Đang sử dụng';
+      if (res.status === 'In Use') {
+        t.note = `"${t.customerName}" bắt VNDầu sử dụng bàn`;
+        t.status = 'In Use';
         t.isAvailable = false;
       } else {
         if (resTime <= fortyFiveMinutesFromNow) {
           t.nextReservationTime = res.reservationTime;
           t.holdExpiryTime = new Date(resTime.getTime() + 30 * 60 * 1000);
 
-          if (t.status === 'Đang sử dụng') {
-            t.note = "Sắp đến giờ đặt bàn của khách, mau chóng xử lý!";
+          if (t.status === 'In Use') {
+            t.note = "Sắp to giờ book table của khách, mau chóng xử lý!";
           } else {
-            t.status = 'Đã đặt';
+            t.status = 'Reserved';
             t.isAvailable = false;
-            t.note = "Bàn đang giữ chỗ";
+            t.note = "Table VNDang giữ chỗ";
           }
         } else {
-          // Ngoài khoảng 45 phút, nếu không đang sử dụng thì là Trống
-          if (t.status !== 'Đang sử dụng') {
-            t.status = 'Trống';
+          // Ngoài khoảng 45 phút, nếu không in use thì là Empty
+          if (t.status !== 'In Use') {
+            t.status = 'Empty';
             t.isAvailable = true;
           }
         }
       }
     } else {
-      // Không có reservation, nếu không đang sử dụng thì là Trống
-      if (t.status !== 'Đang sử dụng') {
-        t.status = 'Trống';
+      // Không có reservation, nếu không in use thì là Empty
+      if (t.status !== 'In Use') {
+        t.status = 'Empty';
         t.isAvailable = true;
       }
     }
 
-    // Áp dụng trạng thái kiểm tra thanh toán ngay cả với bàn không có reservation
-    // Áp dụng trạng thái kiểm tra thanh toán ngay cả với bàn không có reservation
-    if (t.status === 'Đang sử dụng' && t.session_start) {
-      // Tìm các đơn hàng thuộc bàn này và được tạo SAU KHI bàn bắt đầu sử dụng
+    // Apply trạng thái kiểm tra thanh toán ngay cả với bàn không có reservation
+    // Apply trạng thái kiểm tra thanh toán ngay cả với bàn không có reservation
+    if (t.status === 'In Use' && t.session_start) {
+      // Tìm các order thuộc bàn này và VNDược tạo SAU KHI bàn bắt VNDầu sử dụng
       const tableOrders = recentOrders.filter(o => 
         String(o.table_number) === String(t.tableNumber) && 
         new Date(o.createdAt) >= new Date(t.session_start)
@@ -203,7 +203,7 @@ exports.getTablesListInternal = async (sortBy, order) => {
       t.hasOrders = tableOrders.length > 0;
       
       if (t.hasOrders) {
-        // Bàn được coi là Đã thanh toán nếu TẤT CẢ đơn hàng trong phiên này đã payment
+        // Table VNDược coi là Đã thanh toán nếu TẤT CẢ order trong phiên này VNDã payment
         const allPaid = tableOrders.every(o => o.is_payment === true);
         if (allPaid) {
           t.isPaid = true;
@@ -223,7 +223,7 @@ exports.getAllTables = async (req, res) => {
     res.json(result);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Lỗi khi lấy tất cả bàn.' });
+    res.status(500).json({ message: 'Error khi lấy tất cả bàn.' });
   }
 };
 
@@ -232,13 +232,13 @@ exports.getAvailableTables = async (req, res) => {
     const tables = await exports.getTablesListInternal();
     const availableTables = tables.filter(t =>
       t.isAvailable === true &&
-      t.status !== 'Đang sử dụng' &&
+      t.status !== 'In Use' &&
       !t.merged_into
     );
     res.json(availableTables);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Lỗi khi lấy danh sách bàn trống.' });
+    res.status(500).json({ message: 'Error khi lấy danh sách bàn trống.' });
   }
 };
 
@@ -246,7 +246,7 @@ exports.startUsingTable = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Cập nhật trạng thái reservation nếu có cho ngày hôm nay
+    // Update trạng thái reservation nếu có cho ngày hôm nay
     const tzoffset = (new Date()).getTimezoneOffset() * 60000;
     const localISO = new Date(Date.now() - tzoffset).toISOString().split('T')[0];
     const todayDateQuery = new Date(localISO + "T00:00:00.000Z");
@@ -256,7 +256,7 @@ exports.startUsingTable = async (req, res) => {
     const reservation = await db.reservation.findOne({
       tableId: id,
       use_date: todayDateQuery,
-      status: 'Đã đặt',
+      status: 'Reserved',
       reservationTime: { $lte: fortyFiveMinutesFromNow }
     });
 
@@ -265,12 +265,12 @@ exports.startUsingTable = async (req, res) => {
       const expiryTime = new Date(reservation.reservationTime.getTime() + 30 * 60 * 1000);
 
       if (now > expiryTime) {
-        reservation.status = 'Đã hủy';
+        reservation.status = 'Cancelled';
         await reservation.save();
         return res.status(400).json({ message: 'Đã quá thời gian nhận bàn (quá 30 phút).' });
       }
 
-      reservation.status = 'Đang sử dụng';
+      reservation.status = 'In Use';
       await reservation.save();
     }
 
@@ -279,7 +279,7 @@ exports.startUsingTable = async (req, res) => {
     const updatedTable = await Table.findByIdAndUpdate(
       id,
       {
-        status: 'Đang sử dụng',
+        status: 'In Use',
         isAvailable: false,
         session_pin: session_pin,
         session_start: new Date()
@@ -288,13 +288,13 @@ exports.startUsingTable = async (req, res) => {
     );
 
     if (!updatedTable) {
-      return res.status(404).json({ message: 'Bàn không tồn tại.' });
+      return res.status(404).json({ message: 'Table không tồn tại.' });
     }
 
     res.json(updatedTable);
   } catch (error) {
     console.error(error);
-    res.status(400).json({ message: 'Lỗi khi cập nhật trạng thái bàn.' });
+    res.status(400).json({ message: 'Error khi cập nhật trạng thái bàn.' });
   }
 };
 
@@ -303,7 +303,7 @@ exports.mergeTable = async (req, res) => {
     const { fromTable, toTable } = req.body;
 
     if (!fromTable || !toTable) {
-      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp bàn cần gộp và bàn đích.' });
+      return res.status(400).json({ success: false, message: 'Please cung cấp bàn cần gộp và bàn VNDích.' });
     }
 
     const from = await Table.findOne({ tableNumber: Number(fromTable) });
@@ -317,42 +317,42 @@ exports.mergeTable = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Không thể gộp bàn vào chính nó.' });
     }
 
-    // Ràng buộc 1: Bàn gộp đi (From) không được đang là Master của bàn khác
+    // Ràng buộc 1: Table gộp VNDi (From) không VNDược VNDang là Master của bàn khác
     const isMaster = await Table.findOne({ merged_into: from.tableNumber });
     if (isMaster) {
-      return res.status(400).json({ success: false, message: `Bàn ${from.tableNumber} đang là bàn Master của bàn khác. Vui lòng rã gộp bàn đó trước.` });
+      return res.status(400).json({ success: false, message: `Table ${from.tableNumber} VNDang là bàn Master của bàn khác. Please rã gộp bàn VNDó trước.` });
     }
 
-    // Ràng buộc 2: Bàn đích (To) không được đang là Slave của bàn khác
+    // Ràng buộc 2: Table VNDích (To) không VNDược VNDang là Slave của bàn khác
     if (to.merged_into) {
-      return res.status(400).json({ success: false, message: `Bàn ${to.tableNumber} đang là bàn Slave của bàn ${to.merged_into}. Không thể gộp lồng.` });
+      return res.status(400).json({ success: false, message: `Table ${to.tableNumber} VNDang là bàn Slave của bàn ${to.merged_into}. Không thể gộp lồng.` });
     }
 
-    // Ràng buộc 3: Bàn nguồn (From) chưa bị merge vào bàn nào khác
+    // Ràng buộc 3: Table nguồn (From) chưa bị merge vào bàn nào khác
     if (from.merged_into) {
-      return res.status(400).json({ success: false, message: 'Bàn này đã được gộp vào bàn khác.' });
+      return res.status(400).json({ success: false, message: 'Table này has been gộp vào bàn khác.' });
     }
 
     // Thực hiện gộp
     from.merged_into = to.tableNumber;
-    from.status = 'Đang sử dụng';
+    from.status = 'In Use';
     from.isAvailable = false;
-    from.session_pin = null; // Bàn slave không cần mã PIN riêng
+    from.session_pin = null; // Table slave không cần mã PIN riêng
     await from.save();
 
-    to.status = 'Đang sử dụng';
+    to.status = 'In Use';
     to.isAvailable = false;
-    // Nếu bàn Master chưa có PIN (đang Trống), tạo PIN mới
+    // Nếu bàn Master chưa có PIN (VNDang Empty), tạo PIN mới
     if (!to.session_pin) {
       to.session_pin = Math.floor(1000 + Math.random() * 9000).toString();
       to.session_start = new Date();
     }
     await to.save();
 
-    res.json({ success: true, message: 'Gộp bàn thành công.' });
+    res.json({ success: true, message: 'Merge Table thành công.' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: 'Lỗi server khi gộp bàn.' });
+    res.status(500).json({ success: false, message: 'Error server khi gộp bàn.' });
   }
 };
 
@@ -369,14 +369,14 @@ exports.unmergeAllSlaves = async (req, res) => {
       { merged_into: String(masterTableNumber) },
       { 
         merged_into: null,
-        status: 'Trống',
+        status: 'Empty',
         isAvailable: true
       }
     );
 
-    // 2. Cập nhật Bàn chủ (MASTER) - Bàn chủ vẫn giữ trạng thái 'Đang sử dụng' 
-    // vì nó mang session chính. Nhân viên sẽ tự click 'Giải phóng' sau.
-    // Không cần thay đổi gì ở đây.
+    // 2. Update Table chủ (MASTER) - Table chủ vẫn giữ trạng thái 'In Use' 
+    // vì nó mang session chính. Staff sẽ tự click 'Giải phóng' sau.
+    // Không cần thay VNDổi gì ở VNDây.
 
     const listSocket = require('../socket');
     if (listSocket && listSocket.updateOrder) {
@@ -389,7 +389,7 @@ exports.unmergeAllSlaves = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: 'Lỗi server khi phân rã bàn.' });
+    res.status(500).json({ success: false, message: 'Error server khi phân rã bàn.' });
   }
 };
 
@@ -402,30 +402,30 @@ exports.unmergeTable = async (req, res) => {
     const slaveTable = await Table.findOne({ tableNumber: Number(tableNumber) });
 
     if (!slaveTable) return res.status(404).json({ success: false, message: 'Không tìm thấy bàn.' });
-    if (!slaveTable.merged_into) return res.status(400).json({ success: false, message: 'Bàn này đang không bị gộp.' });
+    if (!slaveTable.merged_into) return res.status(400).json({ success: false, message: 'Table này VNDang không bị gộp.' });
 
     const masterTableNumber = slaveTable.merged_into;
 
-    // 1. Cập nhật Bàn bị gộp (SLAVE)
+    // 1. Update Table bị gộp (SLAVE)
     slaveTable.merged_into = null;
-    slaveTable.status = 'Trống';
+    slaveTable.status = 'Empty';
     slaveTable.isAvailable = true;
     await slaveTable.save();
 
-    // 2. Cập nhật Bàn chủ (MASTER)
-    // Bàn Master vẫn giữ nguyên trạng thái hiện tại (Đang sử dụng/Đã thanh toán) 
-    // vì nó là bàn chứa đơn hàng/session. 
-    // Chỉ khi nhân viên nhấn "Giải phóng" thì bàn Master mới về Trống.
+    // 2. Update Table chủ (MASTER)
+    // Table Master vẫn giữ nguyên trạng thái hiện tại (In Use/Đã thanh toán) 
+    // vì nó là bàn chứa order/session. 
+    // Chỉ khi nhân viên nhấn "Giải phóng" thì bàn Master mới về Empty.
 
     const listSocket = require('../socket');
     if (listSocket && listSocket.updateOrder) {
       listSocket.updateOrder.emit('tableMerged', { unmerged: tableNumber, master: masterTableNumber });
     }
 
-    res.status(200).json({ success: true, message: 'Tách bàn thành công' });
+    res.status(200).json({ success: true, message: 'Split Table thành công' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: 'Lỗi server khi tách bàn' });
+    res.status(500).json({ success: false, message: 'Error server khi tách bàn' });
   }
 };
 
@@ -437,10 +437,10 @@ exports.refreshTableSession = async (tableNumber) => {
     const session_pin = Math.floor(1000 + Math.random() * 9000).toString();
     
     table.session_pin = session_pin;
-    // QR code giữ nguyên URL tĩnh, không cần tạo lại DataURL trừ khi muốn đổi URL
+    // QR code giữ nguyên URL tĩnh, không cần tạo lại DataURL trừ khi muốn VNDổi URL
     
     // Khi reset session, thường bàn sẽ trống
-    table.status = 'Trống';
+    table.status = 'Empty';
     table.isAvailable = true;
     table.session_start = null;
     await table.save();
@@ -457,16 +457,16 @@ exports.verifyPIN = async (req, res) => {
     const table = await Table.findOne({ tableNumber: Number(tableNumber) });
     
     if (!table) {
-      return res.status(404).json({ success: false, message: 'Bàn không tồn tại.' });
+      return res.status(404).json({ success: false, message: 'Table không tồn tại.' });
     }
 
     if (table.session_pin === pin) {
       return res.status(200).json({ success: true, message: 'PIN hợp lệ.' });
     } else {
-      return res.status(403).json({ success: false, message: 'Mã PIN không chính xác.' });
+      return res.status(403).json({ success: false, message: 'PIN Code không chính xác.' });
     }
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Lỗi server khi xác thực PIN.' });
+    res.status(500).json({ success: false, message: 'Error server khi xác thực PIN.' });
   }
 };
 
@@ -474,7 +474,7 @@ exports.moveTable = async (req, res) => {
   try {
     const { fromTable, toTable } = req.body;
     if (!fromTable || !toTable) {
-      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp bàn nguồn và bàn đích.' });
+      return res.status(400).json({ success: false, message: 'Please cung cấp bàn nguồn và bàn VNDích.' });
     }
 
     const from = await Table.findOne({ tableNumber: Number(fromTable) });
@@ -484,11 +484,11 @@ exports.moveTable = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Không tìm thấy bàn.' });
     }
 
-    if (to.status !== 'Trống' || !to.isAvailable || to.merged_into) {
-      return res.status(400).json({ success: false, message: 'Bàn đích phải là bàn trống và không bị gộp.' });
+    if (to.status !== 'Empty' || !to.isAvailable || to.merged_into) {
+      return res.status(400).json({ success: false, message: 'Table VNDích phải là bàn trống và không bị gộp.' });
     }
 
-    // 1. Chuyển toàn bộ đơn hàng chưa thanh toán sang bàn mới
+    // 1. Chuyển toàn bộ order chưa thanh toán sang bàn mới
     await db.order.updateMany(
       { table_number: String(fromTable), is_payment: false },
       { table_number: String(toTable) }
@@ -497,12 +497,12 @@ exports.moveTable = async (req, res) => {
     // 2. Chuyển session data (PIN, start time)
     to.session_pin = from.session_pin;
     to.session_start = from.session_start;
-    to.status = 'Đang sử dụng';
+    to.status = 'In Use';
     to.isAvailable = false;
     await to.save();
 
     // 3. Giải phóng bàn cũ
-    from.status = 'Trống';
+    from.status = 'Empty';
     from.isAvailable = true;
     from.session_pin = null;
     from.session_start = null;
@@ -512,6 +512,6 @@ exports.moveTable = async (req, res) => {
     res.json({ success: true, message: `Đã chuyển toàn bộ dữ liệu từ bàn ${fromTable} sang bàn ${toTable}.` });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: 'Lỗi server khi chuyển bàn.' });
+    res.status(500).json({ success: false, message: 'Error server khi chuyển bàn.' });
   }
 };

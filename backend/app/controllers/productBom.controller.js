@@ -3,7 +3,7 @@ const productBomService = require("../services/productBom.service");
 const handleError = (res, error) => {
   console.error(error);
   res.status(error.status || 500).json({
-    message: error.message || "Lỗi server",
+    message: error.message || "Error server",
   });
 };
 

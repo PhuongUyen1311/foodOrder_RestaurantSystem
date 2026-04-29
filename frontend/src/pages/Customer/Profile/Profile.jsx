@@ -37,14 +37,14 @@ function Profile(props) {
                 // wait, the backend does `res.json(result)`, result has everything.
                 setUserUpdate(data);
                 sessionStorage.setItem("user", JSON.stringify(data));
-                toast.success('Thông tin đã được cập nhật thành công!');
+                toast.success('Thông tin has been cập nhật thành công!');
                 
                 // Reload immediately to update the header's display name
                 setTimeout(() => {
                     window.location.reload();
                 }, 1000);
             } else {
-                toast.error(data.message || 'Cập nhật thất bại');
+                toast.error(data.message || 'Update thất bại');
             }
         } catch (error) {
             toast.error('Có lỗi xảy ra khi kết nối tới máy chủ');
@@ -79,7 +79,7 @@ function Profile(props) {
                                     />
                                 </div>
                                 <div className="upload-image">
-                                    Nhấn vào ảnh để tải ảnh
+                                    Nhấn vào ảnh to tải ảnh
                                 </div>
                             </div>
                         </Col>
@@ -95,7 +95,7 @@ function Profile(props) {
                                             <input type="text" name='first_name'
                                                 onChange={(event)=> setUserUpdate({...userUpdate, first_name: event.target.value})} 
                                                 value={userUpdate && userUpdate.first_name} 
-                                                placeholder='Nhập tên của bạn'
+                                                placeholder='Enter tên của bạn'
                                             />
                                         </div>
 
@@ -103,7 +103,7 @@ function Profile(props) {
                                             <input type="text" name='last_name' 
                                                 onChange={(event)=> setUserUpdate({...userUpdate, last_name: event.target.value})} 
                                                 value={userUpdate && userUpdate.last_name} 
-                                                placeholder='Nhập họ của bạn'
+                                                placeholder='Enter họ của bạn'
                                             />
                                         </div>
                                     </div>
@@ -112,19 +112,19 @@ function Profile(props) {
                                         <input type="text" name='email' 
                                             onChange={(event)=> setUserUpdate({...userUpdate, email: event.target.value})} 
                                             value={userUpdate && userUpdate.email} 
-                                            placeholder='Nhập email của bạn'
+                                            placeholder='Enter email của bạn'
                                         />
                                     </div>
 
                                     {/* <div className='profile-form-input'>
-                                        <input type="password" name='password' value={user.password} placeholder='Nhập mật khẩu của bạn'/>
+                                        <input type="password" name='password' value={user.password} placeholder='Enter mật khẩu của bạn'/>
                                     </div> */}
 
                                     <div className='profile-form-input'>
                                         <input type="number" name='age' 
                                             onChange={(event)=> setUserUpdate({...userUpdate, age: event.target.value})}  
                                             value={userUpdate && userUpdate.age} 
-                                            placeholder='Nhập tuổi của bạn'
+                                            placeholder='Enter tuổi của bạn'
                                         />
                                     </div>
 
@@ -133,7 +133,7 @@ function Profile(props) {
                                             <input type="text" name='phone' 
                                                 onChange={(event)=> setUserUpdate({...userUpdate, phone: event.target.value})}  
                                                 value={userUpdate && userUpdate.phone} 
-                                                placeholder='Nhập số điện thoại'
+                                                placeholder='Enter phone number'
                                             />
                                         </div>
 

@@ -1,50 +1,168 @@
+@use '../../../scss/' as *;
+
 .staff-management {
-    padding: 20px;
+    padding: 24px;
+    background-color: $luxury-bg;
+    min-height: calc(100vh - 70px);
 
     &__header {
-        h3 {
-            color: #212529;
-            font-weight: 600;
+        h2 {
+            font-family: 'Playfair Display', serif;
+            color: $luxury-gold !important;
+            letter-spacing: 1px;
         }
     }
 
+    .form-select, .form-control {
+        background-color: $luxury-surface-light;
+        border: 1px solid rgba($luxury-gold, 0.1) !important;
+        color: $luxury-text !important;
+        border-radius: 8px;
+
+        &:focus {
+            border-color: $luxury-gold !important;
+            box-shadow: 0 0 0 2px rgba($luxury-gold, 0.2) !important;
+        }
+
+        &::placeholder {
+            color: $luxury-text-muted !important;
+        }
+    }
+
+    .bg-white {
+        background-color: $luxury-surface-light !important;
+    }
+
     .btn-success {
-        background-color: #28a745;
-        border-color: #28a745;
+        background-color: $luxury-gold !important;
+        border: none !important;
+        color: $luxury-bg !important;
+        font-weight: 600 !important;
+        padding: 10px 24px !important;
+        border-radius: 8px !important;
+        transition: all 0.3s ease !important;
 
         &:hover {
-            background-color: #218838;
-            border-color: #1e7e34;
+            background-color: $luxury-gold-light !important;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba($luxury-gold, 0.3);
+        }
+    }
+
+    .table {
+        background-color: $luxury-surface-light;
+        border-collapse: separate;
+        border-spacing: 0 8px;
+        border: none;
+        margin-top: 20px;
+
+        thead {
+            tr th {
+                background-color: transparent;
+                color: $luxury-gold;
+                font-family: 'Playfair Display', serif;
+                font-weight: 600;
+                text-transform: uppercase;
+                font-size: 0.85rem;
+                letter-spacing: 1px;
+                border: none;
+                padding: 1.2rem;
+            }
+        }
+
+        tbody {
+            tr {
+                background-color: $luxury-surface;
+                transition: all 0.3s ease;
+
+                td {
+                    border: none;
+                    color: $luxury-text;
+                    padding: 1.2rem;
+                    
+                    &:first-child { border-radius: 12px 0 0 12px; }
+                    &:last-child { border-radius: 0 12px 12px 0; }
+                }
+
+                &:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+                    background-color: $luxury-surface-light;
+                }
+            }
         }
     }
 }
 
 .staff-modal {
     .modal-content {
-        border-radius: 10px;
-        overflow: hidden;
+        background-color: $luxury-surface;
+        border: 1px solid rgba($luxury-gold, 0.2);
+        border-radius: 16px;
+        color: $luxury-text;
     }
 
     .modal-header {
-        background-color: #28a745;
-        color: white;
+        border-bottom: 1px solid rgba($luxury-gold, 0.1);
+        padding: 20px 24px;
+        
+        .modal-title {
+            font-family: 'Playfair Display', serif;
+            color: $luxury-gold;
+            font-size: 1.4rem;
+        }
 
         .btn-close {
-            filter: invert(1) grayscale(100%) brightness(200%);
+            filter: invert(1) brightness(200%);
         }
     }
 
-    .input-pwd-wrapper {
-        .form-control {
-            padding-right: 40px;
+    .modal-body {
+        padding: 24px;
+    }
+
+    .form-control, .form-select {
+        background-color: $luxury-bg;
+        border: 1px solid rgba($luxury-gold, 0.1);
+        color: $luxury-text;
+        
+        &:focus {
+            border-color: $luxury-gold;
+            background-color: $luxury-bg;
+            color: $luxury-text;
         }
+    }
 
-        .pwd-icon {
-            color: #6c757d;
+    .avatar-preview-box {
+        border: 2px dashed rgba($luxury-gold, 0.3) !important;
+        background-color: rgba($luxury-bg, 0.5) !important;
+        transition: all 0.3s ease;
 
-            &:hover {
-                color: #212529;
-            }
+        &:hover {
+            border-color: $luxury-gold !important;
+            background-color: rgba($luxury-gold, 0.05) !important;
+        }
+    }
+
+    .btn-secondary {
+        background-color: transparent;
+        border: 1px solid rgba($luxury-text, 0.2);
+        color: $luxury-text-muted;
+        
+        &:hover {
+            background-color: rgba($luxury-text, 0.05);
+            color: $luxury-text;
+        }
+    }
+
+    .btn-success {
+        background-color: $luxury-gold;
+        border: none;
+        color: $luxury-bg;
+        font-weight: 700;
+        
+        &:hover {
+            background-color: $luxury-gold-light;
         }
     }
 }

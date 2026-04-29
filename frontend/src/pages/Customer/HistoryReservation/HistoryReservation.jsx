@@ -31,7 +31,7 @@ function ReservationHistory() {
         setReservations(sortedData);
 
       } catch (error) {
-        console.error("Lỗi khi lấy lịch sử đặt bàn:", error);
+        console.error("Error khi lấy lịch sử book table:", error);
       }
     };
 
@@ -50,7 +50,7 @@ function ReservationHistory() {
   }, [accessToken]);
 
   const handleCancelReservation = async (reservationId) => {
-    const isConfirm = window.confirm("Bạn có chắc chắn muốn hủy đặt bàn này không?");
+    const isConfirm = window.confirm("Bạn có chắc chắn muốn hủy book table này không?");
     if (!isConfirm) return;
 
     try {
@@ -70,14 +70,14 @@ function ReservationHistory() {
         throw new Error(data.message);
       }
 
-      alert("Hủy bàn thành công");
+      alert("Cancel bàn thành công");
 
       setReservations(prev =>
-        prev.map(r => r._id === reservationId ? { ...r, status: "Đã hủy" } : r)
+        prev.map(r => r._id === reservationId ? { ...r, status: "Cancelled" } : r)
       );
 
     } catch (error) {
-      console.error("Lỗi khi hủy bàn:", error);
+      console.error("Error khi hủy bàn:", error);
       alert(error.message || "Có lỗi xảy ra khi hủy bàn");
     }
   };
@@ -89,12 +89,12 @@ function ReservationHistory() {
       <div className="block__history-reservation">
         <Container>
 
-          <h2>Lịch sử đặt bàn</h2>
+          <h2>Lịch sử book table</h2>
 
           <div className="reservation-list">
 
             {reservations.length === 0 && (
-              <p>Không có lịch sử đặt bàn</p>
+              <p>Không có lịch sử book table</p>
             )}
 
             {reservations.map((items) => {
@@ -121,7 +121,7 @@ function ReservationHistory() {
                     </label>
 
                     <label>
-                      Ngày đặt:
+                      Date VNDặt:
                       <span className="reservation-time">
                         {moment(createdAt).format("DD-MM-YYYY HH:mm")}
                       </span>
@@ -135,13 +135,13 @@ function ReservationHistory() {
 
                         <Col md={4}>
                           <label>
-                            Tên khách hàng: <span>{customerName}</span>
+                            Name khách hàng: <span>{customerName}</span>
                           </label>
                         </Col>
 
                         <Col md={4}>
                           <label>
-                            Số điện thoại: <span>{phoneNumber}</span>
+                            Phone Number: <span>{phoneNumber}</span>
                           </label>
                         </Col>
 
@@ -153,20 +153,20 @@ function ReservationHistory() {
 
                         <Col md={4}>
                           <label>
-                            Bàn đã đặt:
+                            Table VNDã VNDặt:
                             <span>
-                              {tableId?.tableNumber || "Không xác định"}
+                              {tableId?.tableNumber || "Không xác VNDịnh"}
                             </span>
                           </label>
                         </Col>
 
                         <Col md={4}>
                           <label>
-                            Ngày sử dụng:
+                            Date sử dụng:
                             <span>
                               {reservationTime
                                 ? moment(reservationTime).format("DD-MM-YYYY HH:mm")
-                                : "Không xác định"}
+                                : "Không xác VNDịnh"}
                             </span>
                           </label>
                         </Col>
@@ -178,17 +178,17 @@ function ReservationHistory() {
 
                   <div className="reservation-request">
                     <label>
-                      (*) Yêu cầu đặc biệt:
+                      (*) Request special:
                       <span>{specialRequests || "Không có"}</span>
                     </label>
                   </div>
 
                   <div className="reservation-footer">
 
-                    <span className={`reservation-status ${status === "Đã hủy" ? "cancelled" : status === "Đang sử dụng" ? "in-use" : "confirmed"}`}>
-                      {status === "Đã hủy" ? (
+                    <span className={`reservation-status ${status === "Cancelled" ? "cancelled" : status === "In Use" ? "in-use" : "confirmed"}`}>
+                      {status === "Cancelled" ? (
                         <i className="fa-solid fa-times-circle"></i>
-                      ) : status === "Đang sử dụng" ? (
+                      ) : status === "In Use" ? (
                         <i className="fa-solid fa-utensils"></i>
                       ) : (
                         <i className="fa-solid fa-check-circle"></i>
@@ -196,12 +196,12 @@ function ReservationHistory() {
                       <span>{status}</span>
                     </span>
 
-                    {status === "Đã đặt" && (
+                    {status === "Reserved" && (
                       <button
                         className="btn-cancel"
                         onClick={() => handleCancelReservation(_id)}
                       >
-                        Hủy bàn
+                        Cancel bàn
                       </button>
                     )}
 

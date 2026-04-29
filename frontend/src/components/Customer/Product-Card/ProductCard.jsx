@@ -43,7 +43,7 @@ function ProductCard({ items, fullCol }) {
           guestCart[existingItemIndex].qty += 1;
           guestCart[existingItemIndex].total_price = guestCart[existingItemIndex].qty * price;
         } else {
-          // Lấy tên ảnh từ đường dẫn
+          // Lấy tên ảnh từ VNDường dẫn
           const imageName = items.image_url || 'no-image.png';
 
           guestCart.push({
@@ -64,7 +64,7 @@ function ProductCard({ items, fullCol }) {
           total_item: guestCart.reduce((sum, i) => sum + i.qty, 0),
           total_price: guestCart.reduce((sum, i) => sum + i.total_price, 0)
         }));
-        toast.success("Đã thêm vào giỏ hàng!");
+        toast.success("Added to cart!");
         return;
       }
       navigate('/login');
@@ -92,7 +92,7 @@ function ProductCard({ items, fullCol }) {
       if (data && data.cart) {
         dispatch(setCartStore(data.cart));
         dispatch(setCartItems(data.cartItems));
-        toast.success("Đã thêm vào giỏ hàng!");
+        toast.success("Added to cart!");
       } else {
         sessionStorage.removeItem("accessToken");
         sessionStorage.removeItem("user");
@@ -112,7 +112,7 @@ function ProductCard({ items, fullCol }) {
         <div className={`product-card ${isOutOfStock ? 'out-of-stock' : ''}`}>
           <div className="product-img">
             <img src={imageSrc} alt={name} />
-            {isOutOfStock && <div className="out-of-stock-label">Đã hết</div>}
+            {isOutOfStock && <div className="out-of-stock-label">Sold Out</div>}
           </div>
 
           <div className="product-info">
@@ -153,7 +153,7 @@ function ProductCard({ items, fullCol }) {
       >
         <div className="product-img">
           <img src={imageSrc} alt={name} />
-          {isOutOfStock && <div className="out-of-stock-label">Đã hết</div>}
+          {isOutOfStock && <div className="out-of-stock-label">Sold Out</div>}
         </div>
 
         <div className="product-info">

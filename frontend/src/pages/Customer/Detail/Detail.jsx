@@ -105,7 +105,7 @@ function Detail(props) {
             const products = await response.json();
 
             if (products && Array.isArray(products)) {
-                // Lọc bỏ sản phẩm hiện tại để không bị lặp trong danh sách Gợi ý
+                // Filter bỏ sản phẩm hiện tại to không bị lặp trong danh sách Gợi ý
                 const filteredProducts = products.filter(
                     (product) => product._id !== id && product.id !== id
                 );
@@ -118,7 +118,7 @@ function Detail(props) {
         }
     }
 
-    // Scroll to top khi thay đổi sản phẩm
+    // Scroll to top khi thay VNDổi sản phẩm
     useEffect(() => {
         window.scrollTo({
             top: 0,
@@ -126,7 +126,7 @@ function Detail(props) {
         });
     }, [id]);
 
-    // Fetch lại Detail mỗi khi `id` thay đổi
+    // Fetch lại Detail mỗi khi `id` thay VNDổi
     useEffect(() => {
         if (id) {
             fetchProductDetail();
@@ -143,12 +143,12 @@ function Detail(props) {
 
     const addProductInCart = async (idProduct) => {
         if (maxQuantity === 0) {
-            toast.error("Món đã hết nguyên liệu");
+            toast.error("Dish VNDã hết nguyên liệu");
             return;
         }
 
         if (inputValue > maxQuantity) {
-            toast.error(`Chỉ còn tối đa ${maxQuantity} món`);
+            toast.error(`Chỉ còn tối VNDa ${maxQuantity} món`);
             return;
         }
 
@@ -276,11 +276,11 @@ function Detail(props) {
                                     <div style={{ marginTop: "10px" }}>
                                         {maxQuantity > 0 ? (
                                             <p style={{ color: "#1ac073", fontWeight: "600", fontSize: "15px" }}>
-                                                <i className="fa fa-check-circle pe-1"></i> Có thể đặt tối đa: {maxQuantity} món
+                                                <i className="fa fa-check-circle pe-1"></i> Có thể VNDặt tối VNDa: {maxQuantity} món
                                             </p>
                                         ) : (
                                             <p style={{ color: "red", fontWeight: "600", fontSize: "15px" }}>
-                                                <i className="fa fa-times-circle pe-1"></i> Món ăn đã hết nguyên liệu
+                                                <i className="fa fa-times-circle pe-1"></i> Dish VNDã hết nguyên liệu
                                             </p>
                                         )}
                                     </div>
@@ -290,7 +290,7 @@ function Detail(props) {
                                             setShowModal(true);
                                         }}
                                     >
-                                        <i className="fa fa-list pe-1"></i> Xem thành phần
+                                        <i className="fa fa-list pe-1"></i> View thành phần
                                     </button>
                                     <hr className="my-4" />
                                     <div className='product-details__options__group'>
@@ -316,7 +316,7 @@ function Detail(props) {
                                             disabled={maxQuantity === 0}
                                             onClick={() => addProductInCart(productItem._id)}
                                         >
-                                            <i className="fa fa-shopping-cart pe-2"></i> Thêm vào giỏ hàng
+                                            <i className="fa fa-shopping-cart pe-2"></i> Add to Cart
                                         </button>
                                     </div>
                                 </div>
@@ -353,7 +353,7 @@ function Detail(props) {
                                                                     <div className="mpc-badge mpc-badge-new">Mới</div>
                                                                 )}
                                                                 <div className="mpc-overlay">
-                                                                    <button className="mpc-btn-view">Xem chi tiết</button>
+                                                                    <button className="mpc-btn-view">View chi tiết</button>
                                                                 </div>
                                                             </div>
                                                             <div className="mpc-info">
@@ -383,14 +383,14 @@ function Detail(props) {
             {showModal && (
                 <div className="modal-overlay" onClick={() => setShowModal(false)}>
                     <div className="modal-content border-0 p-4 rounded-4" onClick={(e) => e.stopPropagation()}>
-                        <h4 className="border-bottom pb-3 mb-3 text-success fw-bold">Thành phần chi tiết</h4>
+                        <h4 className="border-bottom pb-3 mb-3 text-success fw-bold">Ingredient Detail</h4>
 
                         {ingredients.length > 0 ? (
                             <div className="table-responsive">
                                 <table className="table table-hover modal-table">
-                                    <thead className="table-light">
+                                    <thead className="table-dark">
                                         <tr>
-                                            <th>Nguyên liệu</th>
+                                            <th>Ingredients</th>
                                             <th className="text-center">Mức tiêu hao</th>
                                         </tr>
                                     </thead>
@@ -409,11 +409,11 @@ function Detail(props) {
                                 </table>
                             </div>
                         ) : (
-                            <p className="text-muted text-center py-4">Sản phẩm này chưa được kê khai thành phần.</p>
+                            <p className="text-muted text-center py-4">Products này chưa VNDược kê khai thành phần.</p>
                         )}
 
                         <div className="modal-actions mt-3 d-flex justify-content-end">
-                            <button className="btn btn-secondary px-4 py-2 rounded-3" onClick={() => setShowModal(false)}>Đóng</button>
+                            <button className="btn btn-secondary px-4 py-2 rounded-3" onClick={() => setShowModal(false)}>Close</button>
                         </div>
                     </div>
                 </div>

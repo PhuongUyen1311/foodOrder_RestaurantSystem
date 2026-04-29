@@ -50,7 +50,7 @@ const getCustomers = async (req, res) => {
         res.status(200).json(customers);
     } catch (error) {
         console.error('Error fetching customers:', error);
-        res.status(500).json({ message: 'Lỗi khi lấy danh sách khách hàng', error: error.message });
+        res.status(500).json({ message: 'Error getting customer list', error: error.message });
     }
 };
 
@@ -61,24 +61,24 @@ const getCustomerById = async (req, res) => {
 
         // Kiểm tra id có hợp lệ không
         if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: 'ID khách hàng không hợp lệ' });
+            return res.status(400).json({ message: 'Invalid customer ID' });
         }
 
         console.log("Getting customer by id:", id);
         const customer = await Customer.findById(id);
 
         if (!customer) {
-            return res.status(404).json({ message: 'Không tìm thấy khách hàng' });
+            return res.status(404).json({ message: 'Customer not found' });
         }
 
         res.status(200).json(customer);
     } catch (error) {
         console.error('Error fetching customer:', error);
-        res.status(500).json({ message: 'Lỗi khi lấy thông tin khách hàng' });
+        res.status(500).json({ message: 'Error getting customer info' });
     }
 };
 
-// 🔹 Cập nhật khách hàng (admin)
+// 🔹 Update khách hàng (admin)
 const updateCustomer = async (req, res) => {
     try {
         const { id } = req.params;
@@ -89,7 +89,7 @@ const updateCustomer = async (req, res) => {
 
         // Kiểm tra ID hợp lệ
         if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: 'ID khách hàng không hợp lệ' });
+            return res.status(400).json({ message: 'Invalid customer ID' });
         }
 
         // Tạo object update
@@ -110,48 +110,48 @@ const updateCustomer = async (req, res) => {
         );
 
         if (!customer) {
-            return res.status(404).json({ message: 'Không tìm thấy khách hàng' });
+            return res.status(404).json({ message: 'Customer not found' });
         }
 
         console.log('Customer updated successfully:', customer._id);
 
-        // Trả về response không bao gồm mật khẩu
+        // Return về response không bao gồm mật khẩu
         const customerResponse = customer.toObject();
         delete customerResponse.hash_password;
 
         res.status(200).json({
-            message: 'Cập nhật khách hàng thành công',
+            message: 'Customer updated successfully',
             customer: customerResponse
         });
     } catch (error) {
         console.error('Error updating customer:', error);
         res.status(500).json({
-            message: 'Lỗi khi cập nhật khách hàng',
+            message: 'Error khi cập nhật khách hàng',
             error: error.message
         });
     }
 };
 
-// 🔹 Xóa khách hàng (admin)
+// 🔹 Delete khách hàng (admin)
 const deleteCustomer = async (req, res) => {
     try {
         const { id } = req.params;
 
         // Kiểm tra ID hợp lệ
         if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: 'ID khách hàng không hợp lệ' });
+            return res.status(400).json({ message: 'Invalid customer ID' });
         }
 
         const customer = await Customer.findByIdAndDelete(id);
 
         if (!customer) {
-            return res.status(404).json({ message: 'Không tìm thấy khách hàng' });
+            return res.status(404).json({ message: 'Customer not found' });
         }
 
-        res.status(200).json({ message: 'Xóa khách hàng thành công' });
+        res.status(200).json({ message: 'Delete khách hàng thành công' });
     } catch (error) {
         console.error('Error deleting customer:', error);
-        res.status(500).json({ message: 'Lỗi khi xóa khách hàng' });
+        res.status(500).json({ message: 'Error khi xóa khách hàng' });
     }
 };
 
@@ -166,20 +166,20 @@ const createCustomer = async (req, res) => {
         // Kiểm tra các trường bắt buộc
         if (!email || !first_name || !last_name || !phone || !password) {
             return res.status(400).json({
-                message: 'Vui lòng điền đầy đủ thông tin bắt buộc'
+                message: 'Please VNDiền full VNDủ thông tin bắt buộc'
             });
         }
 
-        // Kiểm tra email đã tồn tại
+        // Kiểm tra email VNDã tồn tại
         const existingCustomer = await Customer.findOne({ email });
         if (existingCustomer) {
-            return res.status(400).json({ message: 'Email đã được sử dụng' });
+            return res.status(400).json({ message: 'Email has been sử dụng' });
         }
 
-        // Kiểm tra phone đã tồn tại
+        // Kiểm tra phone VNDã tồn tại
         const existingPhone = await Customer.findOne({ phone });
         if (existingPhone) {
-            return res.status(400).json({ message: 'Số điện thoại đã được sử dụng' });
+            return res.status(400).json({ message: 'Phone Number has been sử dụng' });
         }
 
         // Mã hóa mật khẩu (bỏ comment bcrypt)
@@ -199,7 +199,7 @@ const createCustomer = async (req, res) => {
 
         await newCustomer.save();
 
-        // Trả về response (ẩn mật khẩu)
+        // Return về response (ẩn mật khẩu)
         const customerResponse = newCustomer.toObject();
         delete customerResponse.hash_password;
 
@@ -210,13 +210,13 @@ const createCustomer = async (req, res) => {
     } catch (error) {
         console.error('Error creating customer:', error);
         res.status(500).json({
-            message: 'Lỗi khi tạo khách hàng',
+            message: 'Error khi tạo khách hàng',
             error: error.message
         });
     }
 };
 
-// 🔹 Khóa/Mở khóa tài khoản khách hàng (Toggle is_active)
+// 🔹 Locked/Mở khóa tài khoản khách hàng (Toggle is_active)
 const toggleCustomerStatus = async (req, res) => {
     try {
         const { id } = req.params;
@@ -225,18 +225,18 @@ const toggleCustomerStatus = async (req, res) => {
 
         // Kiểm tra ID hợp lệ
         if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: 'ID khách hàng không hợp lệ' });
+            return res.status(400).json({ message: 'Invalid customer ID' });
         }
 
         // Lấy thông tin khách hàng hiện tại
         const existingCustomer = await Customer.findById(id);
         if (!existingCustomer) {
-            return res.status(404).json({ message: 'Không tìm thấy khách hàng' });
+            return res.status(404).json({ message: 'Customer not found' });
         }
 
         const newStatus = !existingCustomer.is_active;
 
-        // Cập nhật trạng thái mới
+        // Update trạng thái mới
         const customer = await Customer.findByIdAndUpdate(
             id,
             {
@@ -265,7 +265,7 @@ const toggleCustomerStatus = async (req, res) => {
     } catch (error) {
         console.error('Error toggling customer status:', error);
         res.status(500).json({
-            message: 'Lỗi khi thay đổi trạng thái tài khoản',
+            message: 'Error khi thay VNDổi trạng thái tài khoản',
             error: error.message
         });
     }

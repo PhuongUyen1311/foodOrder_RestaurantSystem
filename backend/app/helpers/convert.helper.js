@@ -38,7 +38,7 @@ exports.convertCartToOrder = async (cartId, typeOrder, selectedItemIds = null) =
         total_price: total_price,
         status: "NEW",
         type_order: typeOrder,
-        payment_method: typeOrder === "cash" ? "tiền mặt" : (typeOrder === "transfer" ? "chuyển khoản" : ""),
+        payment_method: typeOrder === "cash" ? "cash" : (typeOrder === "transfer" ? "transfer" : ""),
         is_payment: false,
         is_active: true,
     });
@@ -139,8 +139,8 @@ exports.createOrderFromGuestItems = async (items, typeOrder, tableNumber, guestN
     const newOrder = new Order({
         customer_id: null,
         cart_id: null,
-        first_name: guestName || "Khách",
-        last_name: guestName ? "" : "vãng lai",
+        first_name: guestName || "Guest",
+        last_name: guestName ? "" : "walk-in",
         guest_name: guestName,
         phone: phone,
         total_item: total_item,
@@ -149,7 +149,7 @@ exports.createOrderFromGuestItems = async (items, typeOrder, tableNumber, guestN
         type_order: typeOrder,
         order_source: "table",
         table_number: tableNumber,
-        payment_method: typeOrder === "cash" ? "tiền mặt" : (typeOrder === "transfer" ? "chuyển khoản" : ""),
+        payment_method: typeOrder === "cash" ? "cash" : (typeOrder === "transfer" ? "transfer" : ""),
         is_payment: false,
         is_active: true,
     });

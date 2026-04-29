@@ -66,10 +66,10 @@ function Login() {
              sessionStorage.setItem("accessToken", data.accessToken);
             //  sessionStorage.setItem('accessToken', JSON.stringify(data.accessToken));
             }else{
-                toast.error('Đăng nhập thất bại');
+                toast.error('Login thất bại');
             }
         } else {
-            toast.error('Mật khẩu phải ít nhất là 6 ký tự');
+            toast.error('Password phải ít nhất là 6 ký tự');
         }
     }
 
@@ -80,21 +80,21 @@ function Login() {
                 autoClose={1000}
             />
             <Container className='block-login'>
-                <h2>Đăng nhập</h2>
-                <span>Đăng nhập và bắt đầu cuộc phiêu lưu ẩm thực của bạn!</span>
+                <h2>Login</h2>
+                <span>Login và bắt VNDầu cuộc phiêu lưu ẩm thực của bạn!</span>
 
                 <form className='login-form' onSubmit={handleSubmit}>
                     <div className='login-form-input'>
-                        <input type="text" name='email' onChange={handleChange} placeholder='Nhập email của bạn' required/>
+                        <input type="text" name='email' onChange={handleChange} placeholder='Enter email của bạn' required/>
                     </div>
 
                     <div className='login-form-input'>
-                        <input type="password" name='password' onChange={handleChange} placeholder='Nhập mật khẩu của bạn' required/>
+                        <input type="password" name='password' onChange={handleChange} placeholder='Enter mật khẩu của bạn' required/>
                         <input type="hidden" name='page'/>
                     </div>
 
                     <div className='login-form-btn'>
-                        <input type="submit" className='btn btn-login' value="Đăng nhập"/>
+                        <input type="submit" className='btn btn-login' value="Login"/>
                     </div>
                     
                     <div className='login-form-register'>

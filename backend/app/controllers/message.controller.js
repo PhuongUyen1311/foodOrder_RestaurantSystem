@@ -32,7 +32,7 @@ exports.uploadFile = (req, res) => {
     upload(req, res, (err) => {
         if (err instanceof multer.MulterError) {
             if (err.code === "LIMIT_FILE_SIZE") {
-                return res.status(400).send({ message: "File quá lớn! Giới hạn tối đa là 5MB." });
+                return res.status(400).send({ message: "File quá lớn! Giới hạn tối VNDa là 5MB." });
             }
             return res.status(500).send({ message: err.message });
         } else if (err) {
@@ -40,7 +40,7 @@ exports.uploadFile = (req, res) => {
         }
 
         if (!req.file) {
-            return res.status(400).send({ message: "Vui lòng chọn file." });
+            return res.status(400).send({ message: "Please select file." });
         }
 
         const fileUrl = `/static/uploads/chat/${req.file.filename}`;

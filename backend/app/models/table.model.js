@@ -7,9 +7,9 @@ module.exports = mongoose => {
             unique: true,
         },
         
-        qrCode: { type: String, unique: true }, // Lưu trữ URL hoặc dữ liệu của mã QR
+        qrCode: { type: String, unique: true }, // Save trữ URL hoặc dữ liệu của mã QR
         isAvailable: { type: Boolean, default: true },
-        status: { type: String, enum: ['Trống', 'Đã đặt', 'Đang sử dụng', 'Hoàn thành'], default: 'Trống' },
+        status: { type: String, enum: ['Empty', 'Reserved', 'In Use', 'Completed'], default: 'Empty' },
         seatingCapacity: { 
             type: Number, 
             required: true,
@@ -17,7 +17,7 @@ module.exports = mongoose => {
         },
         location: { 
             type: String,
-            enum: ['Tầng 1 trong nhà', 'Tầng 2 trong nhà', 'Tầng 1 ngoài trời', 'Tầng 2 ngoài trời'],
+            enum: ['1st Floor Indoor', '2nd Floor Indoor', '1st Floor Outdoor', '2nd Floor Outdoor'],
             required: true 
         },
         merged_into: {

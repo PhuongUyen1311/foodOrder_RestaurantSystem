@@ -1,6 +1,10 @@
 @use '../../../scss/' as *;
 
 .table-management {
+    padding-bottom: 0 !important;
+    padding-right: 0 !important;
+    background-color: $bg;
+    min-height: calc(100vh - 70px);
 
     &__header {
         display: flex;
@@ -10,160 +14,106 @@
 
         h1 {
             font-size: 24px;
-            font-weight: 600;
-            color: #2d3748;
+            font-weight: 700;
+            color: $gold;
+            font-family: $font-heading;
             margin: 0;
         }
 
         .btn-add {
-            background-color: $color-primary;
+            background-color: $gold;
             border: none;
             padding: 10px 20px;
             border-radius: 8px;
-            transition: all 0.3s ease;
+            color: black;
+            font-weight: 600;
+            transition: $transition;
 
             &:hover {
-                background-color: darken-color($color-primary, 10%);
+                background-color: darken($gold, 10%);
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba($gold, 0.3);
             }
         }
     }
 
     .table {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        background: $surface;
+        border-radius: $radius;
+        box-shadow: $shadow;
+        border: 1px solid $border;
+        color: $text;
+        overflow: hidden;
 
         thead {
             th {
-                background-color: #f8fafc;
-                color: #4a5568;
+                background-color: rgba($gold, 0.05);
+                color: $gold;
                 font-weight: 600;
                 padding: 16px;
-                border-bottom: 2px solid #e2e8f0;
+                border-bottom: 1px solid $border;
+                font-family: $font-heading;
 
-                &:nth-child(1) {
-                    width: 100px;
-                    text-align: center;
-                }
-
-                &:nth-child(2) {
-                    width: 200px;
-                    text-align: center;
-                }
-
-                &:nth-child(3) {
-                    width: 150px;
-                    text-align: center;
-                }
-
-                &:nth-child(4) {
-                    width: 400px;
-                    text-align: right;
-                }
-
-                &:nth-child(5) {
-                    width: auto;
-                    min-width: 300px;
-                }
+                &:nth-child(1) { width: 100px; text-align: center; }
+                &:nth-child(2) { width: 200px; text-align: center; }
+                &:nth-child(3) { width: 150px; text-align: center; }
+                &:nth-child(4) { width: 400px; text-align: right; }
+                &:nth-child(5) { width: auto; min-width: 300px; }
             }
         }
 
         tbody {
             tr {
+                border-bottom: 1px solid rgba($border, 0.5);
+                transition: $transition;
+                
                 &:hover {
-                    background-color: #f8fafc;
+                    background-color: rgba($gold, 0.02);
                 }
 
                 td {
                     padding: 16px;
                     vertical-align: middle;
-                    color: #4a5568;
+                    color: $text;
+                    border: none;
 
-                    &:nth-child(1) {
-                        width: 100px;
-                        text-align: center;
-                    }
-
-                    &:nth-child(2) {
-                        width: 200px;
-                        text-align: center;
-                    }
-
-                    &:nth-child(3) {
-                        width: 150px;
-                        text-align: center;
-                    }
-
-                    &:nth-child(4) {
-                        width: 400px;
-                        white-space: nowrap;
-                    }
-
-                    &:nth-child(5) {
-                        width: auto;
-                        min-width: 300px;
-                    }
+                    &:nth-child(1) { width: 100px; text-align: center; }
+                    &:nth-child(2) { width: 200px; text-align: center; }
+                    &:nth-child(3) { width: 150px; text-align: center; }
+                    &:nth-child(4) { width: 400px; white-space: nowrap; }
+                    &:nth-child(5) { width: auto; min-width: 300px; }
 
                     .table-status {
                         display: inline-block;
                         padding: 6px 12px;
                         border-radius: 20px;
                         font-size: 14px;
-                        font-weight: 500;
+                        font-weight: 600;
                         text-align: center;
                         min-width: 100px;
 
                         &.bg-success {
-                            background-color: $color-success !important;
-                            color: $color-text-light;
+                            background-color: rgba($beige, 0.1) !important;
+                            color: $beige !important;
+                            border: 1px solid rgba($beige, 0.2);
                         }
 
                         &.bg-danger {
-                            background-color: $color-error !important;
-                            color: $color-text-light;
+                            background-color: rgba($wine, 0.1) !important;
+                            color: $wine !important;
+                            border: 1px solid rgba($wine, 0.2);
                         }
 
                         &.bg-warning {
-                            background-color: $color-warning !important;
-                            color: $color-text-primary !important;
+                            background-color: rgba($gold, 0.1) !important;
+                            color: $gold !important;
+                            border: 1px solid rgba($gold, 0.2);
                         }
 
                         &.bg-secondary {
-                            background-color: $color-text-secondary !important;
-                            color: $color-text-light;
-                        }
-                    }
-
-                    .btn {
-                        padding: 6px 12px;
-                        font-size: 14px;
-                        border-radius: 6px;
-
-                        &-info {
-                            background-color: #4299e1;
-                            border-color: #4299e1;
-
-                            &:hover {
-                                background-color: #3182ce;
-                            }
-                        }
-
-                        &-primary {
-                            background-color: #4a5568;
-                            border-color: #4a5568;
-
-                            &:hover {
-                                background-color: #2d3748;
-                            }
-                        }
-
-                        &-success {
-                            background-color: #48bb78;
-                            border-color: #48bb78;
-
-                            &:hover {
-                                background-color: #38a169;
-                            }
+                            background-color: rgba($text-muted, 0.1) !important;
+                            color: $text-muted !important;
+                            border: 1px solid rgba($text-muted, 0.2);
                         }
                     }
                 }
@@ -175,143 +125,27 @@
 // Modal Styles
 .modal {
     .modal-content {
-        border-radius: 12px;
-        border: none;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        padding: 0;
-        overflow: hidden;
+        background-color: $surface;
+        border-radius: $radius;
+        border: 1px solid $border;
+        box-shadow: $shadow;
+        color: $text;
     }
 
     .modal-header {
-        border-bottom: 1px solid #e2e8f0;
+        border-bottom: 1px solid $border;
+        padding: 20px;
 
         .modal-title {
             font-size: 20px;
-            font-weight: 600;
-            color: #f7f9fb;
-            margin-top: 0px;
-        }
-    }
-
-    .modal-body {
-        padding: 20px;
-        margin-top: 20px;
-
-        .form-label {
-            font-weight: 500;
-            color: #4a5568;
-            margin-top: 20px;
+            font-weight: 700;
+            color: $gold;
+            font-family: $font-heading;
+            margin: 0;
         }
 
-        .form-control,
-        .form-select {
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-            // padding: 10px 12px;
-
-            &:focus {
-                border-color: $color-primary;
-                box-shadow: 0 0 0 3px rgba($color-primary, 0.2);
-            }
-        }
-
-        .table-details {
-
-            .info-section,
-            .reservation-section {
-                background-color: #f8fafc;
-                // padding: 16px;
-                border-radius: 8px;
-                // margin-bottom: 16px;
-
-                h5 {
-                    color: #2d3748;
-                    font-size: 16px;
-                    font-weight: 600;
-                    margin-bottom: 12px;
-                }
-
-                p {
-                    margin-bottom: 8px;
-                    color: #4a5568;
-
-                    strong {
-                        color: #2d3748;
-                    }
-                }
-            }
-
-            .qr-section {
-                text-align: center;
-                margin-bottom: 16px;
-
-                h5 {
-                    color: #2d3748;
-                    font-size: 16px;
-                    font-weight: 600;
-                    margin-bottom: 16px;
-                    margin-top: 10px;
-                }
-            }
-        }
-    }
-
-    .modal-footer {
-        border-top: 1px solid #e2e8f0;
-        padding: 20px;
-
-        .btn {
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-weight: 500;
-        }
-    }
-}
-
-.btn-group {
-    .btn {
-        &-warning {
-            background-color: #fef3c7;
-            color: #92400e;
-            border: none;
-
-            &:hover {
-                background-color: #fde68a;
-                color: #92400e;
-            }
-        }
-
-        &-success {
-            background-color: #dcfce7;
-            color: #166534;
-            border: none;
-
-            &:hover {
-                background-color: #bbf7d0;
-                color: #166534;
-            }
-        }
-
-        svg {
-            margin-right: 4px;
-        }
-    }
-}
-
-.reserve-modal {
-    .modal-content {
-        border-radius: 12px;
-        border: none;
-    }
-
-    .modal-header {
-        padding: 20px;
-        border-bottom: 1px solid #e2e8f0;
-
-        .modal-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #1e293b;
+        .btn-close {
+            filter: invert(1) brightness(2);
         }
     }
 
@@ -319,230 +153,208 @@
         padding: 24px;
 
         .form-label {
-            font-weight: 500;
-            color: #475569;
+            font-weight: 600;
+            color: $gold;
             margin-bottom: 8px;
         }
 
-        .form-control {
+        .form-control,
+        .form-select {
+            background-color: $bg;
+            border: 1px solid $border;
+            color: $text;
             border-radius: 8px;
-            border: 1px solid #e2e8f0;
-            padding: 10px 16px;
-            font-size: 14px;
 
             &:focus {
-                border-color: $color-primary;
-                box-shadow: 0 0 0 3px rgba($color-primary, 0.1);
+                border-color: $gold;
+                box-shadow: 0 0 0 3px rgba($gold, 0.2);
+            }
+        }
+
+        .table-details {
+            .info-section,
+            .reservation-section {
+                background-color: rgba($gold, 0.05);
+                padding: 16px;
+                border-radius: 8px;
+                margin-bottom: 16px;
+                border: 1px solid rgba($gold, 0.1);
+
+                h5 {
+                    color: $gold;
+                    font-size: 16px;
+                    font-weight: 700;
+                    margin-bottom: 12px;
+                    font-family: $font-heading;
+                }
+
+                p {
+                    margin-bottom: 8px;
+                    color: $text;
+
+                    strong {
+                        color: $gold;
+                    }
+                }
             }
 
-            &:disabled {
-                background-color: #f8fafc;
+            .qr-section {
+                text-align: center;
+                margin-bottom: 16px;
+                padding: 16px;
+                background: white;
+                border-radius: 12px;
+
+                h5 {
+                    color: black;
+                    font-size: 16px;
+                    font-weight: 700;
+                    margin-bottom: 16px;
+                }
+            }
+        }
+    }
+
+    .modal-footer {
+        border-top: 1px solid $border;
+        padding: 20px;
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: $transition;
+        }
+    }
+}
+
+.btn-group {
+    .btn {
+        &-warning {
+            background-color: rgba($gold, 0.1);
+            color: $gold;
+            border: 1px solid rgba($gold, 0.2);
+
+            &:hover {
+                background-color: $gold;
+                color: black;
+            }
+        }
+
+        &-success {
+            background-color: rgba($beige, 0.1);
+            color: $beige;
+            border: 1px solid rgba($beige, 0.2);
+
+            &:hover {
+                background-color: $beige;
+                color: black;
             }
         }
     }
 }
 
-.loading-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-}
-
-// Thêm hiệu ứng hover
-td .badge:hover {
-    transform: scale(1.05);
-    transition: transform 0.2s ease;
-}
-
-.date-text {
-    margin-right: 16px;
-    font-weight: 500;
-    font-size: 15px;
-    color: #3c7543;
-    margin-left: auto;
-}
-
-.reservation-schedule {
-    background-color: #f8fafc;
-    padding: 16px;
-    border-radius: 8px;
-    margin-bottom: 16px;
-
-    h5 {
-        color: #2d3748;
-        font-size: 16px;
-        font-weight: 600;
-        margin-bottom: 12px;
+.reserve-modal {
+    .modal-header {
+        .modal-title {
+            color: $gold;
+        }
     }
 
-    .schedule-list-wrapper {
-        border: 1px solid #e2e8f0;
-        border-radius: 6px;
-        background: white;
+    .modal-body {
+        .form-label {
+            color: $gold;
+        }
 
-        .schedule-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
+        .form-control {
+            background-color: $bg;
+            border: 1px solid $border;
+            color: $text;
 
-            th {
-                background-color: #f1f5f9;
-                color: #475569;
-                font-weight: 600;
-                padding: 10px;
-                text-align: left;
-                position: sticky;
-                top: 0;
-                border-bottom: 1px solid #e2e8f0;
-            }
-
-            td {
-                padding: 10px;
-                border-bottom: 1px solid #f1f5f9;
-                color: #64748b;
-            }
-
-            tr.current-res {
-                background-color: #f0fdf4;
-
-                td {
-                    color: #166534;
-                    font-weight: 500;
-                }
+            &:disabled {
+                background-color: rgba($text-muted, 0.1);
+                color: $text-muted;
             }
         }
     }
 }
 
 .status-badge {
-    padding: 4px 8px;
+    padding: 4px 10px;
     border-radius: 12px;
     font-size: 11px;
-    font-weight: 500;
+    font-weight: 700;
+    text-transform: uppercase;
 
-    &.status-đã-đặt {
-        background-color: #fee2e2;
-        color: #991b1b;
-    }
-
-    &.status-đang-sử-dụng {
-        background-color: #fef3c7;
-        color: #92400e;
-    }
-
-    &.status-hoàn-thành {
-        background-color: #dcfce7;
-        color: #166534;
-    }
-
-    &.status-đã-hủy {
-        background-color: #f1f5f9;
-        color: #475569;
-    }
-
+    &.status-VNDã-VNDặt { background-color: rgba($gold, 0.2); color: $gold; }
+    &.status-VNDang-sử-dụng { background-color: rgba($wine, 0.2); color: $wine; }
+    &.status-hoàn-thành { background-color: rgba($beige, 0.2); color: $beige; }
+    &.status-VNDã-hủy { background-color: rgba($text-muted, 0.2); color: $text-muted; }
 }
 
-// Chỉ áp dụng cho modal chi tiết bàn
-.custom-detail-modal {
-    .modal-content {
-        border-radius: 15px;
-        border: none;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-    }
+.reservation-schedule {
+    background-color: rgba($gold, 0.02);
+    border: 1px solid $border;
 
-    .modal-body {
-        .row {
-            display: flex;
-            align-items: stretch; // Đây là chìa khóa để 2 cột bằng nhau
-        }
+    h5 { color: $gold; }
 
-        .info-section {
-            display: flex;
-            flex-direction: column;
+    .schedule-list-wrapper {
+        border: 1px solid $border;
+        background: $bg;
 
-            .bg-light {
-                display: flex;
-                flex-direction: column;
+        .schedule-table {
+            th {
+                background-color: $surface;
+                color: $gold;
+                border-bottom: 1px solid $border;
+            }
+
+            td {
+                border-bottom: 1px solid $border;
+                color: $text;
+            }
+
+            tr.current-res {
+                background-color: rgba($gold, 0.1);
+                td { color: $gold; font-weight: 700; }
             }
         }
     }
+}
 
+.custom-detail-modal {
     .modal-actions {
         .btn {
-            padding: 10px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); // Hiệu ứng mượt hơn
-            cursor: pointer;
-            outline: none;
-        }
+            &.btn-close-modal {
+                border: 2px solid $border !important;
+                color: $text !important;
 
-        .btn.btn-close-modal {
-            transition: all 0.3s ease;
-            border-width: 2px !important;
-            background-color: transparent !important;
-            border: 2px solid #e2e8f0 !important; // Sửa 'order' thành 'border'
-            color: #4a5568 !important;
-
-            &:hover {
-                background-color: #f8fafc !important;
-                border-color: #cbd5e0 !important;
-                color: #2d3748 !important;
-                transform: translateY(-1px);
+                &:hover {
+                    background-color: rgba($text, 0.05) !important;
+                    border-color: $gold !important;
+                    color: $gold !important;
+                }
             }
 
-            &:active {
-                transform: translateY(0);
-                background-color: #edf2f7 !important;
-            }
+            &.btn-delete-modal {
+                background-color: $wine !important;
+                color: white !important;
 
-            &:focus {
-                box-shadow: 0 0 0 3px rgba(203, 213, 224, 0.5) !important;
-            }
-        }
-
-        .btn.btn-delete-modal {
-            background-color: #e53e3e !important;
-            border: none !important;
-            color: white !important;
-
-            &:hover {
-                background-color: #c53030 !important;
-                box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3) !important;
-                transform: translateY(-1px);
-            }
-
-            &:active {
-                transform: translateY(0);
+                &:hover {
+                    background-color: darken($wine, 10%) !important;
+                    box-shadow: 0 4px 12px rgba($wine, 0.3) !important;
+                }
             }
         }
     }
 }
 
 .pulse-button {
-    animation: pulse-blue 2s infinite;
-    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
+    animation: pulse-luxury 2s infinite;
 }
 
-@keyframes pulse-blue {
-    0% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
-    }
-    70% {
-        transform: scale(1);
-        box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
-    }
-    100% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
-    }
+@keyframes pulse-luxury {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba($gold, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 10px rgba($gold, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba($gold, 0); }
 }

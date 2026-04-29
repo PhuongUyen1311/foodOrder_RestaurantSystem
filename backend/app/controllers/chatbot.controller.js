@@ -4,7 +4,7 @@ const Product = db.product;
 const ProductBOM = require("../models/productBom.model");
 
 // --- FEATURE FLAG ---
-// Bật Use_Function_Calling = true để chuyển từ Regex Tag -> Struct Object JSON trực tiếp
+// Bật Use_Function_Calling = true to chuyển từ Regex Tag -> Struct Object JSON trực tiếp
 const USE_FUNCTION_CALLING = false;
 
 // --- IN-MEMORY CACHE LAYER ---
@@ -37,10 +37,10 @@ const fetchMenuData = async () => {
     for (const p of products) {
         const pid = p._id.toString();
         const ingredientsStr = (bomsByProduct[pid] || []).join(", ");
-        menuStr += `- Món: ${p.name} | Giá: ${p.price} | ID_MÓN: ${pid}`;
+        menuStr += `- Dish: ${p.name} | Price: ${p.price} | ID_MÓN: ${pid}`;
         if (p.detail) {
             const shortDetail = p.detail.length > 60 ? p.detail.substring(0, 60) + "..." : p.detail;
-            menuStr += ` | Chi tiết: ${shortDetail}`;
+            menuStr += ` | Details: ${shortDetail}`;
         }
         menuStr += '\n';
         if (ingredientsStr) {
@@ -55,7 +55,7 @@ const getMenuContext = async (userMessage = "") => {
     if (cachedMenuContext && lastCacheTime && (NOW - lastCacheTime < CACHE_TTL)) {
         return cachedMenuContext;
     }
-    console.log("[Chatbot Cache] Miss! Đang tải Menu từ Database...");
+    console.log("[Chatbot Cache] Miss! Loading...nu từ Database...");
     cachedMenuContext = await fetchMenuData();
     lastCacheTime = NOW;
     return cachedMenuContext;
@@ -66,13 +66,13 @@ const generateSystemPrompt = async (userMessage) => {
         const menuContext = await getMenuContext(userMessage);
 
         const regexInstructions = `QUAN TRỌNG KHI BÁN HÀNG: 
-Khi đề xuất món ăn, BẮT BUỘC chèn tag: [CART: ID_MÓN | Tên món | Giá]
+Khi VNDề xuất món ăn, BẮT BUỘC chèn tag: [CART: ID_MÓN | Name món | Price]
 Ví dụ: "Hãy thử nhé! [CART: 64b1f... | Khoai lang nướng | 45000]"`;
 
         const functionInstructions = `QUAN TRỌNG KHI BÁN HÀNG (FUNCTION CALLING):
-BẮT BUỘC dùng công cụ 'add_to_cart_ui' để đề xuất. Dùng đúng ID_MÓN thực tế ở Thực đơn.
+BẮT BUỘC dùng công cụ 'add_to_cart_ui' to VNDề xuất. Dùng VNDúng ID_MÓN thực tế ở Thực order.
 [QUAN TRỌNG ĐỂ KHÔNG BỊ TRỪ ĐIỂM] 
-1. Không được đưa ra lời khuyên nửa vời! Nếu khách hỏi thực đơn 3 món / 1 ngày. Bạn PHẢI liệt kê và gọi Tool ít nhất 3 lần liên tiếp cho đủ Sáng-Trưa-Chiều rồi mới được ngừng.
+1. Không VNDược VNDưa ra lời khuyên nửa vời! Nếu khách hỏi thực order 3 món / 1 ngày. Bạn PHẢI liệt kê và gọi Tool ít nhất 3 lần liên tiếp cho VNDủ Sáng-Trưa-Chiều rồi mới VNDược ngừng.
 2. Bạn phải gọi TẤT CẢ các tool trong cùng 1 lần suy nghĩ thay vì nói rồi ngưng. Đảm bảo giải quyết trọn vẹn câu hỏi của khách!`;
 
         const methodRule = USE_FUNCTION_CALLING ? functionInstructions : regexInstructions;
@@ -81,7 +81,7 @@ BẮT BUỘC dùng công cụ 'add_to_cart_ui' để đề xuất. Dùng đúng 
 Bạn là chuyên gia dinh dưỡng và nhân viên tư vấn nhiệt tình của quán Healthy Food.
 Nhiệm vụ:
 1. Chỉ tư vấn món có trong menu. KHÔNG bịa món. Phân tích Calories kỹ lưỡng dựa trên yêu cầu.
-2. Trả lời đầy đủ, rành mạch. Đừng bao giờ trả lời lặp lại câu hỏi của khách. Khách hỏi gì thì đi thẳng vào việc tư vấn và lên danh sách món.
+2. Return lời full VNDủ, rành mạch. Đừng bao giờ trả lời lặp lại câu hỏi của khách. Guest hỏi gì thì VNDi thẳng vào việc tư vấn và lên danh sách món.
 
 ${methodRule}
 
@@ -90,8 +90,8 @@ ${menuContext}
 `;
         return systemPrompt;
     } catch (error) {
-        console.error("Lỗi sinh System Prompt:", error);
-        return "Hệ thống đang lỗi.";
+        console.error("Error sinh System Prompt:", error);
+        return "System VNDang lỗi.";
     }
 };
 
@@ -101,13 +101,13 @@ const config = require("../config/db.config.js");
 const chatTools = [{
     functionDeclarations: [{
         name: "add_to_cart_ui",
-        description: "Sử dụng tính năng này để chèn Giao diện Mua hàng khi bạn đề xuất món ăn cho khách (hỗ trợ gọi nhiều lần liên tiếp để gợi ý nhiều món).",
+        description: "Sử dụng tính năng này to chèn Giao diện Mua hàng khi bạn VNDề xuất món ăn cho khách (hỗ trợ gọi nhiều lần liên tiếp to gợi ý nhiều món).",
         parameters: {
             type: "OBJECT",
             properties: {
                 product_id: { type: "STRING", description: "id_món của sản phẩm từ Menu" },
-                name: { type: "STRING", description: "Tên món ăn" },
-                price: { type: "NUMBER", description: "Giá tiền" }
+                name: { type: "STRING", description: "Name món ăn" },
+                price: { type: "NUMBER", description: "Price tiền" }
             },
             required: ["product_id", "name", "price"]
         }
@@ -143,11 +143,11 @@ const analyzeIntentAndHandle = async (message, res) => {
     // 1. Chào hỏi cơ bản
     const greetings = ['chào', 'hello', 'hi', 'ê', 'bot', 'chào bạn', 'hi bot', 'chào em'];
     if (greetings.includes(msg)) {
-        return sendRuleBasedResponse(res, "Chào buổi lành! Mình là trợ lý thông minh của Healthy Food. Mình có thể lấy thực đơn, báo giá hoặc tính toán Calories giúp bạn nghen!");
+        return sendRuleBasedResponse(res, "Chào buổi lành! Mình là trợ lý thông minh của Healthy Food. Mình có thể lấy thực order, báo giá hoặc tính toán Calories giúp bạn nghen!");
     }
 
-    // 2. Yêu cầu hiển thị thực đơn
-    if (msg.includes('thực đơn') || msg.includes('menu') || msg.includes('danh sách món') || msg.includes('có món gì')) {
+    // 2. Request hiển thị thực order
+    if (msg.includes('thực order') || msg.includes('menu') || msg.includes('danh sách món') || msg.includes('có món gì')) {
         const topProducts = await Product.find({ is_active: true }).limit(5).select('_id name price').lean();
         const actions = topProducts.map(p => ({
             type: "add_to_cart",
@@ -155,10 +155,10 @@ const analyzeIntentAndHandle = async (message, res) => {
             name: p.name,
             price: p.price
         }));
-        return sendRuleBasedResponse(res, "Dạ đây là các món tủ đang bán chạy nhất ở cửa hàng bên mình nha:", actions);
+        return sendRuleBasedResponse(res, "Dạ VNDây là các món tủ VNDang bán chạy nhất ở cửa hàng bên mình nha:", actions);
     }
 
-    // 3. Tìm kiếm sản phẩm phổ biến
+    // 3. Search products...ổ biến
     const searchMatch = msg.match(/(có|mua|cho|tìm|thèm).* (cơm|gà|bò|trà sữa|nước ép|trà|nước|sandwich|yến mạch|salad|bánh|sinh tố)/);
     if (searchMatch) {
         const keyword = searchMatch[2];
@@ -186,9 +186,9 @@ const handleFallback = async (reqMessage, res) => {
 
         // Smart Search dựa trên Text
         if (reqMessage) {
-            // Lọc bớt ký tự đặc biệt, lấy Array từ
+            // Filter bớt ký tự special, lấy Array từ
             const keywords = reqMessage
-                .replace(/[^vVnNaA-Za-z0-9àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđĐ \-]/g, "")
+                .replace(/[^vVnNaA-Za-z0-9àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹVNDĐ \-]/g, "")
                 .split(" ")
                 .filter(w => w.length > 2)
                 .join("|");
@@ -202,7 +202,7 @@ const handleFallback = async (reqMessage, res) => {
             }
         }
 
-        // Nếu AI lười, không ra từ khoá khớp, tung 5 sản phẩm tự động phòng hờ
+        // Nếu AI lười, không ra từ khoá khớp, tung 5 sản phẩm tự VNDộng phòng hờ
         if (products.length === 0) {
             console.log("[Fallback Query] Không khớp từ khoá, nhả Top 5 sản phẩm ngẫu nhiên.");
             products = await Product.find({ is_active: true }).limit(5).select('_id name price').lean();
@@ -218,7 +218,7 @@ const handleFallback = async (reqMessage, res) => {
         res.write(`data: ${JSON.stringify({
             fallback: true,
             source: 'rule',
-            text: "Hiện tại hệ thống AI đang quá tải 🤖. Tôi đã dựa vào yêu cầu của bạn để tìm nhanh các món bên dưới 👇",
+            text: "Hiện tại hệ thống AI VNDang quá tải 🤖. Tôi VNDã dựa vào yêu cầu của bạn to tìm nhanh các món bên dưới 👇",
             actions
         })}\n\n`);
 
@@ -226,7 +226,7 @@ const handleFallback = async (reqMessage, res) => {
         return res.end();
     } catch (e) {
         console.error("[Fallback Fatal Error]:", e);
-        res.write(`data: ${JSON.stringify({ text: "Hệ thống đang bảo trì, xin thông cảm." })}\n\n`);
+        res.write(`data: ${JSON.stringify({ text: "System VNDang bảo trì, xin thông cảm." })}\n\n`);
         res.write('data: [DONE]\n\n');
         return res.end();
     }
@@ -237,7 +237,7 @@ const attemptChat = async (model, message, initLog, res, retryCount = 0) => {
         const chat = model.startChat({ history: initLog });
         const result = await chat.sendMessageStream(message);
 
-        // Báo hiệu Frontend đổi cờ Badge sang màu Tím AI
+        // Báo hiệu Frontend VNDổi cờ Badge sang màu Tím AI
         res.write(`data: ${JSON.stringify({ source: 'ai' })}\n\n`);
 
         for await (const chunk of result.stream) {
@@ -291,12 +291,12 @@ const attemptChat = async (model, message, initLog, res, retryCount = 0) => {
             }
         }
 
-        // Fail hoàn toàn (Quyết định khóa hạm API 60 giây)
+        // Fail hoàn toàn (Quyết VNDịnh khóa hạm API 60 giây)
         isQuotaExceeded = true;
         quotaResetTime = Date.now() + 60000;
         console.warn("[Quota Sentinel] Đã kích hoạt chốt khóa API Gemini trong 60 giây tiếp theo.");
 
-        // Tung chế độ Smart Fallback DB 
+        // Tung chế VNDộ Smart Fallback DB 
         return handleFallback(message, res);
     }
 };
@@ -322,11 +322,11 @@ exports.chat = async (req, res) => {
         res.setHeader('Connection', 'keep-alive');
         res.flushHeaders?.();
 
-        // Hybrid Rule-based Intercept (Chặn đầu trước khi gọi AI)
+        // Hybrid Rule-based Intercept (Chặn VNDầu trước khi gọi AI)
         const isHandledByRule = await analyzeIntentAndHandle(message, res);
-        if (isHandledByRule !== false) return; // Nếu rule đã chộp, return luôn giải phóng request chạy trong 10ms
+        if (isHandledByRule !== false) return; // Nếu rule VNDã chộp, return luôn giải phóng request chạy trong 10ms
 
-        // Nếu lọt xuống tới đây là AI bắt đầu tính phí Token
+        // Nếu lọt xuống tới VNDây là AI bắt VNDầu tính phí Token
         statAiCalls++;
         console.log(`[HYBRID ENGINE] 🧠 AI Executed. (Stats: Rules ${statRuleCalls} | AI ${statAiCalls})`);
 
@@ -335,7 +335,7 @@ exports.chat = async (req, res) => {
             const now = Date.now();
             if (now < quotaResetTime) {
                 const secondsLeft = Math.ceil((quotaResetTime - now) / 1000);
-                console.log(`[Quota Lock Active] Bỏ qua Gemini API, đang sử dụng Fallback... (Reset sau ${secondsLeft}s)`);
+                console.log(`[Quota Lock Active] Bỏ qua Gemini API, in use Fallback... (Reset sau ${secondsLeft}s)`);
                 return handleFallback(message, res);
             } else {
                 console.log("[Quota Lock Released] Giải phóng tài nguyên AI sau chu kỳ 60s nghỉ.");
@@ -358,7 +358,7 @@ exports.chat = async (req, res) => {
                 if (h.role === 'bot') {
                     if (txt === '' && h.actions && h.actions.length > 0) {
                         const sug = h.actions.map(a => a.name).join(", ");
-                        txt = `[SystemLog: Tôi đã hiển thị thẻ giỏ hàng cho các món: ${sug}]`;
+                        txt = `[SystemLog: Tôi VNDã hiển thị thẻ giỏ hàng cho các món: ${sug}]`;
                     } else if (txt === '' && (!h.actions || h.actions.length === 0)) {
                         txt = "Tôi sẽ kiểm tra thông tin.";
                     }
@@ -372,7 +372,7 @@ exports.chat = async (req, res) => {
 
         const initLog = [
             { role: "user", parts: [{ text: "SYSTEM INSTRUCTION (Read and simulate this role): " + systemInstruction }] },
-            { role: "model", parts: [{ text: "Tôi đã duyệt Menu. Tôi sẽ bắt đầu tư vấn." }] },
+            { role: "model", parts: [{ text: "Tôi VNDã duyệt Menu. Tôi sẽ bắt VNDầu tư vấn." }] },
             ...formattedHistory
         ];
 
@@ -381,7 +381,7 @@ exports.chat = async (req, res) => {
     } catch (error) {
         console.error("Internal Chat Controller Error:", error);
         try {
-            res.write(`data: ${JSON.stringify({ text: "Hệ thống đang bảo trì!" })}\n\n`);
+            res.write(`data: ${JSON.stringify({ text: "System VNDang bảo trì!" })}\n\n`);
             res.write('data: [DONE]\n\n');
             res.end();
         } catch (e) { }

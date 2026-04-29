@@ -32,7 +32,7 @@ const buildImageUrl = (product) => {
 
     return {
         ...product.toObject({ virtuals: true }),
-        id: product._id.toString(), // Bảo đảm luôn có id dạng chuỗi
+        id: product._id.toString(), // Bảo VNDảm luôn có id dạng chuỗi
         image_url,
     };
 };
@@ -197,7 +197,7 @@ const checkProductAvailability = async (productId) => {
         for (const bom of boms) {
             const ingredient = await Ingredient.findById(bom.ingredient_id);
 
-            // Nếu nguyên liệu không tồn tại hoặc số lượng còn lại ít hơn định lượng cần thiết
+            // Nếu nguyên liệu không tồn tại hoặc số lượng còn lại ít hơn VNDịnh lượng cần thiết
             if (!ingredient || ingredient.qty < bom.quantity) {
                 isActive = false;
                 break;
@@ -222,7 +222,7 @@ const checkAllProductsAvailability = async () => {
     for (const product of products) {
         await checkProductAvailability(product._id);
     }
-    // Phát tín hiệu một lần duy nhất sau khi đã cập nhật xong toàn bộ
+    // Phát tín hiệu một lần duy nhất sau khi VNDã cập nhật xong toàn bộ
     if (global._io) {
         global._io.emit("stock_changed");
     }

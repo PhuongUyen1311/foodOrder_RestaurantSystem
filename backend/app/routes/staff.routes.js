@@ -11,7 +11,7 @@ module.exports = app => {
         try {
             const auth = await middlewares.checkAuth(req);
             if (!auth || !auth.id) {
-                return res.status(401).json({ message: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại." });
+                return res.status(401).json({ message: "Phiên VNDăng nhập VNDã hết hạn. Please VNDăng nhập lại." });
             }
 
             const activeAdmin = await Admin.findById(auth.id);
@@ -22,7 +22,7 @@ module.exports = app => {
             req.user = activeAdmin;
             next();
         } catch (error) {
-            return res.status(500).json({ message: "Lỗi xác thực quyền" });
+            return res.status(500).json({ message: "Error xác thực quyền" });
         }
     };
 

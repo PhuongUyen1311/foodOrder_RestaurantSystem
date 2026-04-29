@@ -108,7 +108,7 @@ function PopupUpdateCart(props) {
 
                 sessionStorage.setItem('guestCart', JSON.stringify(guestCart));
 
-                // Cập nhật Redux store để giao diện (Cart badge, Cart sidebar) thay đổi ngay
+                // Update Redux store to giao diện (Cart badge, Cart sidebar) thay VNDổi ngay
                 dispatch(setCartItems(guestCart));
                 dispatch(setCartStore({
                     id: 'guest',
@@ -131,7 +131,7 @@ function PopupUpdateCart(props) {
         >
             <Modal.Header>
                 <Modal.Title>
-                    Cập nhật sản phẩm
+                    Update sản phẩm
                 </Modal.Title>
             </Modal.Header>
 
@@ -149,12 +149,12 @@ function PopupUpdateCart(props) {
 
                     {maxQuantity !== Infinity && maxQuantity > 0 && (
                         <p style={{ color: "green", fontSize: "14px", marginTop: "10px", textAlign: "center" }}>
-                            Có thể đặt tối đa: {maxQuantity} món
+                            Có thể VNDặt tối VNDa: {maxQuantity} món
                         </p>
                     )}
                     {maxQuantity === 0 && (
                         <p style={{ color: "red", fontSize: "14px", marginTop: "10px", textAlign: "center" }}>
-                            Món ăn đã hết nguyên liệu
+                            Dish VNDã hết nguyên liệu
                         </p>
                     )}
 
@@ -175,10 +175,10 @@ function PopupUpdateCart(props) {
 
             <Modal.Footer>
                 <button className="btn-confirm" onClick={hanndleUpdate}>
-                    Xác nhận
+                    Confirm
                 </button>
                 <button className="btn-close-modal" onClick={props.onHide}>
-                    Hủy bỏ
+                    Cancel bỏ
                 </button>
             </Modal.Footer>
         </Modal>

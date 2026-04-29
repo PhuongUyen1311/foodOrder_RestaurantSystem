@@ -25,7 +25,7 @@ function PopupOrderSuccess({ isPayment, tableNumber, ...props }) {
                 >
                 <Modal.Header>
                     <Modal.Title id="contained-modal-title-vcenter">
-                        Thông báo
+                        Notification
                     </Modal.Title>
 
                 </Modal.Header>
@@ -49,19 +49,19 @@ function PopupOrderSuccess({ isPayment, tableNumber, ...props }) {
                     </svg>
 
                     <h4 className='success-title'>
-                        {isPayment ? 'Thanh toán thành công' : 'Đặt hàng thành công'}
+                        {isPayment ? 'Payment Successful' : 'Đặt hàng thành công'}
                     </h4>
                     {isPayment && (
-                        <p className='text-center mt-2 fs-5'>Cảm ơn quý khách đã dùng bữa!</p>
+                        <p className='text-center mt-2 fs-5'>Cảm ơn quý khách VNDã dùng bữa!</p>
                     )}
 
                 </Modal.Body>
                 <Modal.Footer>
                     {accessToken && (
-                        <Link to='/history-order' className='btn-success-follow'>Theo dõi đơn hàng</Link>
+                        <Link to='/history-order' className='btn-success-follow'>Track Order</Link>
                     )}
                     <Link to={getRedirectLink()} className='btn-success-continue'>
-                        {isPayment ? 'Trở về màn hình gọi món' : 'Tiếp tục mua hàng'}
+                        {isPayment ? 'Trở về màn hình gọi món' : 'Continue mua hàng'}
                     </Link>
                 </Modal.Footer>
             </Modal>

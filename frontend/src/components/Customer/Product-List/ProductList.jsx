@@ -27,7 +27,7 @@ function ProductList(props) {
         fetchProducts();
 
         // Lắng nghe sự kiện cập nhật trạng thái sản phẩm (is_active)
-        // Lắng nghe tín hiệu kho thay đổi để tải lại dữ liệu mới nhất
+        // Lắng nghe tín hiệu kho thay VNDổi to tải lại dữ liệu mới nhất
         socket.on('stock_changed', () => {
             fetchProducts();
         });

@@ -20,7 +20,7 @@ exports.updateProfile = async (id, data, file) => {
     const updatedAdmin = await Admin.findByIdAndUpdate(id, updateData, { new: true });
 
     if (!updatedAdmin) {
-        throw { status: 404, message: "Không tìm thấy Admin" };
+        throw { status: 404, message: "Admin not found" };
     }
 
     // Need to return a payload shape that authMethod expects so frontend JSON.parse is exact

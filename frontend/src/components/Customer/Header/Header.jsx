@@ -61,18 +61,18 @@ function Header(props) {
                     {orderSource === 'table' && tableNumber && (
                         <div className="header__table-badge">
                             <span className="badge-pulse"></span>
-                            Bàn số {tableNumber}
+                            Table No. {tableNumber}
                         </div>
                     )}
                 </div>
-                {/* Ẩn hoàn toàn feature ở trang checkout nếu là đặt tại bàn */}
+                {/* Ẩn hoàn toàn feature ở trang checkout nếu là VNDặt tại bàn */}
                 {!(orderSource === 'table' && location.pathname === '/checkout') && (
                     <div className='header__feature'>
                         {orderSource === 'table' ? (
                             <>
                                 {isOrderingPage && (
                                     <button className='header__feature-ordered-list' onClick={handleShowOrderedList}>
-                                        Món đã đặt
+                                        Ordered List
                                     </button>
                                 )}
 
@@ -96,9 +96,9 @@ function Header(props) {
                                             <span>{user.first_name + ' ' + user.last_name}</span>
                                             <div className="header__user-dropdown">
                                                 <ul>
-                                                    <li><Link to={'/profile'}>Thông tin tài khoản</Link></li>
-                                                    <li><Link to={'/history-order'}>Lịch sử đơn hàng</Link></li>
-                                                    <li><Link onClick={(event) => handleClickLogOut(event)}>Đăng xuất</Link></li>
+                                                    <li><Link to={'/profile'}>Profile Info</Link></li>
+                                                    <li><Link to={'/history-order'}>Order History</Link></li>
+                                                    <li><Link onClick={(event) => handleClickLogOut(event)}>Logout</Link></li>
                                                 </ul>
                                             </div>
                                         </div>
@@ -123,15 +123,15 @@ function Header(props) {
                                             </svg>
                                             <div className="header__user-dropdown">
                                                 <ul>
-                                                    <li><Link to='/login'>Đăng nhập</Link></li>
-                                                    <li><Link to='/register'>Đăng ký</Link></li>
+                                                    <li><Link to='/login'>Login</Link></li>
+                                                    <li><Link to='/register'>Register</Link></li>
                                                 </ul>
                                             </div>
                                         </div>
                                         <div className="header__feature-login desktop-only">
-                                            <Link to='/login'>Đăng nhập</Link>
+                                            <Link to='/login'>Login</Link>
                                             <span>|</span>
-                                            <Link to='/register'>Đăng ký</Link>
+                                            <Link to='/register'>Register</Link>
                                         </div>
                                     </>
                                 )}
@@ -141,11 +141,11 @@ function Header(props) {
                                         <path d="M19 4H5C3.89543 4 3 4.89543 3 6V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V6C21 4.89543 20.1046 4 19 4Z" stroke="#F3BA00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                         <path d="M16 2V6M8 2V6M3 10H21M8 14H8.01M12 14H12.01M16 14H16.01M8 18H8.01M12 18H12.01M16 18H16.01" stroke="#F3BA00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
-                                    <span className="desktop-only">Đặt bàn</span>
+                                    <span className="desktop-only">Reservation</span>
                                     <div className="header__reservation-dropdown">
                                         <ul>
-                                            <li><Link to="/table-reservation">Đặt bàn ngay</Link></li>
-                                            <li><Link to="/history-reservation">Lịch sử đặt bàn</Link></li>
+                                            <li><Link to="/table-reservation">Book Now</Link></li>
+                                            <li><Link to="/history-reservation">Reservation History</Link></li>
                                         </ul>
                                     </div>
                                 </div>

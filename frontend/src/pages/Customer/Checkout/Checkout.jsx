@@ -117,30 +117,30 @@ function Checkout(props) {
         const cartId = cart ? cart.id : null;
 
         if (paymentMethod === '') {
-            toast.error('Vui lòng chọn phương thức thanh toán');
+            toast.error('Please select phương thức thanh toán');
             return;
         }
 
         if (!isFullTablePayment && cartId === null) {
-            toast.error('Gặp lỗi khi truy xuất giỏ hàng. Vui lòng thử lại!');
+            toast.error('Gặp lỗi khi truy xuất giỏ hàng. Please thử lại!');
             return;
         }
 
         if (cartItems.length === 0) {
-            toast.error('Không có sản phẩm nào được chọn để thanh toán');
+            toast.error('Không có sản phẩm nào VNDược chọn to thanh toán');
             return;
         }
 
         if (paymentMethod === 'cash') {
             let data;
             if (isFullTablePayment) {
-                // Đối với thanh toán tại bàn bằng tiền mặt, cập nhật phương thức nhưng chưa is_payment
-                data = await fetchPayGuestOrdersByTable(tableNumber, 'tiền mặt', sessionId);
+                // Đối với thanh toán tại bàn bằng cash, cập nhật phương thức nhưng chưa is_payment
+                data = await fetchPayGuestOrdersByTable(tableNumber, 'cash', sessionId);
             } else if (accessToken) {
-                data = await fetchOrder(cartId, orderSource, tableNumber, selectedItemIds, 'tiền mặt');
+                data = await fetchOrder(cartId, orderSource, tableNumber, selectedItemIds, 'cash');
             } else {
                 const guestItemsToOrder = allCartItems.filter(item => selectedItemIds.includes(item.id));
-                data = await fetchGuestOrder(guestItemsToOrder, tableNumber, orderSource, 'tiền mặt');
+                data = await fetchGuestOrder(guestItemsToOrder, tableNumber, orderSource, 'cash');
             }
 
             if (data && data.success) {
@@ -155,10 +155,10 @@ function Checkout(props) {
                         total_price: 0
                     }));
                 }
-                toast.success(isFullTablePayment ? "Đã gửi thông báo thu tiền mặt đến nhân viên!" : "Đặt hàng thành công!");
+                toast.success(isFullTablePayment ? "Sent thông báo thu cash to nhân viên!" : "Đặt hàng thành công!");
                 return setShowPopup(true);
             } else {
-                toast.error(data?.message || 'Có lỗi xảy ra khi xử lý đơn hàng');
+                toast.error(data?.message || 'Có lỗi xảy ra khi xử lý order');
             }
         } else {
             // Transfer
@@ -191,12 +191,12 @@ function Checkout(props) {
         const cartId = cart ? cart.id : null;
 
         if (cartItems.length === 0) {
-            toast.error('Không có sản phẩm nào được chọn để chia hóa đơn');
+            toast.error('Không có sản phẩm nào VNDược chọn to chia hóa order');
             return;
         }
 
         let data;
-        // CREATE ORDER FIRST with dummy payment method 'chia bill' (handled as 'tiền mặt' internally for creation)
+        // CREATE ORDER FIRST with dummy payment method 'chia bill' (handled as 'cash' internally for creation)
         if (isFullTablePayment) {
             setSplitOrderPayload({ 
                 id: 'TABLE_' + tableNumber, 
@@ -224,7 +224,7 @@ function Checkout(props) {
             setSplitOrderPayload({ id: data.orderId || data.data?._id || data.order?.id, total_price: cartTotalPrice, items: [...cartItems] });
             setShowSplit(true);
         } else {
-            toast.error(data?.message || 'Có lỗi khi tạo hóa đơn để chia bill');
+            toast.error(data?.message || 'Có lỗi khi tạo hóa order to chia bill');
         }
     }
 
@@ -236,7 +236,7 @@ function Checkout(props) {
 
         if (code === '00' && cancel === 'false' && orderCode) {
             const finalizePayment = async () => {
-                // Trạng thái đơn hàng sẽ được Backend xử lý thông qua Webhook PayOS tự động
+                // Status order sẽ VNDược Backend xử lý thông qua Webhook PayOS tự VNDộng
                 const savedOrderSource = sessionStorage.getItem('orderSource');
                 const savedTableNumber = sessionStorage.getItem('tableNumber');
 
@@ -252,7 +252,7 @@ function Checkout(props) {
                         total_price: 0
                     }));
 
-                    // Chuyển hướng thẳng về trang thực đơn ban đầu
+                    // Chuyển hướng thẳng về trang thực order ban VNDầu
                     navigate(`/menu?table=${savedTableNumber}`, {
                         replace: true
                     });
@@ -263,14 +263,14 @@ function Checkout(props) {
 
             finalizePayment();
         } else if (cancel === 'true' || (code && code !== '00')) {
-            toast.error('Thanh toán không thành công / Đã hủy');
+            toast.error('Payment không thành công / Cancelled');
         }
     }, [navigate]);
 
     useEffect(() => {
         if (splitSuccessData && splitSuccessData.length > 0) {
             if (splitSuccessData.length <= 3) {
-                // Tự động lấy link PayOS cho tối đa 3 phần
+                // Tự VNDộng lấy link PayOS cho tối VNDa 3 phần
                 const fetchLinks = async () => {
                     const links = {};
                     for (const sb of splitSuccessData) {
@@ -280,7 +280,7 @@ function Checkout(props) {
                                 links[sb.split_id] = res.qrCode;
                             }
                         } catch (e) {
-                            console.error("Lỗi lấy link thanh toán cho split:", sb.split_id, e);
+                            console.error("Error lấy link thanh toán cho split:", sb.split_id, e);
                         }
                     }
                     setSplitPaymentLinks(links);
@@ -296,7 +296,7 @@ function Checkout(props) {
             if (mainOrderQr && data.orderCode === mainOrderQr.orderCode) {
                 setMainOrderQr(null);
                 setShowPopup(true);
-                toast.success("Thanh toán thành công!");
+                toast.success("Payment Successful!");
                 
                 // Thu dọn giỏ hàng nếu cần
                 if (orderSource === 'table') {
@@ -323,7 +323,7 @@ function Checkout(props) {
                     if (res && res.success && res.data && res.data.status === 'PAID') {
                         setMainOrderQr(null);
                         setShowPopup(true);
-                        toast.success("Thanh toán thành công!");
+                        toast.success("Payment Successful!");
                         
                         if (orderSource === 'table') {
                             sessionStorage.removeItem('guestCart');
@@ -346,7 +346,7 @@ function Checkout(props) {
     const handleCallStaff = async (customMessage = null, orderId = null) => {
         const now = Date.now();
         
-        // Reset count nếu đã qua 3 phút
+        // Reset count nếu VNDã qua 3 phút
         let currentCount = callStaffCount;
         let currentReset = lastCallReset;
         
@@ -362,7 +362,7 @@ function Checkout(props) {
             const remainingSec = Math.ceil((180000 - (now - currentReset)) / 1000);
             const min = Math.floor(remainingSec / 60);
             const sec = remainingSec % 60;
-            toast.warning(`Bạn đã gọi hỗ trợ 3 lần. Vui lòng đợi ${min > 0 ? `${min}p ` : ""}${sec}s nữa để gọi tiếp.`);
+            toast.warning(`Bạn VNDã gọi hỗ trợ 3 lần. Please VNDợi ${min > 0 ? `${min}p ` : ""}${sec}s nữa to gọi tiếp.`);
             return;
         }
 
@@ -372,12 +372,12 @@ function Checkout(props) {
             const res = await fetchCallStaff(savedTableNumber, customMessage, orderId || splitOrderPayload?.id);
             if (res.success) {
                 setCallStaffCount(prev => prev + 1);
-                toast.success("Đã gửi yêu cầu hỗ trợ tới nhân viên.");
+                toast.success("Sent yêu cầu hỗ trợ tới nhân viên.");
             } else {
-                toast.error("Không thể gửi yêu cầu hỗ trợ. Vui lòng thử lại!");
+                toast.error("Không thể gửi yêu cầu hỗ trợ. Please thử lại!");
             }
         } catch (e) {
-            toast.error("Lỗi kết nối khi gọi nhân viên.");
+            toast.error("Error kết nối khi gọi nhân viên.");
         } finally {
             setIsCallingStaff(false);
         }
@@ -407,18 +407,18 @@ function Checkout(props) {
                 <Container className="pt-4 pb-5">
                     <div className="checkout shadow p-4 border bg-white rounded mt-4 mx-auto" style={{ maxWidth: splitSuccessData.length <= 3 ? '1200px' : '600px' }}>
                         <div className="text-center mb-4">
-                            <h2 className="text-success fw-bold">Tách hóa đơn thành công!</h2>
+                            <h2 className="text-success fw-bold">Split Bill thành công!</h2>
                             {splitSuccessData.length > 3 ? (
                                 <div className="alert alert-warning py-3 mt-3 shadow-sm border-warning">
                                     <h4 className="alert-heading fw-bold">⚠️ Cần nhân viên hỗ trợ</h4>
                                     <p className="mb-0 fs-5">
-                                        Vì hóa đơn được chia thành <strong>{splitSuccessData.length}</strong> phần (nhiều hơn 3), 
-                                        hệ thống đã tự động gửi yêu cầu hỗ trợ. Quý khách vui lòng đợi nhân viên đến hỗ trợ thanh toán trực tiếp.
+                                        Vì hóa order VNDược chia thành <strong>{splitSuccessData.length}</strong> phần (nhiều hơn 3), 
+                                        hệ thống VNDã tự VNDộng gửi yêu cầu hỗ trợ. Quý khách vui lòng VNDợi nhân viên to hỗ trợ thanh toán trực tiếp.
                                     </p>
                                 </div>
                             ) : (
                                 <h5 className="text-muted fst-italic">
-                                    Quý khách có thể tự quét mã QR bên dưới để thanh toán nhanh hoặc gọi nhân viên hỗ trợ.
+                                    Quý khách có thể tự quét mã QR bên dưới to thanh toán nhanh hoặc gọi nhân viên hỗ trợ.
                                 </h5>
                             )}
                         </div>
@@ -461,7 +461,7 @@ function Checkout(props) {
                                                 <div className="account-name" style={{fontSize: '10px'}}>Người nhận: VN</div>
                                                 <div className="user-fullname" style={{fontSize: '14px', marginBottom: '8px'}}>NGUYỄN KHÁNH VĂN</div>
                                                 <div className="amount-display" style={{fontSize: '16px', padding: '6px 12px'}}>
-                                                    {sb.amount.toLocaleString()} đ
+                                                    {sb.amount.toLocaleString()} VND
                                                 </div>
                                             </div>
                                         </div>
@@ -483,7 +483,7 @@ function Checkout(props) {
                                     className="btn btn-outline-primary px-4 py-2 fw-bold"
                                     onClick={() => navigate(`/menu?table=${tableNumber || sessionStorage.getItem('tableNumber')}`, { replace: true })}
                                 >
-                                    Quay lại Menu
+                                    Back Menu
                                 </button>
                             </div>
                             <p className="mt-4 text-secondary small fst-italic">Healthy Food Restaurant - Hân hạnh phục vụ quý khách!</p>
@@ -493,10 +493,10 @@ function Checkout(props) {
             ) : (
                 <Container className='block-checkout'>
                     <div className="checkout-title">
-                        <h2>Thanh toán</h2>
+                        <h2>Payment</h2>
                         {orderSource === 'table' && tableNumber && (
                             <div className="table-number">
-                                <span>Bàn số: {tableNumber}</span>
+                                <span>Table số: {tableNumber}</span>
                             </div>
                         )}
                     </div>
@@ -504,8 +504,8 @@ function Checkout(props) {
                         <Table>
                             <thead>
                                 <tr>
-                                    <th>Sản phẩm</th>
-                                    <th>Số lượng</th>
+                                    <th>Products</th>
+                                    <th>Quantity</th>
                                     <th>Số tiền</th>
                                     <th>Đơn giá</th>
                                 </tr>
@@ -540,29 +540,29 @@ function Checkout(props) {
                         <div className="checkout-group">
                             <div className="checkout-info">
                                 <div className="order-type-info">
-                                    <label>Hình thức đặt hàng:</label>
+                                    <label>Hình thức VNDặt hàng:</label>
                                     <span>{orderSource === 'table' ? 'Đặt tại bàn' : 'Đặt hàng online'}</span>
                                 </div>
                                 {orderSource === 'table' && tableNumber && (
                                     <div className="table-info">
-                                        <label>Số bàn:</label>
+                                        <label>Table No.:</label>
                                         <span>{tableNumber}</span>
                                     </div>
                                 )}
                             </div>
 
                             <div className="checkout-payment">
-                                <label>Chọn phương thức thanh toán</label>
+                                <label>Select phương thức thanh toán</label>
                                 <Form.Select name="payment" onChange={handleSelectPayment}>
-                                    <option value="">Phương thức thanh toán</option>
-                                    <option value="cash">Trả bằng tiền mặt</option>
-                                    <option value="transfer">Chuyển khoản</option>
+                                    <option value="">Payment Method</option>
+                                    <option value="cash">Return bằng cash</option>
+                                    <option value="transfer">Bank Transfer</option>
                                 </Form.Select>
                             </div>
 
                             <div className="checkout-box">
                                 <div className="box-group">
-                                    <label>Tổng tiền hàng</label>
+                                    <label>Total tiền hàng</label>
                                     <span>{cartTotalPrice.toLocaleString('vi', { style: 'currency', currency: 'VND' })}</span>
                                 </div>
                                 <hr />
@@ -572,13 +572,13 @@ function Checkout(props) {
                                 </div>
 
                                 <div className="d-flex w-100 gap-2">
-                                    <button type="button" onClick={handleOrder} className='btn-checkout w-100'>{orderSource === 'table' ? 'Thanh toán' : 'Đặt hàng'}</button>
+                                    <button type="button" onClick={handleOrder} className='btn-checkout w-100'>{orderSource === 'table' ? 'Payment' : 'Đặt hàng'}</button>
                                     <button type="button"
                                         onClick={handleOpenSplit}
                                         className='btn-checkout bg-warning text-white w-100'
                                         style={{ border: 'none' }}
                                     >
-                                        Mở chia hóa đơn
+                                        Mở chia hóa order
                                     </button>
                                 </div>
                             </div>
@@ -600,9 +600,9 @@ function Checkout(props) {
                             setSplitOrderPayload(prev => ({ ...prev, id: realOrderId }));
                         }
 
-                        // Tự động gọi nhân viên hỗ trợ nếu chia bill > 3 người
+                        // Tự VNDộng gọi nhân viên hỗ trợ nếu chia bill > 3 người
                         if (splits && splits.length > 3) {
-                            handleCallStaff(`Bàn ${tableNumber} đã chia hóa đơn thành ${splits.length} phần và cần hỗ trợ thanh toán trực tiếp.`, realOrderId || splitOrderPayload?.id);
+                            handleCallStaff(`Table ${tableNumber} VNDã chia hóa order thành ${splits.length} phần và cần hỗ trợ thanh toán trực tiếp.`, realOrderId || splitOrderPayload?.id);
                         }
 
                         if (orderSource === 'table') {
@@ -615,7 +615,7 @@ function Checkout(props) {
                 />
             )}
 
-            {/* Modal hiển thị mã QR Thanh toán trực tiếp */}
+            {/* Modal hiển thị mã QR Payment trực tiếp */}
             <Modal show={!!mainOrderQr} onHide={() => setMainOrderQr(null)} centered className={isZoomed ? "modal-qr-zoomed" : ""}>
                 <Modal.Body className="p-0 border-0 overflow-hidden" style={{ borderRadius: '20px' }}>
                     <div className="vietqr-card">
@@ -657,13 +657,13 @@ function Checkout(props) {
                         </div>
 
                         <div className="text-center instruction-text">
-                            Quét mã bằng App ngân hàng hoặc Ví điện tử.<br/>
+                            Quét mã bằng App ngân hàng hoặc Ví VNDiện tử.<br/>
                             <span className="text-primary fw-bold" style={{cursor:'pointer'}} onClick={() => setIsZoomed(!isZoomed)}>
-                                {isZoomed ? "Nhấn để thu nhỏ" : "Nhấn vào mã QR để phóng to"}
+                                {isZoomed ? "Nhấn to thu nhỏ" : "Nhấn vào mã QR to phóng to"}
                             </span>
                         </div>
                     </div>
-                    {/* Trạng thái chờ realtime */}
+                    {/* Status chờ realtime */}
                     <div className="px-3 pb-3">
                         <div className="alert alert-info py-2 d-flex align-items-center justify-content-center gap-2 mb-0">
                             <Spinner animation="grow" size="sm" variant="info" />
@@ -673,7 +673,7 @@ function Checkout(props) {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => setMainOrderQr(null)}>
-                        Đóng / Hủy
+                        Close / Cancel
                     </Button>
                 </Modal.Footer>
             </Modal>

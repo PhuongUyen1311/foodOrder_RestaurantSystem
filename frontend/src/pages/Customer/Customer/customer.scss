@@ -1,6 +1,11 @@
+@use '../../../scss/' as *;
+
 .block-customer-admin {
+    padding-bottom: 0 !important;
+    background-color: $bg;
+    min-height: calc(100vh - 70px);
+
     .customer-container {
-        margin-top: 48px;
         padding: 30px 20px;
     }
 
@@ -8,13 +13,24 @@
         margin: 0 0 20px 12px;
 
         a {
-            text-decoration: none;
-            font-weight: 400;
+            background-color: $gold;
+            color: black;
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
             font-size: 14px;
-            line-height: 16px;
+            font-weight: 700;
+            box-shadow: $shadow;
+            transition: $transition;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-decoration: none;
+            display: inline-block;
 
             &:hover {
-                text-decoration: none;
+                transform: translateY(-2px);
+                background-color: lighten($gold, 5%);
+                box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.4);
             }
         }
     }
@@ -23,6 +39,11 @@
     .customer-form {
         max-width: 800px;
         margin: 0 auto;
+        background: $surface;
+        padding: 40px;
+        border-radius: 16px;
+        border: 1px solid $border;
+        box-shadow: $shadow;
 
         .row-form {
             display: grid;
@@ -36,150 +57,157 @@
         }
 
         .required {
-            color: red;
+            color: $wine;
             margin-left: 4px;
         }
 
         .form-actions {
             display: flex;
             gap: 15px;
-            margin-top: 20px;
+            margin-top: 30px;
+            justify-content: center;
 
             .btn-add {
-                background-color: #4CAF50;
-                color: white;
+                background-color: $gold;
+                color: black;
                 border: none;
-                padding: 10px 24px;
-                margin: 0;
+                padding: 12px 30px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                border-radius: 8px;
+                transition: $transition;
 
                 &:hover {
-                    background-color: #45a049;
+                    background-color: lighten($gold, 5%);
                     transform: translateY(-2px);
                 }
 
                 &:disabled {
-                    opacity: 0.6;
-                    cursor: not-allowed;
+                    opacity: 0.5;
                 }
             }
 
             .btn-cancel {
-                background-color: #6c757d;
-                color: white;
-                border: none;
-                padding: 10px 24px;
+                background-color: transparent;
+                color: $text-muted;
+                border: 1px solid $border;
+                padding: 12px 30px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                border-radius: 8px;
+                transition: $transition;
 
                 &:hover {
-                    background-color: #5a6268;
-                    transform: translateY(-2px);
+                    background-color: rgba(255,255,255,0.05);
+                    color: $text;
                 }
             }
         }
 
         .form-label {
-            font-weight: 500;
+            color: $gold;
+            font-weight: 700;
             margin-bottom: 8px;
+            font-family: $font-heading;
         }
 
         .form-control,
         .form-select {
+            background-color: $bg !important;
+            border: 1px solid $border !important;
+            color: $text !important;
+            padding: 12px 15px;
+            
             &:focus {
-                border-color: #4CAF50;
-                box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+                border-color: $gold !important;
+                box-shadow: 0 0 0 0.2rem rgba($gold, 0.2);
             }
         }
 
         .invalid-feedback {
             font-size: 12px;
+            color: $wine;
         }
     }
 }
 
-// CSS cho bảng danh sách khách hàng (giữ nguyên)
 .customer-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0 8px;
 
     th,
     td {
-        padding: 12px;
-        text-align: left;
-        border-bottom: 1px solid #ddd;
+        padding: 16px;
+        text-align: center;
+        border: none;
     }
 
     th {
-        background-color: #f2f2f2;
-        font-weight: bold;
+        background-color: $surface;
+        color: $gold;
+        font-weight: 700;
+        font-family: $font-heading;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border-bottom: 1px solid $border;
     }
 
     tr {
-        transition: background-color 0.3s;
+        background-color: $surface;
+        transition: $transition;
 
         &:hover {
-            background-color: #f5f5f5;
+            background-color: lighten($surface, 2%);
+            transform: translateY(-2px);
+            box-shadow: $shadow;
         }
 
         &.locked-row {
-            background-color: #fff3f3;
+            background-color: rgba($wine, 0.05);
             opacity: 0.8;
 
             &:hover {
-                background-color: #ffe6e6;
+                background-color: rgba($wine, 0.1);
             }
         }
+        
+        td:first-child { border-radius: 10px 0 0 10px; }
+        td:last-child { border-radius: 0 10px 10px 0; }
     }
 
     .status-badge {
         display: inline-block;
         padding: 4px 12px;
         border-radius: 20px;
-        font-size: 12px;
-        font-weight: bold;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
 
         &.active {
-            background-color: #d4edda;
-            color: #155724;
+            background-color: rgba($beige, 0.1);
+            color: $beige;
+            border: 1px solid rgba($beige, 0.3);
         }
 
         &.banned,
         &.inactive {
-            background-color: #f8d7da;
-            color: #721c24;
+            background-color: rgba($wine, 0.1);
+            color: $wine;
+            border: 1px solid rgba($wine, 0.3);
         }
     }
 
     .icon-update {
-        color: #ffc107;
+        color: $gold;
         cursor: pointer;
         font-size: 18px;
-        margin-right: 10px;
-        transition: all 0.3s;
+        transition: $transition;
 
         &:hover {
-            color: #e0a800;
-            transform: scale(1.1);
-        }
-    }
-
-    .icon-update-link {
-        display: inline-block;
-        margin-right: 10px;
-        text-decoration: none;
-
-        &:hover {
-            text-decoration: none;
-        }
-    }
-
-    .icon-update {
-        color: #ffc107;
-        cursor: pointer;
-        font-size: 18px;
-        transition: all 0.3s;
-
-        &:hover {
-            color: #e0a800;
-            transform: scale(1.1);
+            transform: scale(1.2);
         }
     }
 
@@ -189,71 +217,68 @@
         cursor: pointer;
         display: inline-flex;
         align-items: center;
-        gap: 5px;
-        padding: 5px 10px;
-        border-radius: 5px;
-        transition: all 0.3s;
-        font-size: 14px;
+        gap: 8px;
+        padding: 6px 15px;
+        border-radius: 6px;
+        transition: $transition;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
 
         &.lock {
-            background-color: #dc3545;
-            color: white;
+            background-color: rgba($wine, 0.15);
+            color: $wine;
+            border: 1px solid $wine;
 
             &:hover {
-                background-color: #c82333;
-                transform: translateY(-2px);
+                background-color: $wine;
+                color: white;
             }
         }
 
         &.unlock {
-            background-color: #28a745;
-            color: white;
+            background-color: rgba($beige, 0.15);
+            color: $beige;
+            border: 1px solid $beige;
 
             &:hover {
-                background-color: #218838;
-                transform: translateY(-2px);
+                background-color: $beige;
+                color: black;
             }
         }
-
-        svg {
-            font-size: 16px;
-        }
-    }
-
-    .loading-spinner {
-        display: inline-block;
-        width: 30px;
-        text-align: center;
     }
 }
 
 .pagination {
     display: flex;
     justify-content: center;
-    gap: 5px;
-    margin-top: 20px;
+    gap: 8px;
+    margin-top: 30px;
 
     button {
-        padding: 8px 12px;
-        border: 1px solid #ddd;
-        background-color: white;
+        padding: 8px 16px;
+        border: 1px solid $border;
+        background-color: $surface;
+        color: $text;
         cursor: pointer;
-        transition: all 0.3s;
+        border-radius: 8px;
+        transition: $transition;
+        font-weight: 600;
 
         &:hover:not(:disabled) {
-            background-color: #007bff;
-            color: white;
-            border-color: #007bff;
+            background-color: rgba($gold, 0.1);
+            color: $gold;
+            border-color: $gold;
         }
 
         &.active {
-            background-color: #007bff;
-            color: white;
-            border-color: #007bff;
+            background-color: $gold;
+            color: black;
+            border-color: $gold;
         }
 
         &:disabled {
-            opacity: 0.5;
+            opacity: 0.3;
             cursor: not-allowed;
         }
     }

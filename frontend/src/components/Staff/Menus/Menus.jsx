@@ -8,52 +8,52 @@ const sliders = [
     {
         url: '/staff',
         icon: <FaHome />,
-        name: 'Trang chủ',
+        name: 'Dashboard',
         role: 'ADMIN'
     },
     {
         url: '/staff/manage',
         icon: <FaUserPlus />,
-        name: 'Nhân viên',
+        name: 'Staff Management',
         role: 'ADMIN'
     },
     {
         url: '/staff/customer',
         icon: <FaUser />,
-        name: 'Khách hàng',
+        name: 'Customers',
     },
     {
         url: '/staff/table',
         icon: <FaTable />,
-        name: 'Quản lý bàn',
+        name: 'Table Management',
     },
     {
         url: '/staff/category',
         icon: <FaList />,
-        name: 'Danh mục',
+        name: 'Categories',
         role: 'ADMIN'
     },
     {
         url: '/staff/product',
         icon: <FaBox />,
-        name: 'Sản phẩm',
+        name: 'Products',
         role: 'ADMIN'
     },
     {
         url: '/staff/ingredient',
         icon: <FaCarrot />,
-        name: 'Nguyên liệu',
+        name: 'Ingredients',
         role: 'ADMIN'
     },
     {
         url: '/staff/order',
         icon: <FaShoppingCart />,
-        name: 'Đơn hàng',
+        name: 'Orders',
     },
     {
         url: '/staff/revenue',
         icon: <FaChartBar />,
-        name: 'Doanh thu',
+        name: 'Revenue',
         role: 'ADMIN'
     },
 ];
@@ -70,9 +70,9 @@ function Menus() {
 
     return (
         <div className="slider__menu d-flex flex-column">
-            <div className="slider__logo d-flex align-items-center justify-content-center py-2 mb-2 border-bottom" style={{ borderColor: 'rgba(0,0,0,0.1)' }}>
-                <FaUtensils className="fs-3 me-2" style={{ color: '#1a4824ff', fontSize: '15px' }} />
-                <h4 className="m-0 fw-bold" style={{ color: '#1a4824ff', marginBottom: '20px' }}>HEATHYFOOD</h4>
+            <div className="slider__logo d-flex align-items-center justify-content-center py-4 mb-2 border-bottom" style={{ borderColor: 'rgba(197, 160, 89, 0.2)' }}>
+                <FaUtensils className="fs-3 me-2" style={{ color: '#c5a059' }} />
+                <h4 className="m-0 fw-bold luxury-title" style={{ color: '#c5a059', letterSpacing: '2px' }}>VietNamCusine</h4>
             </div>
 
             <div className="flex-grow-1" style={{ overflowY: 'auto', scrollbarWidth: 'none' }}>
@@ -109,7 +109,7 @@ function Menus() {
                             onClick={handleLogout}
                         >
                             <FaSignOutAlt className="text-danger" />
-                            <span className="slider__menu-name">Đăng xuất</span>
+                            <span className="slider__menu-name">Logout</span>
                         </Link>
                     </li>
                 </ul>

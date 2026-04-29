@@ -165,5 +165,6 @@ Tránh tình trạng gộp dây chuyền (A → B → C) gây khó khăn khi tru
   - Một bàn có nhiều khách đặt riêng (nhiều order/session).
 
 ---
+-số lượng nguyên liệu tồn kho không phục hồi khi món khách order đã bị nhân viên xác nhận hủy khi xảy ra sự cố
 
 *(Tài liệu này được cập nhật trạng thái hoàn thành vào ngày 19/04/2026)*

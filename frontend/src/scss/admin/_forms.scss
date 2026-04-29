@@ -8,19 +8,20 @@
     label {
       display: block;
       font-size: $font-size-base;
-      font-weight: $font-weight-medium;
-      color: $text-primary;
+      font-weight: $font-weight-bold;
+      color: $gold;
       margin-bottom: $space-sm;
+      font-family: $font-heading;
     }
   }
 
   &__control,
   &__select {
     width: 100%;
-    padding: 8px 12px;
+    padding: 10px 14px;
     font-size: $font-size-base;
     color: $text-primary;
-    background-color: $white;
+    background-color: $bg;
     border: 1px solid $border-color;
     border-radius: $radius-md;
     transition: $transition-base;
@@ -31,17 +32,17 @@
     }
 
     &:hover {
-      border-color: $primary-hover;
+      border-color: rgba($gold, 0.5);
     }
 
     &:focus {
       outline: none;
-      border-color: $primary;
-      box-shadow: 0 0 0 2px rgba($primary, 0.2);
+      border-color: $gold;
+      box-shadow: 0 0 0 2px rgba($gold, 0.2);
     }
 
     &:disabled {
-      background-color: $gray-100;
+      background-color: rgba($text-muted, 0.1);
       color: $text-disabled;
       cursor: not-allowed;
       &:hover {
@@ -50,7 +51,7 @@
     }
   }
 
-  // Lỗi validation
+  // Error validation
   &__control.is-invalid {
     border-color: $danger;
     &:focus {
@@ -63,5 +64,6 @@
     color: $danger;
     margin-top: 4px;
     display: block;
+    font-style: italic;
   }
 }

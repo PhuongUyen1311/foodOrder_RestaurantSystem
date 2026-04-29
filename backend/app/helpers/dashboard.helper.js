@@ -22,20 +22,20 @@ exports.getStats = async () => {
     createdAt: { $gte: startOfMonth }
   });
 
-  // tổng khách hàng (để hiển thị nếu cần)
+  // tổng khách hàng (to hiển thị nếu cần)
   const totalCustomers = await Customer.countDocuments();
 
-  // đơn hoàn thành (đã thanh toán)
+  // order hoàn thành (paid)
   const paidOrdersCount = await Order.countDocuments({
     is_payment: true
   });
 
-  // tổng đơn (không tính hủy)
+  // tổng order (không tính hủy)
   const totalOrders = await Order.countDocuments({
     status: { $ne: "CANCELED" }
   });
 
-  // doanh thu tổng của các đơn đã thanh toán
+  // doanh thu tổng của các order paid
   const revenueTotal = await Order.aggregate([
     {
       $match: {

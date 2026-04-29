@@ -85,7 +85,7 @@ function OrderedList() {
         });
 
         if (allItems.length === 0) {
-            alert('Không có món nào để thanh toán!');
+            alert('Không có món nào to thanh toán!');
             return;
         }
 
@@ -102,10 +102,10 @@ function OrderedList() {
 
     const getStatusText = (status) => {
         switch (status) {
-            case 'pending': return 'Chờ xác nhận';
+            case 'pending': return 'Pending';
             case 'processing': return 'Đang nấu';
-            case 'completed': return 'Hoàn thành';
-            case 'canceled': return 'Đã hủy';
+            case 'completed': return 'Completed';
+            case 'canceled': return 'Cancelled';
             default: return status;
         }
     };
@@ -138,16 +138,16 @@ function OrderedList() {
                 </div>
 
                 <div className="list-title">
-                    <h3>Món đã đặt</h3>
-                    <p>Bàn số: {tableNumber}</p>
+                    <h3>Dish VNDã VNDặt</h3>
+                    <p>Table số: {tableNumber}</p>
                 </div>
 
                 <div className="list-main">
                     {loading && orders.length === 0 ? (
-                        <p className="text-center">Đang tải...</p>
+                        <p className="text-center">Loading...</p>
                     ) : orders.length > 0 ? (
                         orders.map((group, idx) => {
-                            // Gom nhóm các món theo batch_num (đợt gọi món)
+                            // Gom nhóm các món theo batch_num (VNDợt gọi món)
                             const batches = {};
                             group.orderItems.forEach(item => {
                                 const bNum = item.batch_num || 1;
@@ -177,9 +177,9 @@ function OrderedList() {
                                                         </span>
                                                         <span className={`item-badge px-2 py-1 ${item.status === 'CANCELED' ? 'cancel' : item.status === 'SERVED' ? 'served' : item.status === 'PREPARING' ? 'preparing' : 'new'}`} style={{ width: '25%', textAlign: 'center', fontSize: '11px', borderRadius: '4px' }}>
                                                             {
-                                                                item.status === 'CANCELED' ? 'Đã hủy' :
+                                                                item.status === 'CANCELED' ? 'Cancelled' :
                                                                 item.status === 'SERVED' ? 'Đã lên' :
-                                                                item.status === 'PREPARING' ? 'Đang nấu' : 'Chờ xác nhận'
+                                                                item.status === 'PREPARING' ? 'Đang nấu' : 'Pending'
                                                             }
                                                         </span>
                                                     </div>
@@ -191,20 +191,20 @@ function OrderedList() {
                             );
                         })
                     ) : (
-                        <h4 className="list-no-item">(Chưa có món nào được đặt)</h4>
+                        <h4 className="list-no-item">(Chưa có món nào VNDược VNDặt)</h4>
                     )}
                 </div>
 
                 {orders.length > 0 && (
                     <div className="list-footer">
                         <div className="list-total">
-                            <span>Tổng cộng</span>
+                            <span>Total</span>
                             <span className="total-price">
                                 {totalBill.toLocaleString('vi', { style: 'currency', currency: 'VND' })}
                             </span>
                         </div>
                         <button onClick={handlePayment} className="btn-payment-all">
-                            Thanh toán tất cả
+                            Payment tất cả
                         </button>
                     </div>
                 )}

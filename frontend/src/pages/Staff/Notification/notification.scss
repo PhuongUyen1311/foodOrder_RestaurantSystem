@@ -1,124 +1,119 @@
+@use '../../../scss/' as *;
+
 .admin-notification {
-
     padding: 40px;
-    background: #f4f6f9;
+    background: $bg;
     min-height: 100vh;
-
 }
 
 .notification-header {
-
     display: flex;
     align-items: center;
-    gap: 10px;
-
-    margin-bottom: 25px;
+    gap: 15px;
+    margin-bottom: 30px;
 
     h2 {
-        font-size: 24px;
-        font-weight: 600;
+        font-size: 28px;
+        font-weight: 700;
+        color: $gold;
+        font-family: $font-heading;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
 
     svg {
-        font-size: 26px;
-        color: #ff9800;
+        font-size: 30px;
+        color: $gold;
     }
 
     .notification-filters {
+        display: flex;
+        gap: 10px;
+        margin-left: auto;
+
         .btn-filter {
-            padding: 6px 16px;
-            border: 1px solid #ddd;
-            background: white;
+            padding: 8px 20px;
+            border: 1px solid $border;
+            background: $surface;
             border-radius: 20px;
-            font-size: 14px;
-            font-weight: 500;
-            color: #666;
-            transition: all 0.2s;
+            font-size: 13px;
+            font-weight: 700;
+            color: $text-muted;
+            transition: $transition;
             cursor: pointer;
+            text-transform: uppercase;
 
             &:hover {
-                border-color: #2196f3;
-                color: #2196f3;
+                border-color: $gold;
+                color: $gold;
             }
 
             &.active {
-                background: #2196f3;
-                color: white;
-                border-color: #2196f3;
-                box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+                background: $gold;
+                color: black;
+                border-color: $gold;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             }
         }
     }
 }
 
 .notification-list {
-
     display: flex;
     flex-direction: column;
     gap: 15px;
-
 }
 
 .notification-item {
-
     display: flex;
     align-items: center;
+    background: $surface;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: $shadow;
+    transition: $transition;
+    border: 1px solid $border;
 
-    background: white;
-
-    padding: 18px;
-
-    border-radius: 10px;
-
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-
-    transition: 0.2s;
+    &:hover {
+        transform: translateX(5px);
+        border-color: rgba($gold, 0.3);
+    }
 
     &.served-item {
-        opacity: 0.7;
-        background: #f9f9f9;
+        opacity: 0.6;
+        background: rgba($surface, 0.5);
         box-shadow: none;
-        border: 1px solid #eee;
     }
 
     &.read-item {
-        opacity: 0.85;
-        background: #fafafa;
+        opacity: 0.8;
+        background: rgba($surface, 0.8);
         .message {
-            color: #7f8c8d;
+            color: $text-muted;
             font-weight: 500;
         }
     }
 }
 
-
 .notification-icon {
-
-    margin-right: 15px;
-
+    margin-right: 20px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba($black, 0.2);
+    border-radius: 50%;
 }
 
 .icon {
-
     font-size: 22px;
-
 }
 
-.icon.order {
-    color: #2196f3;
-}
-
-.icon.warning {
-    color: #ff5722;
-}
-
-.icon.success {
-    color: #4caf50;
-}
-
-.icon.system {
-    color: #9c27b0;
-}
+.icon.order { color: $gold; }
+.icon.warning { color: $wine; }
+.icon.success { color: $beige; }
+.icon.system { color: $gold; }
 
 .notification-content {
     display: flex;
@@ -130,26 +125,30 @@
         padding: 2px 8px;
         border-radius: 4px;
         text-transform: uppercase;
-        font-weight: 700;
+        font-weight: 800;
+        width: fit-content;
+        margin-top: 5px;
 
         &.new {
-            background: #e3f2fd;
-            color: #1976d2;
+            background: rgba($gold, 0.1);
+            color: $gold;
+            border: 1px solid rgba($gold, 0.3);
         }
 
         &.served {
-            background: #e8f5e9;
-            color: #2e7d32;
+            background: rgba($beige, 0.1);
+            color: $beige;
+            border: 1px solid rgba($beige, 0.3);
         }
 
         &.confirmed {
-            background: #fff8e1;
-            color: #f57c00;
+            background: rgba($gold, 0.1);
+            color: $gold;
         }
 
         &.processing, &.serving {
-            background: #fff3e0;
-            color: #ef6c00;
+            background: rgba($gold, 0.1);
+            color: $gold;
         }
     }
 }
@@ -162,64 +161,64 @@
     .btn-action {
         display: flex;
         align-items: center;
-        gap: 6px;
-        padding: 6px 14px;
+        gap: 8px;
+        padding: 8px 16px;
         border: none;
         border-radius: 8px;
-        font-size: 13px;
-        font-weight: 600;
+        font-size: 12px;
+        font-weight: 700;
         cursor: pointer;
-        transition: all 0.2s;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        transition: $transition;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
 
         svg {
-            font-size: 12px;
+            font-size: 14px;
         }
 
         &.view {
-            background: #e3f2fd;
-            color: #1976d2;
+            background: rgba($gold, 0.1);
+            color: $gold;
+            border: 1px solid rgba($gold, 0.3);
 
             &:hover {
-                background: #bbdefb;
-                transform: translateY(-1px);
+                background: $gold;
+                color: black;
             }
         }
 
         &.share {
-            background: #f0f2f5;
-            color: #4b4f56;
+            background: transparent;
+            color: $text-muted;
+            border: 1px solid $border;
 
             &:hover {
-                background: #e4e6eb;
-                transform: translateY(-1px);
+                background: rgba(255,255,255,0.05);
+                color: $text;
             }
         }
 
         &.complete {
-            background: #fff5f5;
-            color: #c0392b;
-            border: 1px solid #fab1a0;
+            background: rgba($wine, 0.1);
+            color: $wine;
+            border: 1px solid rgba($wine, 0.3);
 
             &:hover {
-                background: #ff7675;
+                background: $wine;
                 color: white;
-                transform: translateY(-1px);
             }
         }
     }
 }
 
 .message {
-    font-weight: 600;
-    color: #2c3e50;
-    margin-bottom: 2px;
+    font-weight: 700;
+    color: $text;
+    margin-bottom: 4px;
+    font-size: 15px;
 }
 
 .time {
-
-    font-size: 13px;
-
-    color: #888;
-
+    font-size: 12px;
+    color: $text-muted;
 }

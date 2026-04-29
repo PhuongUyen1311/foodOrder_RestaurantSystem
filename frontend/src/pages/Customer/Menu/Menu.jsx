@@ -77,7 +77,7 @@ function Menu() {
                 if (savedSession && savedSession.sessionId === sessionIdFromUrl) {
                     setGuestName(savedSession.username);
                 } else {
-                    // Nếu chưa có local, sẽ fetch danh sách đơn để lấy tên khách
+                    // Nếu chưa có local, sẽ fetch danh sách order to lấy tên khách
                     fetch(`/api/order/guest/table/${tabNum}?sessionId=${sessionIdFromUrl}`)
                         .then(res => res.json())
                         .then(data => {
@@ -110,7 +110,7 @@ function Menu() {
         setShowGuestJoin(false);
         setGuestName(username);
         
-        // URL mới chỉ chứa sessionId ngẫu nhiên (Giữ tính năng đa khách)
+        // URL mới chỉ chứa sessionId ngẫu nhiên (Giữ tính năng VNDa khách)
         navigate(`/menu?table=${tableNumber}/${sessionId}`, { replace: true });
     };
 
@@ -125,7 +125,7 @@ function Menu() {
             }
         }
 
-        // Lắng nghe tín hiệu kho thay đổi để tải lại dữ liệu mới nhất
+        // Lắng nghe tín hiệu kho thay VNDổi to tải lại dữ liệu mới nhất
         socket.on('stock_changed', () => {
             fetchProducts();
         });
@@ -156,7 +156,7 @@ function Menu() {
                     <div className="order-info">
                         {orderSource === 'table' ? (
                             <div className="table-info">
-                                <span> THỰC ĐƠN - Khách hàng: {guestName || 'Khách vãng lai'} </span>
+                                <span> THỰC ĐƠN - Customers: {guestName || 'Guest walk-in'} </span>
                             </div>
                         ) : (
                             <div className="online-info">

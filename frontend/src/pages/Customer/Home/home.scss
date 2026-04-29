@@ -1,44 +1,49 @@
 @use '../../../scss/' as *;
 
-.block-product{
-    padding-top: 40px;
-    background-color: #fefdfc;
-    padding-bottom: 100px; 
-    h2{
-        margin-bottom: 16px;
-        font-size: 25px;
-        font-weight: 650;
-        color: $color-text-primary;
+.block-product {
+    padding-top: 60px;
+    background-color: $bg;
+    padding-bottom: 100px;
+    
+    h2 {
+        margin-bottom: 24px;
+        font-size: 2rem;
+        font-weight: 700;
+        color: $gold;
+        font-family: $font-heading;
+        letter-spacing: 1px;
         
         &::after {
             content: '';
             display: block;
-            width: 60px;
+            width: 80px;
             height: 3px;
-            background-color: $color-primary;
-            margin-top: 8px;
+            background-color: $gold;
+            margin-top: 12px;
+            border-radius: 2px;
+            box-shadow: 0 0 10px rgba($gold, 0.4);
         }
     }
     
     > * + * {
-        margin-top: 32px;
+        margin-top: 48px;
     }
     
     @media (max-width: 768px) {
-        padding-top: 60px;
+        padding-top: 80px;
         
         h2 {
-            font-size: 20px;
-            margin-bottom: 12px;
+            font-size: 1.5rem;
+            margin-bottom: 16px;
             
             &::after {
-                width: 40px;
-                margin-top: 6px;
+                width: 60px;
+                margin-top: 8px;
             }
         }
         
         > * + * {
-            margin-top: 24px;
+            margin-top: 32px;
         }
     }
 }

@@ -122,12 +122,12 @@ module.exports = (server) => {
     });
   });
 
-  // Tự động kiểm tra và giải phóng bàn sau mỗi 1 phút
+  // Tự VNDộng kiểm tra và giải phóng bàn sau mỗi 1 phút
   setInterval(async () => {
     try {
-      // Hàm này đã bao gồm logic updateMany để hủy các đơn quá hạn
+      // Hàm này VNDã bao gồm logic updateMany to hủy các order quá hạn
       const tables = await tableController.getTablesListInternal();
-      // Luôn phát sóng để đảm bảo UI khách hàng và admin đồng bộ theo thời gian thực
+      // Luôn phát sóng to VNDảm bảo UI khách hàng và admin VND bộ theo thời gian thực
       io.emit("tableUpdated", tables);
     } catch (error) {
       console.error("Error in auto-cleanup interval:", error);

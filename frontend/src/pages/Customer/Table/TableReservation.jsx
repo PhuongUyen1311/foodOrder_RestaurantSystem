@@ -31,7 +31,7 @@ const TableReservation = () => {
           setTables(data);
         }
       } catch (error) {
-        console.error('Lỗi khi lấy dữ liệu bàn:', error);
+        console.error('Error khi lấy dữ liệu bàn:', error);
       }
     };
 
@@ -53,7 +53,7 @@ const TableReservation = () => {
       const res = await getReservationByTableId(accessToken, table._id);
       if (res && Array.isArray(res)) {
         const dates = res
-          .filter(r => !['Đã hủy', 'Hoàn thành'].includes(r.status))
+          .filter(r => !['Cancelled', 'Completed'].includes(r.status))
           .map(r => r.use_date.split('T')[0]);
         setBookedDates(dates);
       }
@@ -75,13 +75,13 @@ const TableReservation = () => {
 
     const selectedDateStr = formData.use_date;
     if (bookedDates.includes(selectedDateStr)) {
-      toast.error("Bàn đã được đặt trong ngày này, vui lòng chọn ngày trống trên lịch.");
+      toast.error("Table has been VNDặt trong ngày này, vui lòng chọn ngày trống trên lịch.");
       return;
     }
 
     const [hours, minutes] = formData.use_time.split(':').map(Number);
     if (hours < 8 || hours >= 20) {
-      toast.error("Thời gian đặt bàn phải từ 08:00 đến 20:00.");
+      toast.error("Thời gian book table phải từ 08:00 to 20:00.");
       return;
     }
 
@@ -96,7 +96,7 @@ const TableReservation = () => {
       const thirtyMinutesFromNow = new Date(now.getTime() + 30 * 60 * 1000);
 
       if (reservationTime < thirtyMinutesFromNow) {
-        toast.error("Quý khách phải đặt bàn trước ít nhất 30 phút để nhà hàng sắp xếp tốt nhất.");
+        toast.error("Quý khách phải book table trước ít nhất 30 phút to nhà hàng sắp xếp tốt nhất.");
         setIsLoading(false);
         return;
       }
@@ -135,7 +135,7 @@ const TableReservation = () => {
 
       // 🔎 log lỗi chi tiết
       console.error("Reservation error:", error);
-      toast.error(error.message || "Có lỗi khi đặt bàn");
+      toast.error(error.message || "Có lỗi khi book table");
 
     } finally {
       setIsLoading(false);
@@ -144,7 +144,7 @@ const TableReservation = () => {
 
   return (
     <div className="container mt-4">
-      <h2 className="mb-4" style={{ paddingTop: "80px", color: "green" }}>Danh sách bàn</h2>
+      <h2 className="mb-4" style={{ paddingTop: "80px", color: "green" }}>Table List</h2>
 
       {tables.length === 0 ? (
           <div className="alert alert-warning text-center mt-4 p-4 shadow-sm" style={{ fontSize: '18px', borderRadius: '10px' }}>
@@ -154,17 +154,17 @@ const TableReservation = () => {
           <BootstrapTable striped bordered hover>
             <thead>
               <tr>
-                <th>Số bàn</th>
-                <th>Sức chứa</th>
-                <th>Vị trí</th>
-                <th>Hành động</th>
+                <th>Table No.</th>
+                <th>Capacity</th>
+                <th>Location</th>
+                <th>Actions</th>
               </tr>
             </thead>
 
             <tbody>
               {tables.map((table) => (
                 <tr key={table._id}>
-                  <td>Bàn {table.tableNumber}</td>
+                  <td>Table {table.tableNumber}</td>
                   <td>{table.seatingCapacity} người</td>
                   <td>{table.location}</td>
                   <td>
@@ -181,7 +181,7 @@ const TableReservation = () => {
           </BootstrapTable>
       )}
 
-      {/* Modal đặt bàn */}
+      {/* Modal book table */}
       <Modal
         show={showModal}
         onHide={() => !isLoading && setShowModal(false)}
@@ -199,7 +199,7 @@ const TableReservation = () => {
               {/* Lịch bên trái */}
               <Col md={5}>
                 <div className="mb-3">
-                  <Form.Label className="fw-bold" style={{ fontSize: '13px' }}>(Đỏ = Đã đặt, Xanh = Trống)</Form.Label>
+                  <Form.Label className="fw-bold" style={{ fontSize: '13px' }}>(Đỏ = Reserved, Xanh = Empty)</Form.Label>
                   <div style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(7, 1fr)',
@@ -248,7 +248,7 @@ const TableReservation = () => {
                 <Row>
                   <Col sm={6}>
                     <Form.Group className="mb-2">
-                      <Form.Label style={{ fontSize: '14px' }}>Số bàn</Form.Label>
+                      <Form.Label style={{ fontSize: '14px' }}>Table No.</Form.Label>
                       <Form.Control
                         type="text"
                         value={selectedTable?.tableNumber || ''}
@@ -259,7 +259,7 @@ const TableReservation = () => {
                   </Col>
                   <Col sm={6}>
                     <Form.Group className="mb-2">
-                      <Form.Label style={{ fontSize: '14px' }}>Họ và tên</Form.Label>
+                      <Form.Label style={{ fontSize: '14px' }}>Full Name</Form.Label>
                       <Form.Control
                         type="text"
                         value={`${user?.first_name || ''} ${user?.last_name || ''}`}
@@ -273,7 +273,7 @@ const TableReservation = () => {
                 <Row>
                   <Col sm={6}>
                     <Form.Group className="mb-2">
-                      <Form.Label style={{ fontSize: '14px' }}>Số điện thoại</Form.Label>
+                      <Form.Label style={{ fontSize: '14px' }}>Phone Number</Form.Label>
                       <Form.Control
                         type="tel"
                         value={user?.phone || ''}
@@ -297,7 +297,7 @@ const TableReservation = () => {
                 <Row>
                   <Col sm={6}>
                     <Form.Group className="mb-2">
-                      <Form.Label style={{ fontSize: '14px' }}>Ngày sử dụng</Form.Label>
+                      <Form.Label style={{ fontSize: '14px' }}>Date sử dụng</Form.Label>
                       <Form.Control
                         type="date"
                         name="use_date"
@@ -311,7 +311,7 @@ const TableReservation = () => {
                   </Col>
                   <Col sm={6}>
                     <Form.Group className="mb-2">
-                      <Form.Label style={{ fontSize: '14px' }}>Giờ sử dụng</Form.Label>
+                      <Form.Label style={{ fontSize: '14px' }}>Time sử dụng</Form.Label>
                       <Form.Control
                         type="time"
                         name="use_time"
@@ -325,7 +325,7 @@ const TableReservation = () => {
                 </Row>
 
                 <Form.Group className="mb-3">
-                  <Form.Label style={{ fontSize: '14px' }}>Yêu cầu đặc biệt</Form.Label>
+                  <Form.Label style={{ fontSize: '14px' }}>Request special</Form.Label>
                   <Form.Control
                     as="textarea"
                     name="specialRequests"
@@ -355,7 +355,7 @@ const TableReservation = () => {
                         Đang xử lý...
                       </>
                     ) : (
-                      'Xác nhận đặt bàn'
+                      'Confirm book table'
                     )}
                   </Button>
                 </div>

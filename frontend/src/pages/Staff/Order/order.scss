@@ -1,240 +1,160 @@
 @use '../../../scss/' as *;
 
-// Xóa các class cũ của list Order, chỉ giữ lại chi tiết
+.block-order {
+    background-color: $bg;
+    min-height: calc(100vh - 70px);
+    padding: 24px;
+
+    .title-admin {
+        font-family: $font-heading;
+        color: $gold !important;
+        letter-spacing: 1px;
+    }
+
+    .form-select, .form-control {
+        background-color: $surface;
+        border: 1px solid $border !important;
+        color: $text !important;
+        border-radius: 8px;
+
+        &:focus {
+            border-color: $gold !important;
+            box-shadow: 0 0 0 2px rgba($gold, 0.2) !important;
+        }
+
+        &::placeholder {
+            color: $text-muted !important;
+        }
+    }
+
+    .bg-white {
+        background-color: $surface !important;
+    }
+
+    .btn-outline-secondary {
+        background-color: $surface;
+        border: 1px solid $border !important;
+        color: $text;
+
+        &:hover {
+            background-color: rgba($gold, 0.1);
+            color: $gold;
+            border-color: $gold !important;
+        }
+    }
+
+    .table {
+        background-color: $surface;
+        border-collapse: separate;
+        border-spacing: 0 8px;
+        border: none;
+        margin-top: 20px;
+
+        thead {
+            tr th {
+                background-color: transparent;
+                color: $gold;
+                font-family: $font-heading;
+                font-weight: 600;
+                text-transform: uppercase;
+                font-size: 0.85rem;
+                letter-spacing: 1px;
+                border: none;
+                padding: 1.2rem;
+            }
+        }
+
+        tbody {
+            tr {
+                background-color: $surface;
+                transition: $transition;
+
+                td {
+                    border: none;
+                    color: $text;
+                    padding: 1.2rem;
+                    
+                    &:first-child { border-radius: 12px 0 0 12px; }
+                    &:last-child { border-radius: 0 12px 12px 0; }
+                }
+
+                &:hover {
+                    transform: translateY(-2px);
+                    box-shadow: $shadow;
+                    background-color: lighten($surface, 2%);
+                }
+            }
+        }
+    }
+}
+
+// Badges
+.admin-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    &--info { background: rgba($gold, 0.1); color: $gold; border: 1px solid rgba($gold, 0.2); }
+    &--warning { background: rgba($gold, 0.1); color: $gold; border: 1px solid rgba($gold, 0.2); }
+    &--success { background: rgba($beige, 0.1); color: $beige; border: 1px solid rgba($beige, 0.2); }
+    &--danger { background: rgba($wine, 0.1); color: $wine; border: 1px solid rgba($wine, 0.2); }
+    &--default { background: rgba($text-muted, 0.1); color: $text-muted; border: 1px solid rgba($text-muted, 0.2); }
+}
 
 .order__detail {
-    h3 {
-        font-size: 20px;
-    }
+    background-color: $bg;
+    color: $text;
 
     &-container {
-        margin-top: 20px;
-        padding: 30px 20px;
+        background-color: $surface;
+        border-radius: 16px;
+        border: 1px solid $border;
+        padding: 30px;
+        box-shadow: $shadow;
     }
 
-    &-head {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 20px;
-
-        label {
-            font-weight: 400;
-            font-size: 16px;
-            line-height: 20px;
-        }
-
-        span {
-            font-weight: 500;
-        }
+    h3 {
+        font-family: $font-heading;
+        color: $gold;
+        font-size: 1.5rem;
+        margin-bottom: 25px;
     }
 
     &-group {
-        overflow: hidden;
-        height: auto;
-
         .table {
-            margin-bottom: 20px;
-
-            th {
-                font-weight: 600;
-                color: $black-color;
-            }
-
-            td {
-                color: #4a5568;
-            }
-
-            .fw-500 {
-                font-weight: 500;
-            }
+            th { color: $gold; font-family: $font-heading; }
+            td { color: $text; border-bottom: 1px solid rgba($text, 0.05); }
         }
     }
 
     &-foot {
-        margin-top: 10px;
-        border-top: 1px solid $black-color;
-        display: flex;
-        justify-content: space-between;
-        padding: 20px 0;
-    }
-
-    &-status {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-
-        label {
-            font-weight: 500;
-            font-size: 18px;
-            line-height: 20px;
-        }
-
-        span {
-            margin-left: 8px;
-        }
-
-        .order-status {
-            border-radius: 33px;
-            color: $white-color;
-            padding: 2px 8px;
-            font-size: 16px;
-        }
-
+        border-top: 1px solid $border;
+        color: $gold;
+        font-weight: 700;
+        font-size: 1.2rem;
     }
 
     &-group-btn {
-        display: flex;
-        gap: 24px;
-
         button {
-            font-size: 16px;
-            font-weight: 500;
-            line-height: 150%;
-            height: fit-content;
-            border-radius: 18px;
-            padding: 12px 12px;
-            color: $white-color;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: $transition;
 
-            &:disabled {
-                opacity: 0.5;
-                border: none;
+            &:hover:not(:disabled) {
+                transform: translateY(-2px);
+                box-shadow: $shadow;
             }
         }
 
-        .btn-confirm {
-            background-color: #AFB1B0;
-        }
-
-        .btn-processing {
-            background-color: $yellow-color;
-        }
-
-        .btn-complete {
-            background-color: $green-color;
-        }
-
-        .btn-payment {
-            background-color: #007bff;
-            border: 2px solid #0056b3;
-            box-shadow: 0 0 10px rgba(0, 123, 255, 0.4);
-            font-weight: bold;
-        }
-    }
-}
-
-// Media print query for printing exactly the bill
-@media print {
-    body * {
-        visibility: hidden;
-    }
-
-    .print-section,
-    .print-section * {
-        visibility: visible;
-    }
-
-    .print-section {
-        position: absolute !important;
-        left: 0 !important;
-        top: 0 !important;
-        width: 100% !important;
-        margin: 0 !important;
-        padding: 20px !important;
-        box-shadow: none !important;
-        border: none !important;
-        background-color: white !important;
-    }
-
-    .no-print,
-    .no-print * {
-        display: none !important;
-    }
-
-    // Make text darker on print
-    .print-section * {
-        color: #000 !important;
-    }
-
-    // Keep table borders minimal
-    .table-borderless td,
-    .table-borderless th {
-        border-bottom: 1px solid #ddd !important;
-    }
-}
-
-// Receipt (K80 80mm) Styling
-.receipt-layout {
-    width: 80mm !important;
-    max-width: 80mm !important;
-    margin: 0 auto;
-    font-family: 'Inter', 'Courier New', Courier, monospace;
-    font-size: 11px;
-    color: #000;
-    line-height: 1.2;
-    padding: 2mm !important;
-    background: #fff;
-    border: none !important;
-    box-shadow: none !important;
-
-    &.print-section {
-        box-shadow: none !important;
-        border: none !important;
-    }
-
-    h2 {
-        font-size: 16px !important;
-        margin-bottom: 2px !important;
-    }
-
-    h4 {
-        font-size: 13px !important;
-        margin-top: 5px !important;
-        margin-bottom: 5px !important;
-    }
-
-    .border-bottom {
-        border-bottom: 1px dashed #000 !important;
-    }
-
-    .table {
-        font-size: 10px !important;
-        margin-bottom: 5px !important;
-
-        thead {
-            border-bottom: 1px dashed #000 !important;
-            border-top: 1px dashed #000 !important;
-            background: transparent !important;
-            th {
-                color: #000 !important;
-                background: transparent !important;
-                padding: 4px 1px !important;
-                border: none !important;
-            }
-        }
-
-        tbody tr {
-            border-bottom: 1px dotted #eee !important;
-        }
-
-        td {
-            padding: 4px 1px !important;
-            color: #000;
-            border: none !important;
-            background: transparent !important;
-        }
-    }
-
-    .text-muted {
-        color: #000 !important;
-    }
-
-    .bg-light {
-        background-color: transparent !important;
-    }
-
-    .badge {
-        color: #000 !important;
-        border: 1px solid #000;
-        background: transparent !important;
+        .btn-confirm { background: rgba($text-muted, 0.2); color: $text; }
+        .btn-processing { background: rgba($gold, 0.2); color: $gold; }
+        .btn-complete { background: $beige; color: #000; }
+        .btn-payment { background: $gold; color: #000; }
     }
 }

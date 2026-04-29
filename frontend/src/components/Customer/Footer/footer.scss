@@ -1,63 +1,77 @@
 @use '../../../scss/' as *;
 
 .footer {
-    background-color: $color-primary;
-    padding: 0px;
-    margin: 0px;
+    background-color: $bg;
+    padding: 60px 0 30px;
+    margin: 0;
+    border-top: 1px solid $border;
 
-    .container{
-        max-width: 100%;
-        padding-left: 50px;
-        padding-right: 0;
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
     }
-    &__top{
+
+    &__top {
         display: flex;
         flex-direction: column;
         gap: 40px;
     }
 
-    &__produce{
+    hr {
+        border-color: $border;
+        margin: 40px 0 20px;
+    }
+
+    &__produce {
         text-align: center;
-        color: white;
-        font-size: 14px;
-        padding-bottom: 10px;
+        color: $text-muted;
+        font-size: 13px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        font-family: $font-body;
     }
 }
-
 
 .contactUs {
-    height: 200px;
-    width: 100%;
-    background-color: $color-primary;
     display: flex;
-    align-items: center;
-    gap: 80px;
-    padding: 50px;
-}
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 40px;
+    padding: 0;
+    background: transparent;
 
-.contactUs-section{
-
-    h3{
-        color: #ffffff;
-        margin-bottom: 10px;
-    }
-
-    p{
-        color: #ffffff;
-        line-height: 1.5;
-        margin-bottom: 6px;
-        font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    @media (max-width: 768px) {
+        flex-direction: column;
+        gap: 30px;
     }
 }
 
-.contactUs-section:nth-child(1){
-    width: 45%;
-}
+.contactUs-section {
+    h3 {
+        color: $gold;
+        font-family: $font-heading;
+        font-size: 1.25rem;
+        margin-bottom: 20px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+    }
 
-.contactUs-section:nth-child(2){
-    width: 45%;
-}
+    p {
+        color: $text-muted;
+        line-height: 1.6;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+        font-family: $font-body;
+    }
 
-.contactUs-section:nth-child(3){
-    width: 30%;
+    &:nth-child(1) { width: 35%; }
+    &:nth-child(2) { width: 35%; }
+    &:nth-child(3) { width: 20%; }
+
+    @media (max-width: 768px) {
+        &:nth-child(1), &:nth-child(2), &:nth-child(3) {
+            width: 100%;
+        }
+    }
 }

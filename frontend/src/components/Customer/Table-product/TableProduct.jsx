@@ -41,7 +41,7 @@ function TableProduct({ cartItems, selectedItems, setSelectedItems }) {
 
     const handleDeleteItemCart = async (cartItemId, productName) => {
         const isConfirmed = window.confirm(
-            `Bạn có chắc chắn muốn xóa "${productName}" khỏi giỏ hàng không?`
+            `Are you sure you want to delete? "${productName}" khỏi giỏ hàng không?`
         );
 
         if (isConfirmed) {
@@ -62,13 +62,13 @@ function TableProduct({ cartItems, selectedItems, setSelectedItems }) {
             } else {
                 const orderSource = sessionStorage.getItem('orderSource');
                 if (orderSource === 'table') {
-                    // Xử lý cho khách vãng lai
+                    // Xử lý cho khách walk-in
                     const guestCart = JSON.parse(sessionStorage.getItem('guestCart')) || [];
                     const updatedCart = guestCart.filter(item => item.id !== cartItemId);
                     
                     sessionStorage.setItem('guestCart', JSON.stringify(updatedCart));
                     
-                    // Cập nhật Redux store để giao diện (Cart badge, Cart sidebar) thay đổi ngay
+                    // Update Redux store to giao diện (Cart badge, Cart sidebar) thay VNDổi ngay
                     dispatch(setCartItems(updatedCart));
                     dispatch(setCartStore({
                         id: 'guest',
@@ -76,7 +76,7 @@ function TableProduct({ cartItems, selectedItems, setSelectedItems }) {
                         total_price: updatedCart.reduce((sum, i) => sum + i.total_price, 0)
                     }));
 
-                    // Bỏ chọn item nếu nó đang được chọn
+                    // Bỏ chọn item nếu nó VNDang VNDược chọn
                     setSelectedItems(prev => prev.filter(id => id !== cartItemId));
                 }
             }
@@ -93,7 +93,7 @@ function TableProduct({ cartItems, selectedItems, setSelectedItems }) {
             />
 
             <p style={{fontStyle: 'italic', marginBottom: '8px', color: '#666', fontSize: '14px'}}>
-                * Chọn món để thanh toán
+                * Select món to thanh toán
             </p>
 
             <Table>
@@ -107,8 +107,8 @@ function TableProduct({ cartItems, selectedItems, setSelectedItems }) {
                                 style={{ transform: 'scale(1.2)', cursor: 'pointer' }}
                             />
                         </th>
-                        <th>Sản phẩm</th>
-                        <th>Số lượng</th>
+                        <th>Products</th>
+                        <th>Quantity</th>
                         <th>Số tiền</th>
                         <th>Thao tác</th>
                     </tr>
@@ -164,7 +164,7 @@ function TableProduct({ cartItems, selectedItems, setSelectedItems }) {
                                             className="product-action-update"
                                             onClick={() => handleOpenPopup(item)}
                                         >
-                                            Cập nhật
+                                            Update
                                         </button>
                                         <span>|</span>
                                         <button
@@ -173,7 +173,7 @@ function TableProduct({ cartItems, selectedItems, setSelectedItems }) {
                                                 handleDeleteItemCart(id, product_name)
                                             }
                                         >
-                                            Xóa
+                                            Delete
                                         </button>
                                     </div>
                                 </td>

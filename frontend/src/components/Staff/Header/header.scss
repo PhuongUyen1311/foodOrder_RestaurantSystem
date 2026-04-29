@@ -1,26 +1,20 @@
 @use '../../../scss/' as *;
 
 .header-staff {
-
     height: 70px;
-    background: #ffffff;
-
+    background: $surface;
     display: flex;
     justify-content: space-between;
     align-items: center;
-
     padding: 0 30px;
-
-    border-bottom: 1px solid #eee;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-
+    border-bottom: 1px solid $border;
+    box-shadow: $shadow;
     position: sticky;
     top: 0;
     z-index: 100;
 }
 
 /* LEFT */
-
 .header-left {
     display: flex;
     align-items: center;
@@ -28,202 +22,174 @@
 }
 
 /* SEARCH */
-
 .header-search {
-
     display: flex;
     align-items: center;
-
-    background: #f4f6fb;
-
+    background: $bg;
     padding: 8px 14px;
-
     border-radius: 10px;
+    transition: $transition;
+    border: 1px solid $border;
 
-    transition: all 0.2s ease;
-}
+    &:hover {
+        border-color: rgba($gold, 0.3);
+    }
 
-.header-search:hover {
-    background: #eef1f7;
-}
+    .search-icon {
+        color: $gold;
+    }
 
-.header-search input {
+    input {
+        border: none !important;
+        outline: none !important;
+        background: transparent !important;
+        margin-left: 8px;
+        font-size: 14px;
+        width: 180px;
+        color: $text !important;
+        box-shadow: none !important;
 
-    border: none;
-    outline: none;
-
-    background: transparent;
-
-    margin-left: 8px;
-
-    font-size: 14px;
-    width: 180px;
+        &::placeholder {
+            color: $text-muted;
+        }
+    }
 }
 
 /* RIGHT */
-
 .header-right {
-
     display: flex;
     align-items: center;
     gap: 20px;
-
 }
 
 /* ICON */
-
 .header-icon {
-    font-size: 20px;
-    color: #666;
+    font-size: 18px;
+    color: $text-muted;
     position: relative;
     cursor: pointer;
-    transition: all 0.2s ease;
-    &:hover,
-    &:active {
-        outline: none !important;
-        box-shadow: none !important;
-    }
-    &:focus,
-    &:focus-visible {
-        outline: none !important;
-        box-shadow: none !important;
-    }
-}
+    transition: $transition;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba($text, 0.05);
 
-.header-icon:hover {
-    color: #1AC073;
-    transform: scale(1.1);
-}
+    &:hover {
+        color: $gold;
+        background: rgba($gold, 0.1);
+        transform: translateY(-2px);
+    }
 
-.header-icon.active {
-    color: #1AC073;
+    &.active {
+        color: $gold;
+        background: rgba($gold, 0.1);
+    }
 }
 
 .notification-badge {
     position: absolute;
-    top: -6px;
-    right: -8px;
-    background: #f44336;
+    top: -4px;
+    right: -4px;
+    background: $wine;
     color: white;
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 700;
-    min-width: 18px;
-    height: 18px;
+    min-width: 16px;
+    height: 16px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid #fff;
+    border: 2px solid $surface;
     padding: 0 4px;
-    pointer-events: none;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+
+    &.messenger {
+        background: $gold;
+        color: black;
+    }
 }
 
 /* AVATAR */
-
 .header-avatar {
     position: relative;
-    font-size: 20px;
+    font-size: 16px;
     width: 36px;
     height: 36px;
     display: flex;
     justify-content: center;
     align-items: center;
     border-radius: 50%;
-
-    background:#f4f6fb;
-
+    background: $bg;
+    color: $gold;
     cursor: pointer;
+    transition: $transition;
+    border: 1px solid $border;
 
-    transition: all 0.2s ease;
-}
-
-.header-avatar:hover {
-    background: #e9edf5;
+    &:hover {
+        background: rgba($gold, 0.1);
+        border-color: $gold;
+    }
 }
 
 /* DROPDOWN */
-
 .profile-dropdown {
     position: absolute;
-    top: 40px;
+    top: 45px;
     right: 0;
-    width: 180px;
-    background: rgb(231, 225, 194);
-    border-radius: 10px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.285);
-    padding: 0px 0;
+    width: 200px;
+    background: $surface;
+    border-radius: 12px;
+    box-shadow: $shadow;
+    padding: 8px 0;
+    border: 1px solid $border;
+    animation: fadeDropdown 0.2s ease;
 }
 
 /* NAME */
-
 .profile-name {
-    padding: 10px 15px;
-    font-weight: 700;
-    font-size: 17px;
-    border-bottom: 1px solid #97916a;
-
+    padding: 12px 16px;
+    font-weight: 600;
+    font-size: 14px;
+    color: $gold;
+    border-bottom: 1px solid $border;
+    font-family: $font-heading;
 }
 
 /* ITEM */
 .dropdown-item {
     display: flex;
     align-items: center;
-    gap: 20px;              /* icon cách chữ */
-    margin-top: 8px;    /* cách mép trái 20px */
-    height: 25px;
-    font-size: 15px;
-    margin-left: 15px;
-    color: #333;
+    padding: 10px 16px;
+    font-size: 14px;
+    color: $text;
     text-decoration: none;
     cursor: pointer;
-    transition: all 0.2s ease;
-    &:hover,
-    &:active {
-        color: #1a9b5f;
-        outline: none !important;
-        box-shadow: none !important;
+    transition: $transition;
+
+    &:hover {
+        background: rgba($gold, 0.1);
+        color: $gold;
     }
-    &:focus,
-    &:focus-visible {
-        outline: none !important;
-        box-shadow: none !important;
+
+    &.logout {
+        color: $wine;
+        &:hover {
+            background: rgba($wine, 0.1);
+        }
     }
 }
 
-/* logout */
-
-.logout {
-    color: #e74c3c;
-}
-
-/* ANIMATION */
-
-@keyframes dropdownFade {
-
+@keyframes fadeDropdown {
     from {
         opacity: 0;
-        transform: translateY(-5px);
+        transform: translateY(-10px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
     }
-
-}
-
-.profile-dropdown{
-  animation: fadeDropdown 0.2s ease;
-}
-
-@keyframes fadeDropdown{
-  from{
-    opacity:0;
-    transform:translateY(-5px);
-  }
-  to{
-    opacity:1;
-    transform:translateY(0);
-  }
 }

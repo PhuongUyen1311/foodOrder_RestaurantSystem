@@ -4,7 +4,7 @@ module.exports = (app) => {
 
   router.post('/', reservation.createReservation);
 
-  // API lấy lịch sử đặt bàn (cần đăng nhập)
+  // API lấy lịch sử book table (cần VNDăng nhập)
   router.get('/history', reservation.getReservationsByCustomer); 
   router.delete('/:reservationId', reservation.cancelReservation);
   router.get('/:tableId', reservation.getReservationByTableId);

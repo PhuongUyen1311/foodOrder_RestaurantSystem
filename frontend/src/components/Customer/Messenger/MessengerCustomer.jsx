@@ -166,7 +166,7 @@ const MessengerCustomer = () => {
                 }));
                 dispatch(setDisplayToast(true));
                 return;
-            } catch (err) { console.error("Lỗi thêm vào giỏ hàng guest:", err); }
+            } catch (err) { console.error("Error thêm vào giỏ hàng guest:", err); }
         }
         if (user && accessToken) {
             await fetchAddProductToCart(accessToken, [{ id: productId, qty: 1 }]);
@@ -258,7 +258,7 @@ const MessengerCustomer = () => {
             scrollToBottom();
             socket.emit("typing", {
                 receiver: null, receiverModel: 'admin', isTyping: false,
-                senderId: userId, senderName: user ? (user.first_name + " " + user.last_name) : "Khách",
+                senderId: userId, senderName: user ? (user.first_name + " " + user.last_name) : "Guest",
                 conversationType: 'customer'
             });
         }
@@ -270,7 +270,7 @@ const MessengerCustomer = () => {
         if (activeTab === 'staff') {
             socket.emit("typing", {
                 receiver: null, receiverModel: 'admin', isTyping: val.length > 0,
-                senderId: userId, senderName: user ? (user.first_name + " " + user.last_name) : "Khách",
+                senderId: userId, senderName: user ? (user.first_name + " " + user.last_name) : "Guest",
                 conversationType: 'customer'
             });
         }
@@ -303,10 +303,10 @@ const MessengerCustomer = () => {
                     <div key={i} className="chat-cart-card">
                         <div className="ccc-info">
                             <span className="ccc-name">{act.name}</span>
-                            <span className="ccc-price">{act.price?.toLocaleString('vi-VN')}₫</span>
+                            <span className="ccc-price">{act.price?.toLocaleString('vi-VN')}VND</span>
                         </div>
                         <button className="ccc-btn" onClick={() => handleQuickAdd(act.product_id)}>
-                            <FaPaperPlane /> Thêm vào giỏ
+                            <FaPaperPlane /> Add vào giỏ
                         </button>
                     </div>
                 ))}
@@ -337,7 +337,7 @@ const MessengerCustomer = () => {
                             <FaRobot /> AI NutriBot
                         </div>
                         <div className={`tab ${activeTab === 'staff' ? 'active' : ''}`} onClick={() => setActiveTab('staff')}>
-                            <FaUserTie /> Nhân viên
+                            <FaUserTie /> Staff
                         </div>
                     </div>
 
@@ -367,7 +367,7 @@ const MessengerCustomer = () => {
                                 </label>
                             )}
                             <input 
-                                type="text" placeholder="Nhập nội dung..." 
+                                type="text" placeholder="Enter nội dung..." 
                                 value={inputText} onChange={handleInput}
                                 disabled={isStreaming}
                             />

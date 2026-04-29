@@ -9,7 +9,7 @@ export const RequireAuth = ({ children }) => {
     const isFullTablePayment = location.state?.isFullTablePayment;
 
     if (!accessToken && !isTableOrder && !isFullTablePayment) {
-        // Lưu lại đường dẫn hiện tại để quay lại sau khi đăng nhập
+        // Save lại VNDường dẫn hiện tại to quay lại sau khi VNDăng nhập
         return <Navigate to={`/login?returnUrl=${encodeURIComponent(location.pathname + location.search)}`} />;
     }
 

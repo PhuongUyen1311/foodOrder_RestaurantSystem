@@ -8,22 +8,22 @@ function Contact(props) {
         <div className='block-contact'>
             <div className="contact-form">
                 <div className='contact-form-head'>
-                    <h3>Bạn có câu hỏi về chúng tôi?</h3>
-                    <span>Điền vào biểu mẫu này và chúng tôi sẽ liên hệ với bạn trong 48 giờ tới.</span>
+                    <h3>Have a question for us?</h3>
+                    <span>Fill out this form and we will get back to you within 48 hours.</span>
                 </div>
 
                 <form method='post' action='/'>
                     <div className='contact-form-group'>
-                        <input type="text" placeholder='Tên của bạn' name="name" />
+                        <input type="text" placeholder='Your name' name="name" />
 
-                        <input type="text" placeholder='Email của bạn' name="email" />
+                        <input type="text" placeholder='Your email' name="email" />
                     </div>
                     <div>
-                        <textarea placeholder='Vui lòng nhập ý kiến của bạn' name="" id="" cols="30" rows="10"></textarea>
+                        <textarea placeholder='Please enter your opinion' name="" id="" cols="30" rows="10"></textarea>
                     </div>
 
                     <div className='btn-contact'>
-                        <input type="submit" value="Gửi" />
+                        <input type="submit" value="Send" />
                     </div>
                 </form>
             </div>

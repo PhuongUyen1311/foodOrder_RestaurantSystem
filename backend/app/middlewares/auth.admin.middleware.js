@@ -1,8 +1,8 @@
 // Middleware kiểm tra admin
 module.exports = (req, res, next) => {
     try {
-        // Tạm thời bỏ qua xác thực để chạy được
-        // Sau này khi có hệ thống đăng nhập admin, bạn sẽ thêm logic ở đây
+        // Tạm thời bỏ qua xác thực to chạy VNDược
+        // Sau này khi có hệ thống VNDăng nhập admin, bạn sẽ thêm logic ở VNDây
         next();
 
         // Ví dụ khi có JWT token:

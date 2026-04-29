@@ -31,7 +31,7 @@ const fileFilter = (req, file, cb) => {
     if (mimetype && extname) {
         return cb(null, true);
     } else {
-        cb(new Error("Chỉ chấp nhận các định dạng ảnh: .jpg, .jpeg, .png"));
+        cb(new Error("Only .jpg, .jpeg, .png formats are accepted"));
     }
 };
 
@@ -110,7 +110,7 @@ exports.updateAvatar = (req, res) => {
             await admin.save();
 
             res.json({
-                message: "Cập nhật ảnh đại diện thành công",
+                message: "Avatar updated successfully",
                 avatar: newAvatarPath
             });
         } catch (error) {

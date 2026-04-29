@@ -22,7 +22,7 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
     // Raw total of all items (unit_price * qty) without VAT/Discounts if they differ
     const [rawItemsTotal, setRawItemsTotal] = useState(0);
 
-    // State lưu giá trị đang nhập tạm thời để tránh nhảy số khi đang gõ
+    // State lưu giá trị VNDang nhập tạm thời to tránh nhảy số khi VNDang gõ
     const [localEdits, setLocalEdits] = useState({});
 
     useEffect(() => {
@@ -32,7 +32,7 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
     }, [order, show, orderItems]);
 
     const setupInitialState = (currentTab = tab) => {
-        let iState = orderItems.map(i => {
+        let iState = orderItems.filter(i => i.status !== 'CANCELED').map(i => {
             const unitPrice = i.price || 0;
             const totalPrice = i.total_price || (i.price * i.qty) || 0;
             return {
@@ -53,12 +53,12 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
         let u1, u2;
 
         if (currentTab === 'item') {
-            u1 = { id: 1, name: 'Khách 1', amount: 0, percent: 0, items: [] };
-            u2 = { id: 2, name: 'Khách 2', amount: 0, percent: 0, items: [] };
+            u1 = { id: 1, name: 'Guest 1', amount: 0, percent: 0, items: [] };
+            u2 = { id: 2, name: 'Guest 2', amount: 0, percent: 0, items: [] };
         } else {
             const baseAmt = Math.floor(order.total_price / n);
-            u1 = { id: 1, name: 'Khách 1', amount: baseAmt, percent: ((baseAmt / order.total_price) * 100).toFixed(1), items: [] };
-            u2 = { id: 2, name: 'Khách 2', amount: order.total_price - baseAmt, percent: (((order.total_price - baseAmt) / order.total_price) * 100).toFixed(1), items: [] };
+            u1 = { id: 1, name: 'Guest 1', amount: baseAmt, percent: ((baseAmt / order.total_price) * 100).toFixed(1), items: [] };
+            u2 = { id: 2, name: 'Guest 2', amount: order.total_price - baseAmt, percent: (((order.total_price - baseAmt) / order.total_price) * 100).toFixed(1), items: [] };
         }
 
         setUsers([u1, u2]);
@@ -147,14 +147,14 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
 
     const handleAddUser = () => {
         const id = new Date().getTime(); // unique id
-        const newName = `Khách ${users.length + 1}`;
+        const newName = `Guest ${users.length + 1}`;
         setUsers([...users, { id, name: newName, amount: 0, percent: 0, items: [] }]);
     };
 
     const handleDeleteUser = (userIndex) => {
         let targetUser = users[userIndex];
 
-        // Trả lại các món đã gán vào kho leftQty và leftPrice
+        // Return lại các món VNDã gán vào kho leftQty và leftPrice
         let newItemsState = [...itemsState];
         if (targetUser.items && targetUser.items.length > 0) {
             targetUser.items.forEach(ui => {
@@ -166,7 +166,7 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
             });
         }
 
-        // Xóa user
+        // Delete user
         let newUsers = [...users];
         newUsers.splice(userIndex, 1);
 
@@ -185,8 +185,8 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
         newUsers[index].percent = pct;
         newUsers[index].amount = amt;
 
-        // Nếu người đang sửa là người cuối cùng, ta cần điều chỉnh người áp chót để bù trừ
-        // Nếu không, chỉ điều chỉnh người cuối cùng
+        // Nếu người VNDang sửa là người cuối cùng, ta cần VNDiều chỉnh người áp chót to bù trừ
+        // Nếu không, chỉ VNDiều chỉnh người cuối cùng
         redistributeToTarget(index, newUsers);
         setUsers(newUsers);
     };
@@ -207,11 +207,11 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
     const redistributeToTarget = (changedIndex, newUsers) => {
         if (newUsers.length < 2) return;
 
-        // Xác định người sẽ nhận phần bù trừ (mặc định là người cuối cùng)
-        // Nếu đang sửa người cuối cùng, thì người bù trừ là người áp chót (hoặc người đầu tiên tùy logic, ở đây chọn cuối - 1)
+        // Xác VNDịnh người sẽ nhận phần bù trừ (mặc VNDịnh là người cuối cùng)
+        // Nếu VNDang sửa người cuối cùng, thì người bù trừ là người áp chót (hoặc người first tùy logic, ở VNDây chọn cuối - 1)
         let targetIndex = newUsers.length - 1;
         if (changedIndex === newUsers.length - 1) {
-            targetIndex = 0; // Hoặc newUsers.length - 2
+            targetIndex = 0; // or newUsers.length - 2
         }
 
         let sumOthers = 0;
@@ -222,7 +222,7 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
         }
 
         let remaining = order.total_price - sumOthers;
-        newUsers[targetIndex].amount = remaining; // Có thể âm nếu tổng vượt quá, UI sẽ báo đỏ
+        newUsers[targetIndex].amount = remaining; // Có thể âm nếu tổng vượt quá, UI sẽ báo red
         newUsers[targetIndex].percent = parseFloat(((remaining / order.total_price) * 100).toFixed(1));
     };
 
@@ -303,7 +303,7 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
     const handleShareItemSubmit = () => {
         const { itemIndex, selectedUsers, qty: shareQty } = shareItemModal;
         if (selectedUsers.length < 2) {
-            alert('Vui lòng chọn ít nhất 2 người để chia sẻ món này.');
+            alert('Please select ít nhất 2 người to chia sẻ món này.');
             return;
         }
 
@@ -311,7 +311,7 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
         let p = newItemsState[itemIndex];
 
         if (p.leftQty < shareQty) {
-            alert('Số lượng món không đủ để chia.');
+            alert('Quantity món không VNDủ to chia.');
             return;
         }
 
@@ -340,7 +340,7 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
 
         selectedUsers.forEach((userIndex, idx) => {
             let tUser = newUsers[userIndex];
-            const finalPrice = sharedPricePerUser + (idx === 0 ? remainder : 0); // Người đầu tiên chịu số dư
+            const finalPrice = sharedPricePerUser + (idx === 0 ? remainder : 0); // Người first chịu số dư
             tUser.items.push({
                 product_id: p.product_id,
                 product_name: `${shareLabel} ${p.product_name}`,
@@ -356,44 +356,16 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
         setShareItemModal({ show: false, itemIndex: null, selectedUsers: [], qty: 1 });
     };
 
-    // Recalculates amount ensuring exact match with order.total_price
+    // Recalculates amount ensuring exact match with assigned items
     const recalcItemSplitAmounts = (newUsers) => {
-        let userRawSums = newUsers.map(u => u.items.reduce((s, it) => s + (it.price || 0), 0));
-        let totalAssignedRaw = userRawSums.reduce((a, b) => a + b, 0);
-
-        if (totalAssignedRaw === 0) {
-            // No items assigned, reset
-            newUsers.forEach(u => {
-                u.amount = 0;
-                u.percent = 0;
-            });
-            setUsers(newUsers);
-            return;
-        }
-
-        // If items assigned amount is not equal to order total, we pro-rate
-        let currentAssignedTotal = 0;
         const totalToDistribute = order.total_price;
-        const ratio = totalToDistribute / rawItemsTotal;
 
         for (let i = 0; i < newUsers.length; i++) {
-            if (i === newUsers.length - 1) {
-                // Last user gets the remainder if all items are assigned fully
-                if (totalAssignedRaw === rawItemsTotal) {
-                    newUsers[i].amount = totalToDistribute - currentAssignedTotal;
-                } else {
-                    newUsers[i].amount = Math.round(userRawSums[i] * ratio);
-                }
-            } else {
-                let amt = Math.round(userRawSums[i] * ratio);
-                newUsers[i].amount = amt;
-                currentAssignedTotal += amt;
-            }
-            newUsers[i].percent = ((newUsers[i].amount / totalToDistribute) * 100).toFixed(1);
+            const itemsSum = newUsers[i].items.reduce((s, it) => s + (it.price || 0), 0);
+            newUsers[i].amount = itemsSum;
+            newUsers[i].percent = totalToDistribute > 0 ? ((itemsSum / totalToDistribute) * 100).toFixed(1) : 0;
         }
 
-        // Failsafe negative
-        newUsers.forEach(u => { if (u.amount < 0) u.amount = 0 });
         setUsers(newUsers);
     };
 
@@ -402,7 +374,7 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
 
         let sum = users.reduce((acc, u) => acc + (parseInt(u.amount) || 0), 0);
         if (Math.abs(sum - order.total_price) > 10) {
-            toast.error(`Tổng chia không bằng tổng bill ! Vui lòng kiểm tra lại.`);
+            toast.error(`Total chia không bằng tổng bill ! Please kiểm tra lại.`);
             return;
         }
 
@@ -410,17 +382,17 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
         let nameSet = new Set();
         for (let u of users) {
             if (!u.name || u.name.trim() === '') {
-                toast.error('Có một khách chưa được đặt tên!');
+                toast.error('Có một khách chưa VNDược VNDặt tên!');
                 return;
             }
             if (nameSet.has(u.name.trim().toLowerCase())) {
-                toast.error(`Tên khách "${u.name}" bị trùng lặp!`);
+                toast.error(`Name khách "${u.name}" bị trùng lặp!`);
                 return;
             }
             nameSet.add(u.name.trim().toLowerCase());
 
             if (u.amount === 0 && (!u.items || u.items.length === 0)) {
-                toast.error(`Khách "${u.name}" chưa có món nào hoặc số tiền bằng 0!`);
+                toast.error(`Guest "${u.name}" chưa có món nào hoặc số tiền bằng 0!`);
                 return;
             }
             if (u.amount < 0) {
@@ -433,7 +405,7 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
         if (tab === 'item') {
             let leftOver = itemsState.some(i => i.leftQty > 0);
             if (leftOver) {
-                toast.error('Vui lòng phân bổ HẾT các món trong danh sách trước khi xác nhận!');
+                toast.error('Please phân bổ HẾT các món trong danh sách trước khi xác nhận!');
                 return;
             }
         }
@@ -459,14 +431,14 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
             });
             const resData = await resp.json();
             if (resData.success) {
-                toast.success('Xác nhận chia hóa đơn thành công!');
+                toast.success('Confirm chia hóa order thành công!');
                 onHide();
                 if (onSuccess) onSuccess(resData.splits, resData.orderId);
             } else {
-                toast.error(resData.message || 'Lỗi chia hóa đơn');
+                toast.error(resData.message || 'Error chia hóa order');
             }
         } catch (e) {
-            toast.error('Lỗi server. Vui lòng thử lại!');
+            toast.error('Error server. Please thử lại!');
         } finally {
             setIsSubmitting(false);
         }
@@ -493,20 +465,20 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
             <Modal show={show} onHide={onHide} size="xl" backdrop="static" dialogClassName="modal-90w" scrollable>
                 <Modal.Header closeButton className="bg-light py-2">
                     <Modal.Title className="w-100 d-flex justify-content-between align-items-center">
-                        <span>Chia hóa đơn - #{order.id}</span>
+                        <span>Chia hóa order - #{order.id}</span>
                         <h5 className="mb-0 text-danger fw-bold me-4 px-3 py-1 bg-white border border-danger rounded shadow-sm">
-                            Tổng Bill: {order.total_price.toLocaleString()} VNĐ
+                            Total Bill: {order.total_price.toLocaleString()} VNĐ
                         </h5>
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body className="p-0 bg-light">
                     <Tabs activeKey={tab} onSelect={(k) => { setTab(k); setupInitialState(k); }} className="px-3 pt-2 bg-white border-bottom shadow-sm" variant="pills">
-                        <Tab eventKey="item" title="Chia Theo Món" className="p-3">
+                        <Tab eventKey="item" title="Chia Theo Dish" className="p-3">
                             <div className="d-flex w-100 h-100">
                                 {/* CỘT TRÁI: DANH SÁCH MÓN */}
                                 <div className="w-50 pe-3 border-end d-flex flex-column" style={{ height: '50vh', minHeight: '350px' }}>
                                     <div className="d-flex justify-content-between align-items-end mb-2">
-                                        <h5 className="fw-bold fs-6 text-primary mb-0">Danh Sách Món</h5>
+                                        <h5 className="fw-bold fs-6 text-primary mb-0">Danh Sách Dish</h5>
                                         <small className="text-secondary fst-italic">Phải chia hết 100% món ăn</small>
                                     </div>
                                     <div className="flex-grow-1 overflow-auto pe-1">
@@ -514,10 +486,10 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
                                             <div key={idx} className={`d-flex align-items-center p-3 mb-2 border rounded shadow-sm ${it.leftQty === 0 ? 'bg-light opacity-50' : 'bg-white'}`}>
                                                 <div className="flex-grow-1">
                                                     <div className="fw-bold">{it.product_name}</div>
-                                                    <div className="text-secondary small">Giá: {it.unit_price?.toLocaleString()} đ/món</div>
+                                                    <div className="text-secondary small">Price: {it.unit_price?.toLocaleString()} VND/món</div>
                                                 </div>
                                                 <div className="text-center px-2 border-end border-start mx-2">
-                                                    <div className="small text-muted mb-1" style={{ fontSize: '11px' }}>Tồn/Tổng</div>
+                                                    <div className="small text-muted mb-1" style={{ fontSize: '11px' }}>Tồn/Total</div>
                                                     <b className="fs-6 text-primary">{it.leftQty}</b><span className="text-muted small">/{it.qty}</span>
                                                 </div>
                                                 <div className="d-flex flex-column align-items-end gap-1" style={{ width: '200px' }}>
@@ -561,7 +533,7 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
                                                                 selectedUsers: [],
                                                                 qty: it.leftQty // Default to all remaining
                                                             })}
-                                                            title="Chia đều món này cho nhiều người"
+                                                            title="Chia VNDều món này cho nhiều người"
                                                         >
                                                             Chia món
                                                         </Button>
@@ -577,7 +549,7 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
                                     <div className="d-flex justify-content-between align-items-center mb-2">
                                         <h5 className="fw-bold fs-6 text-success mb-0">Hóa Đơn Tách Nhỏ</h5>
                                         <Button variant="success" size="sm" onClick={handleAddUser} className="d-flex align-items-center shadow-sm fw-bold px-2 py-1" style={{ fontSize: '12px' }}>
-                                            <span className="me-1">+</span> Thêm Người Trả
+                                            <span className="me-1">+</span> Add Người Return
                                         </Button>
                                     </div>
                                     <div className="flex-grow-1 overflow-auto pe-1">
@@ -593,15 +565,15 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
                                                             }}
                                                             className="fw-bold border-bottom border-success border-top-0 border-start-0 border-end-0 bg-transparent px-1 text-success fs-6 shadow-none py-0"
                                                             style={{ width: '200px', outline: 'none', borderRadius: 0 }}
-                                                            placeholder="Nhập tên người trả..."
+                                                            placeholder="Enter tên người trả..."
                                                         />
                                                     </div>
-                                                    <span className="fs-6 fw-bold text-danger">{u.amount.toLocaleString()} đ</span>
+                                                    <span className="fs-6 fw-bold text-danger">{u.amount.toLocaleString()} VND</span>
                                                 </div>
                                                 <div className="p-2">
                                                     {u.items.length === 0 ? (
                                                         <div className="text-center text-muted py-2 fst-italic bg-light rounded border border-dashed" style={{ fontSize: '12px' }}>
-                                                            Hãy chọn số lượng món ở bên trái và bấm <b className="text-primary">+ {u.name}</b> để gán vào hóa đơn này.
+                                                            Hãy chọn số lượng món ở bên trái và bấm <b className="text-primary">+ {u.name}</b> to gán vào hóa order này.
                                                         </div>
                                                     ) : (
                                                         <div className="d-flex flex-column gap-2">
@@ -626,34 +598,17 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
                                                                         </Button>
                                                                     </div>
                                                                     <div className="text-end fw-bold" style={{ width: '90px' }}>
-                                                                        {it.price.toLocaleString()} đ
+                                                                        {it.price.toLocaleString()} VND
                                                                     </div>
                                                                 </div>
                                                             ))}
-                                                            {(() => {
-                                                                const itemsSum = u.items.reduce((s, it) => s + (it.price || 0), 0);
-                                                                const adjustment = u.amount - itemsSum;
-                                                                if (adjustment !== 0) {
-                                                                    return (
-                                                                        <div className="d-flex justify-content-between align-items-center p-2 bg-warning bg-opacity-10 border border-warning rounded mt-1">
-                                                                            <div className="fw-medium text-warning-emphasis" style={{ fontSize: '13px' }} title="Khoản điều chỉnh phân bổ do tổng các món không khớp với tổng tiền phải thanh toán của đơn hàng (có thể do gộp bàn, phí, hoặc VAT).">
-                                                                                <i className="fa-solid fa-scale-balanced me-1"></i> Phân bổ chênh lệch Bill
-                                                                            </div>
-                                                                            <div className="text-end fw-bold text-warning-emphasis" style={{ width: '90px', fontSize: '13px' }}>
-                                                                                {adjustment > 0 ? '+' : ''}{adjustment.toLocaleString()} đ
-                                                                            </div>
-                                                                        </div>
-                                                                    );
-                                                                }
-                                                                return null;
-                                                            })()}
                                                         </div>
                                                     )}
                                                 </div>
                                                 <div className="bg-light px-3 py-1 border-top d-flex justify-content-between align-items-center">
                                                     <small className="text-muted fw-medium" style={{ fontSize: '11px' }}>Trọng số: {u.percent}% / {u.items.length} món</small>
                                                     <Button variant="outline-danger" size="sm" className="px-2 py-0 text-decoration-none d-flex align-items-center fw-bold rounded" style={{ fontSize: '11px' }} onClick={() => handleDeleteUser(ui)}>
-                                                        <span className="me-1">✖</span> Xóa Hóa Đơn Này
+                                                        <span className="me-1">✖</span> Delete Hóa Đơn Này
                                                     </Button>
                                                 </div>
                                             </div>
@@ -667,14 +622,14 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
                             <div className="row">
                                 <div className="col-md-5 border-end">
                                     <Form.Group className="mb-4 text-center">
-                                        <Form.Label className="fw-bold fs-5">Chia đều cho bao nhiêu người?</Form.Label>
+                                        <Form.Label className="fw-bold fs-5">Chia VNDều cho bao nhiêu người?</Form.Label>
                                         <Form.Control type="number" min="2" max="20" size="lg" value={numPeople} onChange={handleNumPeopleChange} className="text-center fs-3 fw-bold text-primary mx-auto" style={{ width: '150px' }} />
                                     </Form.Group>
 
                                     <Table bordered hover className="text-center shadow-sm">
-                                        <thead className="table-primary">
+                                        <thead className="table-dark">
                                             <tr style={{ fontSize: '13px' }}>
-                                                <th>Tên Người Trả</th>
+                                                <th>Name Người Return</th>
                                                 <th>Số Tiền</th>
                                             </tr>
                                         </thead>
@@ -691,14 +646,14 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
                                                             }}
                                                         />
                                                     </td>
-                                                    <td className="text-danger fw-bold align-middle" style={{ fontSize: '16px' }}>{u.amount.toLocaleString()} đ</td>
+                                                    <td className="text-danger fw-bold align-middle" style={{ fontSize: '16px' }}>{u.amount.toLocaleString()} VND</td>
                                                 </tr>
                                             ))}
                                         </tbody>
                                     </Table>
                                     <div className="mt-3 p-3 bg-light rounded border border-dashed">
                                         <small className="text-muted d-block text-center fst-italic">
-                                            Hệ thống sẽ tự động chia đều số tiền còn lại sau khi trừ đi các món trả riêng.
+                                            System sẽ tự VNDộng chia VNDều số tiền còn lại sau khi trừ VNDi các món trả riêng.
                                         </small>
                                     </div>
                                 </div>
@@ -711,10 +666,10 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
                                         <Table size="sm" hover className="align-middle">
                                             <thead className="bg-light sticky-top">
                                                 <tr className="text-muted" style={{ fontSize: '12px' }}>
-                                                    <th>Tên món ăn</th>
+                                                    <th>Name món ăn</th>
                                                     <th className="text-end">Đơn giá</th>
                                                     <th className="text-center" style={{ width: '40px' }}>SL</th>
-                                                    <th className="text-end">Thành tiền</th>
+                                                    <th className="text-end">Amount</th>
                                                     <th className="text-center" style={{ width: '140px' }}>Người trả riêng</th>
                                                 </tr>
                                             </thead>
@@ -724,7 +679,7 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
                                                         <td style={{ fontSize: '13px' }} className="fw-medium">{it.product_name}</td>
                                                         <td className="text-end text-muted" style={{ fontSize: '12px' }}>{it.unit_price.toLocaleString()}</td>
                                                         <td className="text-center text-muted" style={{ fontSize: '12px' }}>{it.qty}</td>
-                                                        <td className="text-end fw-bold" style={{ fontSize: '13px' }}>{it.price.toLocaleString()} đ</td>
+                                                        <td className="text-end fw-bold" style={{ fontSize: '13px' }}>{it.price.toLocaleString()} VND</td>
                                                         <td className="text-center">
                                                             <Form.Select
                                                                 size="sm"
@@ -733,7 +688,7 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
                                                                 onChange={(e) => handleExclusiveItemChange(idx, parseInt(e.target.value))}
                                                                 className={exclusiveItems[idx] !== -1 ? 'border-primary text-primary' : ''}
                                                             >
-                                                                <option value="-1">Chia đều</option>
+                                                                <option value="-1">Chia VNDều</option>
                                                                 {users.map((u, ui) => (
                                                                     <option key={ui} value={ui}>{u.name}</option>
                                                                 ))}
@@ -750,15 +705,15 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
 
                         <Tab eventKey="percent" title="Định Mức Tùy Chỉnh (% / Số Tiền)" className="p-4 bg-white">
                             <Button variant="success" size="sm" onClick={handleAddUser} className="mb-3 shadow-sm d-flex align-items-center fw-bold">
-                                <span className="me-1">+</span> Thêm Người Trả
+                                <span className="me-1">+</span> Add Người Return
                             </Button>
                             <Table bordered hover className="align-middle shadow-sm text-center">
                                 <thead className="table-dark">
                                     <tr>
-                                        <th style={{ width: '35%' }}>Tên Khách Hàng (Click để sửa)</th>
+                                        <th style={{ width: '35%' }}>Name Guest Hàng (Click to sửa)</th>
                                         <th style={{ width: '20%' }}>Chiếm Tỷ Lệ (%)</th>
-                                        <th style={{ width: '35%' }}>Số Tiền Thực Tế (đ)</th>
-                                        <th style={{ width: '10%' }}>Hành động</th>
+                                        <th style={{ width: '35%' }}>Số Tiền Thực Tế (VND)</th>
+                                        <th style={{ width: '10%' }}>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -804,7 +759,7 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
                                             </td>
                                             <td>
                                                 <Button variant="outline-danger" size="sm" onClick={() => handleDeleteUser(i)}>
-                                                    Xóa
+                                                    Delete
                                                 </Button>
                                             </td>
                                         </tr>
@@ -812,7 +767,7 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
                                 </tbody>
                             </Table>
                             <div className="text-muted text-center mt-3 fst-italic">
-                                Lưu ý: Mọi thay đổi % sẽ tự nhảy số tiền ngay lập tức. Tổng số tiền phải đúng 100% Bill.
+                                Save ý: Mọi thay VNDổi % sẽ tự nhảy số tiền ngay lập tức. Total số tiền phải VNDúng 100% Bill.
                             </div>
                         </Tab>
                     </Tabs>
@@ -822,7 +777,7 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
                         <div className="d-flex justify-content-between align-items-end mb-1">
                             <div style={{ width: '60%' }}>
                                 <div className="d-flex justify-content-between mb-1">
-                                    <span className="fw-bold" style={{ fontSize: '13px' }}>Tiến độ phân bổ:</span>
+                                    <span className="fw-bold" style={{ fontSize: '13px' }}>Tiến VNDộ phân bổ:</span>
                                     <span className={`fw-bold ${isSumValid ? 'text-success' : 'text-danger'}`} style={{ fontSize: '13px' }}>{Math.min(progressVal, 100).toFixed(1)}%</span>
                                 </div>
                                 <ProgressBar variant={isSumValid ? "success" : "danger"} now={progressVal} style={{ height: '10px', borderRadius: '10px' }} />
@@ -851,25 +806,25 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
                     </div>
                 </Modal.Body>
                 <Modal.Footer className="bg-light py-2">
-                    <Button variant="secondary" size="md" className="px-4 fw-bold" onClick={onHide} disabled={isSubmitting}>Hủy Bỏ</Button>
+                    <Button variant="secondary" size="md" className="px-4 fw-bold" onClick={onHide} disabled={isSubmitting}>Cancel Bỏ</Button>
                     <Button variant={isSumValid ? "success" : "secondary"} size="md" className="px-5 fw-bold d-flex align-items-center" disabled={!isSumValid || isSubmitting} onClick={handleSplit}>
                         {isSubmitting ? <Spinner size="sm" className="me-2" /> : null}
-                        Xác nhận chia & Thanh toán
+                        Confirm chia & Payment
                     </Button>
                 </Modal.Footer>
             </Modal>
 
             <Modal show={shareItemModal.show} onHide={() => setShareItemModal({ show: false, itemIndex: null, selectedUsers: [] })}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Chia Sẻ Món</Modal.Title>
+                    <Modal.Title>Chia Sẻ Dish</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <div className="alert alert-info py-2" style={{ fontSize: '14px' }}>
-                        Chọn các khách hàng cùng dùng chung món <b>{shareItemModal.itemIndex !== null ? itemsState[shareItemModal.itemIndex].product_name : ''}</b>. Giá món sẽ được chia đều cho những người được chọn.
+                        Select các khách hàng cùng dùng chung món <b>{shareItemModal.itemIndex !== null ? itemsState[shareItemModal.itemIndex].product_name : ''}</b>. Price món sẽ VNDược chia VNDều cho những người VNDược chọn.
                     </div>
 
                     <Form.Group className="mb-3">
-                        <Form.Label className="fw-bold">Số lượng muốn chia:</Form.Label>
+                        <Form.Label className="fw-bold">Quantity muốn chia:</Form.Label>
                         <div className="d-flex align-items-center">
                             <Form.Control
                                 type="number"
@@ -886,7 +841,7 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
                         </div>
                     </Form.Group>
 
-                    <Form.Label className="fw-bold">Chọn khách hàng:</Form.Label>
+                    <Form.Label className="fw-bold">Select khách hàng:</Form.Label>
                     <Form.Group className="border rounded p-2 bg-light">
                         {users.map((u, idx) => (
                             <Form.Check
@@ -906,8 +861,8 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
                     </Form.Group>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShareItemModal({ show: false, itemIndex: null, selectedUsers: [], qty: 1 })}>Hủy</Button>
-                    <Button variant="primary" onClick={handleShareItemSubmit}>Xác nhận chia món</Button>
+                    <Button variant="secondary" onClick={() => setShareItemModal({ show: false, itemIndex: null, selectedUsers: [], qty: 1 })}>Cancel</Button>
+                    <Button variant="primary" onClick={handleShareItemSubmit}>Confirm chia món</Button>
                 </Modal.Footer>
             </Modal>
         </React.Fragment>

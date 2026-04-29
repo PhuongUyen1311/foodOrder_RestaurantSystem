@@ -27,7 +27,7 @@ function Cart({ accessToken }) {
 
     const handleNavigateCheckout = () => {
         if (selectedItems.length === 0) {
-            alert('Vui lòng chọn ít nhất 1 món để thanh toán!');
+            alert('Please select at least 1 item to checkout!');
             return;
         }
         const action = visibilityCart(!isCart);
@@ -37,7 +37,7 @@ function Cart({ accessToken }) {
 
     const handleGuestOrder = async () => {
         if (selectedItems.length === 0) {
-            alert('Vui lòng chọn ít nhất 1 món để đặt!');
+            alert('Please select at least 1 item to order!');
             return;
         }
 
@@ -54,25 +54,25 @@ function Cart({ accessToken }) {
                     const parsed = JSON.parse(guestSessionJSON);
                     guestName = parsed.username;
                     sessionId = parsed.sessionId;
-                    phone = parsed.code; // code chính là số điện thoại đã nhập
+                    phone = parsed.code; // code chính là số phone VNDã nhập
                 } catch (e) {}
             }
 
             const data = await fetchGuestOrder(itemsToOrder, tableNumber, 'table', 'cash', guestName, sessionId, phone);
 
             if (data) {
-                // Cập nhật local storage giỏ hàng sau khi order
+                // Update local storage giỏ hàng sau khi order
                 const remaingItems = cartItems.filter(item => !selectedItems.includes(item.id));
                 sessionStorage.setItem('guestCart', JSON.stringify(remaingItems));
 
-                // Nếu có đăng nhập, ta cũng nên clear backend cart (giả sử có API hoặc ghi chú)
+                // Nếu có VNDăng nhập, ta cũng nên clear backend cart (giả sử có API hoặc ghi chú)
                 if (accessToken) {
                     // Cố gắng gửi qty=0 hoặc tương tự nếu API hỗ trợ, 
-                    // hoặc đơn giản là để backend xử lý khi chuyển sang order.
-                    // Ở đây ta tập trung vào UI guest-first
+                    // hoặc order giản là to backend xử lý khi chuyển sang order.
+                    // Ở VNDây ta tập trung vào UI guest-first
                 }
 
-                // Cập nhật redux store
+                // Update redux store
                 dispatch(setCartItems(remaingItems));
                 dispatch(setCartStore({
                     id: accessToken ? cart.id : 'guest',
@@ -82,11 +82,11 @@ function Cart({ accessToken }) {
 
                 setSelectedItems([]);
                 dispatch(setDisplayToast(true));
-                alert('Đặt món thành công! Vui lòng đợi nhân viên phục vụ.');
+                alert('Order placed successfully! Please wait for our staff.');
             }
         } catch (error) {
             console.error(error);
-            alert('Có lỗi xảy ra khi đặt món.');
+            alert('An error occurred while ordering.');
         }
     };
 
@@ -107,7 +107,7 @@ function Cart({ accessToken }) {
         } else if (orderSource === 'table') {
             const guestItems = JSON.parse(sessionStorage.getItem('guestCart')) || [];
             dispatch(setCartItems(guestItems));
-            // Tạo giỏ hàng giả cho khách vãng lai
+            // Tạo giỏ hàng giả cho khách walk-in
             dispatch(setCartStore({
                 id: 'guest',
                 total_item: guestItems.reduce((sum, i) => sum + i.qty, 0),
@@ -147,7 +147,7 @@ function Cart({ accessToken }) {
                 {cartItems?.length > 0 && cart ? (
                     <>
                         <div className="cart-title">
-                            <h3>Giỏ hàng</h3>
+                            <h3>Shopping Cart</h3>
                         </div>
                         <div className="cart-main">
                             <TableProduct
@@ -159,32 +159,32 @@ function Cart({ accessToken }) {
 
                         <div className='cart-footer'>
                             <div className='cart-payment'>
-                                <span>Tổng cộng</span>
+                                <span>Total</span>
                                 <span>
                                     {selectedTotalPrice.toLocaleString('vi', { style: 'currency', currency: 'VND' })}
                                 </span>
                             </div>
 
                             {orderSource === 'table' && isOrderingPage ? (
-                                <div className='guest-order-actions'>
+                                <>
                                     <button
                                         onClick={handleGuestOrder}
                                         className={`cart-payment-btn ${selectedItems.length === 0 ? 'disabled' : ''}`}
                                         disabled={selectedItems.length === 0}
                                     >
-                                        Đặt món
+                                        Order Now
                                     </button>
-                                </div>
+                                </>
                             ) : (
                                 <button onClick={() => handleNavigateCheckout()} className={`cart-payment-btn ${selectedItems.length === 0 ? 'disabled' : ''}`} disabled={selectedItems.length === 0}>
-                                    Thanh toán
+                                    Checkout
                                 </button>
                             )}
                         </div>
                     </>
                 )
                     :
-                    <h4 className='cart-no-item'>Giỏ hàng trống</h4>
+                    <h4 className='cart-no-item'>Your cart is empty</h4>
                 }
 
             </div>

@@ -1,528 +1,530 @@
-[{
-  "_id": {
-    "$oid": "675300000000000000000001"
+[
+  {
+    "_id": {
+      "$oid": "675300000000000000000001"
+    },
+    "name": "Chicken Breast",
+    "unit": "gram",
+    "note": "Phi lê không da",
+    "qty": 9040,
+    "is_active": true,
+    "updatedAt": {
+      "$date": "2026-03-31T08:26:13.789Z"
+    }
   },
-  "name": "Ức gà",
-  "unit": "gram",
-  "note": "Phi lê không da",
-  "qty": 9040,
-  "is_active": true,
-  "updatedAt": {
-    "$date": "2026-03-31T08:26:13.789Z"
+  {
+    "_id": {
+      "$oid": "675300000000000000000002"
+    },
+    "name": "Lettuce",
+    "unit": "gram",
+    "note": "Rau nền salad",
+    "qty": 3000,
+    "is_active": true,
+    "updatedAt": {
+      "$date": "2026-03-31T08:26:13.793Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000003"
+    },
+    "name": "Sesame Dressing",
+    "unit": "ml",
+    "note": "",
+    "qty": 9970,
+    "is_active": true,
+    "updatedAt": {
+      "$date": "2026-03-24T11:32:53.597Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000004"
+    },
+    "name": "Tuna",
+    "unit": "gram",
+    "note": "Ngâm dầu",
+    "qty": 9500,
+    "is_active": true,
+    "updatedAt": {
+      "$date": "2026-03-31T07:21:43.114Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000005"
+    },
+    "name": "Olive Oil",
+    "unit": "ml",
+    "note": "Extra virgin",
+    "qty": 9900,
+    "is_active": true,
+    "updatedAt": {
+      "$date": "2026-03-31T07:21:43.117Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000006"
+    },
+    "name": "Shrimp",
+    "unit": "gram",
+    "note": "Tôm luộc bóc vỏ",
+    "qty": 8650,
+    "is_active": true,
+    "updatedAt": {
+      "$date": "2026-03-31T08:26:13.791Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000007"
+    },
+    "name": "Egg",
+    "unit": "gram",
+    "note": "Trứng luộc",
+    "qty": 8910,
+    "is_active": true,
+    "updatedAt": {
+      "$date": "2026-03-31T08:26:13.792Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000008"
+    },
+    "name": "Quinoa",
+    "unit": "gram",
+    "note": "Đã nấu chín",
+    "qty": 9800,
+    "is_active": true,
+    "updatedAt": {
+      "$date": "2026-03-31T07:21:43.120Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000009"
+    },
+    "name": "Boiled Vegetables",
+    "unit": "gram",
+    "note": "Cà rốt, bông cải",
+    "qty": 9760,
+    "is_active": true,
+    "updatedAt": {
+      "$date": "2026-03-31T07:21:43.122Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000010"
+    },
+    "name": "Avocado",
+    "unit": "gram",
+    "note": "Bơ chín",
+    "qty": 9920,
+    "is_active": true,
+    "updatedAt": {
+      "$date": "2026-03-25T09:14:34.300Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000011"
+    },
+    "name": "Salmon",
+    "unit": "gram",
+    "note": "Phi lê tươi",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000012"
+    },
+    "name": "Basa Fish",
+    "unit": "gram",
+    "note": "Phi lê",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000013"
+    },
+    "name": "Soft Tofu",
+    "unit": "gram",
+    "note": "",
+    "qty": 9800,
+    "is_active": true,
+    "updatedAt": {
+      "$date": "2026-03-31T08:06:16.843Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000014"
+    },
+    "name": "Mushroom",
+    "unit": "gram",
+    "note": "Nấm đông cô / nấm kim châm",
+    "qty": 9930,
+    "is_active": true,
+    "updatedAt": {
+      "$date": "2026-03-31T08:06:16.844Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000015"
+    },
+    "name": "Ginger",
+    "unit": "gram",
+    "note": "Thái sợi",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000016"
+    },
+    "name": "Lime",
+    "unit": "ml",
+    "note": "Nước cốt chanh",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000017"
+    },
+    "name": "Mixed Vegetables",
+    "unit": "gram",
+    "note": "Cà rốt, bắp, đậu Hà Lan",
+    "qty": 9820,
+    "is_active": true,
+    "updatedAt": {
+      "$date": "2026-03-31T08:04:54.704Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000018"
+    },
+    "name": "Brown Rice",
+    "unit": "gram",
+    "note": "Đã nấu chín",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000019"
+    },
+    "name": "Sweet Potato",
+    "unit": "gram",
+    "note": "Khoai lang mật",
+    "qty": 9750,
+    "is_active": true,
+    "updatedAt": {
+      "$date": "2026-03-25T09:16:48.905Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000020"
+    },
+    "name": "Oats",
+    "unit": "gram",
+    "note": "Yến mạch cán",
+    "qty": 9920,
+    "is_active": true,
+    "updatedAt": {
+      "$date": "2026-03-31T08:06:16.847Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000021"
+    },
+    "name": "Nut Milk",
+    "unit": "ml",
+    "note": "Sữa hạnh nhân / óc chó",
+    "qty": 9800,
+    "is_active": true,
+    "updatedAt": {
+      "$date": "2026-03-31T08:06:16.848Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000022"
+    },
+    "name": "Brown Rice Vermicelli",
+    "unit": "gram",
+    "note": "",
+    "qty": 9820,
+    "is_active": true,
+    "updatedAt": {
+      "$date": "2026-03-25T09:16:48.907Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000023"
+    },
+    "name": "Brown Rice Noodles",
+    "unit": "gram",
+    "note": "",
+    "qty": 9820,
+    "is_active": true,
+    "updatedAt": {
+      "$date": "2026-03-31T08:26:13.788Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000024"
+    },
+    "name": "Seaweed",
+    "unit": "gram",
+    "qty": 10000,
+    "note": "Rong biển khô",
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000025"
+    },
+    "name": "Pumpkin",
+    "unit": "gram",
+    "note": "",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000026"
+    },
+    "name": "Pork Bones",
+    "unit": "gram",
+    "note": "Hầm lấy nước dùng",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000027"
+    },
+    "name": "Broccoli",
+    "unit": "gram",
+    "note": "",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000028"
+    },
+    "name": "Tomato",
+    "unit": "gram",
+    "note": "",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000029"
+    },
+    "name": "Egg",
+    "unit": "gram",
+    "note": "",
+    "qty": 9820,
+    "is_active": true,
+    "updatedAt": {
+      "$date": "2026-03-25T09:16:48.904Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000030"
+    },
+    "name": "Lotus Seed",
+    "unit": "gram",
+    "note": "",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000031"
+    },
+    "name": "Longan",
+    "unit": "gram",
+    "note": "",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000032"
+    },
+    "name": "Rock Sugar",
+    "unit": "gram",
+    "note": "",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000033"
+    },
+    "name": "Greek Yogurt",
+    "unit": "gram",
+    "qty": 10000,
+    "note": "",
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000034"
+    },
+    "qty": 9640,
+    "name": "Apple",
+    "unit": "gram",
+    "note": "",
+    "is_active": true,
+    "updatedAt": {
+      "$date": "2026-03-25T09:16:48.901Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000035"
+    },
+    "qty": 9760,
+    "name": "Flour",
+    "unit": "gram",
+    "note": "",
+    "is_active": true,
+    "updatedAt": {
+      "$date": "2026-03-25T09:16:48.900Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000036"
+    },
+    "name": "Cinnamon Powder",
+    "qty": 9985,
+    "unit": "gram",
+    "note": "",
+    "is_active": true,
+    "updatedAt": {
+      "$date": "2026-03-25T09:16:48.903Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000037"
+    },
+    "name": "Chia Seeds",
+    "qty": 10000,
+    "unit": "gram",
+    "note": "",
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000038"
+    },
+    "qty": 10000,
+    "name": "Almond Milk",
+    "unit": "ml",
+    "note": "",
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000039"
+    },
+    "name": "Orange",
+    "unit": "gram",
+    "note": "",
+    "qty": 9000,
+    "is_active": true,
+    "updatedAt": {
+      "$date": "2026-03-24T11:21:52.665Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000040"
+    },
+    "name": "Carrot",
+    "unit": "gram",
+    "note": "",
+    "qty": 9500,
+    "is_active": true,
+    "updatedAt": {
+      "$date": "2026-03-24T11:21:52.667Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000041"
+    },
+    "qty": 10000,
+    "name": "Kiwi",
+    "unit": "gram",
+    "note": "",
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000042"
+    },
+    "name": "Strawberry",
+    "qty": 10000,
+    "unit": "gram",
+    "note": "",
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000043"
+    },
+    "name": "Mango",
+    "unit": "gram",
+    "qty": 10000,
+    "note": "",
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000044"
+    },
+    "name": "Pennywort",
+    "unit": "gram",
+    "qty": 9880,
+    "note": "",
+    "is_active": true,
+    "updatedAt": {
+      "$date": "2026-03-31T08:04:54.713Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000045"
+    },
+    "name": "Mung Bean",
+    "unit": "gram",
+    "note": "",
+    "qty": 9920,
+    "is_active": true,
+    "updatedAt": {
+      "$date": "2026-03-31T08:04:54.715Z"
+    }
   }
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000002"
-  },
-  "name": "Xà lách",
-  "unit": "gram",
-  "note": "Rau nền salad",
-  "qty": 3000,
-  "is_active": true,
-  "updatedAt": {
-    "$date": "2026-03-31T08:26:13.793Z"
-  }
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000003"
-  },
-  "name": "Sốt mè rang",
-  "unit": "ml",
-  "note": "",
-  "qty": 9970,
-  "is_active": true,
-  "updatedAt": {
-    "$date": "2026-03-24T11:32:53.597Z"
-  }
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000004"
-  },
-  "name": "Cá ngừ",
-  "unit": "gram",
-  "note": "Ngâm dầu",
-  "qty": 9500,
-  "is_active": true,
-  "updatedAt": {
-    "$date": "2026-03-31T07:21:43.114Z"
-  }
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000005"
-  },
-  "name": "Dầu oliu",
-  "unit": "ml",
-  "note": "Extra virgin",
-  "qty": 9900,
-  "is_active": true,
-  "updatedAt": {
-    "$date": "2026-03-31T07:21:43.117Z"
-  }
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000006"
-  },
-  "name": "Tôm",
-  "unit": "gram",
-  "note": "Tôm luộc bóc vỏ",
-  "qty": 8650,
-  "is_active": true,
-  "updatedAt": {
-    "$date": "2026-03-31T08:26:13.791Z"
-  }
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000007"
-  },
-  "name": "Trứng gà",
-  "unit": "gram",
-  "note": "Trứng luộc",
-  "qty": 8910,
-  "is_active": true,
-  "updatedAt": {
-    "$date": "2026-03-31T08:26:13.792Z"
-  }
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000008"
-  },
-  "name": "Quinoa",
-  "unit": "gram",
-  "note": "Đã nấu chín",
-  "qty": 9800,
-  "is_active": true,
-  "updatedAt": {
-    "$date": "2026-03-31T07:21:43.120Z"
-  }
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000009"
-  },
-  "name": "Rau củ luộc",
-  "unit": "gram",
-  "note": "Cà rốt, bông cải",
-  "qty": 9760,
-  "is_active": true,
-  "updatedAt": {
-    "$date": "2026-03-31T07:21:43.122Z"
-  }
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000010"
-  },
-  "name": "Bơ",
-  "unit": "gram",
-  "note": "Bơ chín",
-  "qty": 9920,
-  "is_active": true,
-  "updatedAt": {
-    "$date": "2026-03-25T09:14:34.300Z"
-  }
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000011"
-  },
-  "name": "Cá hồi",
-  "unit": "gram",
-  "note": "Phi lê tươi",
-  "qty": 10000,
-  "is_active": true
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000012"
-  },
-  "name": "Cá basa",
-  "unit": "gram",
-  "note": "Phi lê",
-  "qty": 10000,
-  "is_active": true
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000013"
-  },
-  "name": "Đậu hũ non",
-  "unit": "gram",
-  "note": "",
-  "qty": 9800,
-  "is_active": true,
-  "updatedAt": {
-    "$date": "2026-03-31T08:06:16.843Z"
-  }
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000014"
-  },
-  "name": "Nấm",
-  "unit": "gram",
-  "note": "Nấm đông cô / nấm kim châm",
-  "qty": 9930,
-  "is_active": true,
-  "updatedAt": {
-    "$date": "2026-03-31T08:06:16.844Z"
-  }
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000015"
-  },
-  "name": "Gừng",
-  "unit": "gram",
-  "note": "Thái sợi",
-  "qty": 10000,
-  "is_active": true
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000016"
-  },
-  "name": "Chanh",
-  "unit": "ml",
-  "note": "Nước cốt chanh",
-  "qty": 10000,
-  "is_active": true
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000017"
-  },
-  "name": "Rau củ hỗn hợp",
-  "unit": "gram",
-  "note": "Cà rốt, bắp, đậu Hà Lan",
-  "qty": 9820,
-  "is_active": true,
-  "updatedAt": {
-    "$date": "2026-03-31T08:04:54.704Z"
-  }
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000018"
-  },
-  "name": "Gạo lứt",
-  "unit": "gram",
-  "note": "Đã nấu chín",
-  "qty": 10000,
-  "is_active": true
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000019"
-  },
-  "name": "Khoai lang",
-  "unit": "gram",
-  "note": "Khoai lang mật",
-  "qty": 9750,
-  "is_active": true,
-  "updatedAt": {
-    "$date": "2026-03-25T09:16:48.905Z"
-  }
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000020"
-  },
-  "name": "Yến mạch",
-  "unit": "gram",
-  "note": "Yến mạch cán",
-  "qty": 9920,
-  "is_active": true,
-  "updatedAt": {
-    "$date": "2026-03-31T08:06:16.847Z"
-  }
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000021"
-  },
-  "name": "Sữa hạt",
-  "unit": "ml",
-  "note": "Sữa hạnh nhân / óc chó",
-  "qty": 9800,
-  "is_active": true,
-  "updatedAt": {
-    "$date": "2026-03-31T08:06:16.848Z"
-  }
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000022"
-  },
-  "name": "Bún gạo lứt",
-  "unit": "gram",
-  "note": "",
-  "qty": 9820,
-  "is_active": true,
-  "updatedAt": {
-    "$date": "2026-03-25T09:16:48.907Z"
-  }
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000023"
-  },
-  "name": "Mì gạo lứt",
-  "unit": "gram",
-  "note": "",
-  "qty": 9820,
-  "is_active": true,
-  "updatedAt": {
-    "$date": "2026-03-31T08:26:13.788Z"
-  }
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000024"
-  },
-  "name": "Rong biển",
-  "unit": "gram",
-  "qty": 10000,
-  "note": "Rong biển khô",
-  "is_active": true
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000025"
-  },
-  "name": "Bí đỏ",
-  "unit": "gram",
-  "note": "",
-  "qty": 10000,
-  "is_active": true
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000026"
-  },
-  "name": "Xương heo",
-  "unit": "gram",
-  "note": "Hầm lấy nước dùng",
-  "qty": 10000,
-  "is_active": true
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000027"
-  },
-  "name": "Súp lơ xanh",
-  "unit": "gram",
-  "note": "",
-  "qty": 10000,
-  "is_active": true
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000028"
-  },
-  "name": "Cà chua",
-  "unit": "gram",
-  "note": "",
-  "qty": 10000,
-  "is_active": true
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000029"
-  },
-  "name": "Trứng gà",
-  "unit": "gram",
-  "note": "",
-  "qty": 9820,
-  "is_active": true,
-  "updatedAt": {
-    "$date": "2026-03-25T09:16:48.904Z"
-  }
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000030"
-  },
-  "name": "Hạt sen",
-  "unit": "gram",
-  "note": "",
-  "qty": 10000,
-  "is_active": true
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000031"
-  },
-  "name": "Long nhãn",
-  "unit": "gram",
-  "note": "",
-  "qty": 10000,
-  "is_active": true
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000032"
-  },
-  "name": "Đường phèn",
-  "unit": "gram",
-  "note": "",
-  "qty": 10000,
-  "is_active": true
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000033"
-  },
-  "name": "Sữa chua Hy Lạp",
-  "unit": "gram",
-  "qty": 10000,
-  "note": "",
-  "is_active": true
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000034"
-  },
-  "qty": 9640,
-  "name": "Táo",
-  "unit": "gram",
-  "note": "",
-  "is_active": true,
-  "updatedAt": {
-    "$date": "2026-03-25T09:16:48.901Z"
-  }
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000035"
-  },
-  "qty": 9760,
-  "name": "Bột mì",
-  "unit": "gram",
-  "note": "",
-  "is_active": true,
-  "updatedAt": {
-    "$date": "2026-03-25T09:16:48.900Z"
-  }
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000036"
-  },
-  "name": "Bột quế",
-  "qty": 9985,
-  "unit": "gram",
-  "note": "",
-  "is_active": true,
-  "updatedAt": {
-    "$date": "2026-03-25T09:16:48.903Z"
-  }
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000037"
-  },
-  "name": "Hạt chia",
-  "qty": 10000,
-  "unit": "gram",
-  "note": "",
-  "is_active": true
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000038"
-  },
-  "qty": 10000,
-  "name": "Sữa hạnh nhân",
-  "unit": "ml",
-  "note": "",
-  "is_active": true
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000039"
-  },
-  "name": "Cam",
-  "unit": "gram",
-  "note": "",
-  "qty": 9000,
-  "is_active": true,
-  "updatedAt": {
-    "$date": "2026-03-24T11:21:52.665Z"
-  }
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000040"
-  },
-  "name": "Cà rốt",
-  "unit": "gram",
-  "note": "",
-  "qty": 9500,
-  "is_active": true,
-  "updatedAt": {
-    "$date": "2026-03-24T11:21:52.667Z"
-  }
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000041"
-  },
-  "qty": 10000,
-  "name": "Kiwi",
-  "unit": "gram",
-  "note": "",
-  "is_active": true
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000042"
-  },
-  "name": "Dâu tây",
-  "qty": 10000,
-  "unit": "gram",
-  "note": "",
-  "is_active": true
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000043"
-  },
-  "name": "Xoài",
-  "unit": "gram",
-  "qty": 10000,
-  "note": "",
-  "is_active": true
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000044"
-  },
-  "name": "Rau má",
-  "unit": "gram",
-  "qty": 9880,
-  "note": "",
-  "is_active": true,
-  "updatedAt": {
-    "$date": "2026-03-31T08:04:54.713Z"
-  }
-},
-{
-  "_id": {
-    "$oid": "675300000000000000000045"
-  },
-  "name": "Đậu xanh",
-  "unit": "gram",
-  "note": "",
-  "qty": 9920,
-  "is_active": true,
-  "updatedAt": {
-    "$date": "2026-03-31T08:04:54.715Z"
-  }
-}]
+]

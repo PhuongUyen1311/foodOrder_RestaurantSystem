@@ -36,8 +36,8 @@ function Search(props) {
         <div className='block__search container'>
             <div className="search__form">
                 <form method='get' onSubmit={(event)=>handleSubmit(event)}>
-                    <input type="text" value={keyWords} onChange={(event)=>setKeyWords(event.target.value)} placeholder='Tìm kiếm món ăn yêu thích'/>
-                    <button>Tìm kiếm</button>
+                    <input type="text" value={keyWords} onChange={(event)=>setKeyWords(event.target.value)} placeholder='Search for favorite dishes'/>
+                    <button>Search</button>
                 </form>
             </div>
             {

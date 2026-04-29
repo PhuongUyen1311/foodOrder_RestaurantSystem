@@ -62,7 +62,7 @@ function Customer() {
         fetchCustomers();
     }, []);
 
-    // 🔹 Khóa/Mở khóa tài khoản
+    // 🔹 Locked/Mở khóa tài khoản
     const handleToggleLock = async (id, currentStatus) => {
         const action = currentStatus === false ? 'mở khóa' : 'khóa';
 
@@ -91,7 +91,7 @@ function Customer() {
                         });
                     });
                 } else {
-                    toast.error(`Lỗi: ${data.message || 'Không thể thay đổi trạng thái'}`);
+                    toast.error(`Error: ${data.message || 'Không thể thay VNDổi trạng thái'}`);
                 }
             } catch (error) {
                 console.error('Error toggling lock:', error);
@@ -141,21 +141,21 @@ function Customer() {
         setShowModal(false);
     };
 
-    // 🔹 Xử lý Submit (Thêm/Sửa)
+    // 🔹 Xử lý Submit (Add/Edit)
     const handleSubmit = async (event) => {
         event.preventDefault();
 
         // Validation front-end
         if (!formData.first_name.trim() || !formData.last_name.trim()) {
-            return toast.error('Vui lòng nhập họ và tên');
+            return toast.error('Please enter họ và tên');
         }
         
         if (!isEditMode) {
             if (!formData.password || formData.password.length < 6) {
-                return toast.error('Mật khẩu phải ít nhất 6 ký tự');
+                return toast.error('Password phải ít nhất 6 ký tự');
             }
             if (formData.password !== formData.confirm_password) {
-                return toast.error('Xác nhận mật khẩu không khớp');
+                return toast.error('Confirm Password không khớp');
             }
         }
 
@@ -182,7 +182,7 @@ function Customer() {
                 throw new Error(result.message || 'Thao tác thất bại');
             }
 
-            toast.success(result.message || (isEditMode ? 'Cập nhật thành công!' : 'Thêm mới thành công!'));
+            toast.success(result.message || (isEditMode ? 'Update thành công!' : 'Add mới thành công!'));
             handleCloseModal();
             fetchCustomers(); // Re-fetch
         } catch (error) {
@@ -212,20 +212,20 @@ function Customer() {
             <div className="customer-container background-radius">
                 <div className="product-add mt-3 mb-3 d-flex justify-content-end">
                     <Button variant="success" onClick={handleShowAddModal}>
-                        + Thêm mới
+                        + Add mới
                     </Button>
                 </div>
 
                 <Table striped bordered hover className="customer-table text-center align-middle" responsive>
-                    <thead className="table-success">
+                    <thead className="table-dark">
                         <tr>
                             <th>STT</th>
-                            <th>Họ tên</th>
+                            <th>Surname tên</th>
                             <th>Email</th>
                             <th>SĐT</th>
                             <th>Giới tính</th>
-                            <th>Trạng thái</th>
-                            <th>Hành động</th>
+                            <th>Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
 
@@ -259,7 +259,7 @@ function Customer() {
                                         </td>
                                         <td>
                                             <span className={`badge ${isActive ? 'bg-success' : 'bg-danger'}`}>
-                                                {isActive ? 'Hoạt động' : 'Đã khóa'}
+                                                {isActive ? 'Active' : 'Đã khóa'}
                                             </span>
                                         </td>
                                         <td>
@@ -269,7 +269,7 @@ function Customer() {
                                                 className="me-2"
                                                 onClick={() => handleShowEditModal(cus)}
                                             >
-                                                Sửa
+                                                Edit
                                             </Button>
 
                                             {isUpdating ? (
@@ -281,7 +281,7 @@ function Customer() {
                                                     onClick={() => handleToggleLock(customerId, isActive)}
                                                 >
                                                     {isLocked ? <MdLockOpen /> : <MdLock />}
-                                                    {isLocked ? ' Mở khóa' : ' Khóa'}
+                                                    {isLocked ? ' Mở khóa' : ' Locked'}
                                                 </Button>
                                             )}
                                         </td>
@@ -324,17 +324,17 @@ function Customer() {
                 )}
             </div>
 
-            {/* Modal Form Thêm/Sửa */}
+            {/* Modal Form Add/Edit */}
             <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>
                 <Modal.Header closeButton>
-                    <Modal.Title>{isEditMode ? 'Cập nhật khách hàng' : 'Thêm khách hàng mới'}</Modal.Title>
+                    <Modal.Title>{isEditMode ? 'Update khách hàng' : 'Add khách hàng mới'}</Modal.Title>
                 </Modal.Header>
                 
                 <Modal.Body>
                     <Form onSubmit={handleSubmit}>
                         <div className="row">
                             <Form.Group className="col-md-6 mb-3">
-                                <Form.Label>Họ <span className="text-danger">*</span></Form.Label>
+                                <Form.Label>Surname <span className="text-danger">*</span></Form.Label>
                                 <Form.Control
                                     type="text"
                                     value={formData.first_name}
@@ -343,7 +343,7 @@ function Customer() {
                             </Form.Group>
 
                             <Form.Group className="col-md-6 mb-3">
-                                <Form.Label>Tên <span className="text-danger">*</span></Form.Label>
+                                <Form.Label>Name <span className="text-danger">*</span></Form.Label>
                                 <Form.Control
                                     type="text"
                                     value={formData.last_name}
@@ -358,14 +358,14 @@ function Customer() {
                                 type="email"
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                disabled={isEditMode} // Không cho đổi email khi edit
+                                disabled={isEditMode} // Không cho VNDổi email khi edit
                             />
-                            {isEditMode && <Form.Text className="text-muted">Email không thể thay đổi</Form.Text>}
+                            {isEditMode && <Form.Text className="text-muted">Email không thể thay VNDổi</Form.Text>}
                         </Form.Group>
 
                         <div className="row">
                             <Form.Group className="col-md-6 mb-3">
-                                <Form.Label>Số điện thoại <span className="text-danger">*</span></Form.Label>
+                                <Form.Label>Phone Number <span className="text-danger">*</span></Form.Label>
                                 <Form.Control
                                     type="tel"
                                     value={formData.phone}
@@ -389,7 +389,7 @@ function Customer() {
                         {!isEditMode && (
                             <div className="row">
                                 <Form.Group className="col-md-6 mb-3">
-                                    <Form.Label>Mật khẩu <span className="text-danger">*</span></Form.Label>
+                                    <Form.Label>Password <span className="text-danger">*</span></Form.Label>
                                     <Form.Control
                                         type="password"
                                         value={formData.password}
@@ -398,7 +398,7 @@ function Customer() {
                                 </Form.Group>
 
                                 <Form.Group className="col-md-6 mb-3">
-                                    <Form.Label>Xác nhận mật khẩu <span className="text-danger">*</span></Form.Label>
+                                    <Form.Label>Confirm Password <span className="text-danger">*</span></Form.Label>
                                     <Form.Control
                                         type="password"
                                         value={formData.confirm_password}
@@ -410,10 +410,10 @@ function Customer() {
 
                         <div className="d-flex justify-content-end gap-2 mt-4">
                             <Button variant="secondary" onClick={handleCloseModal}>
-                                Hủy bỏ
+                                Cancel bỏ
                             </Button>
                             <Button variant="success" type="submit">
-                                {isEditMode ? 'Lưu cập nhật' : 'Thêm khách hàng'}
+                                {isEditMode ? 'Save cập nhật' : 'Add khách hàng'}
                             </Button>
                         </div>
                     </Form>

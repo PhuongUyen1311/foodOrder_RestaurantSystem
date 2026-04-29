@@ -42,7 +42,7 @@ function GuestJoin({ show, tableNumber, onJoined }) {
 
     const handleNextStep = async () => {
         if (!pin || pin.length < 4) {
-            alert('Vui lòng nhập đủ 4 số PIN');
+            alert('Please enter VNDủ 4 số PIN');
             return;
         }
 
@@ -57,10 +57,10 @@ function GuestJoin({ show, tableNumber, onJoined }) {
             if (data.success) {
                 setStep(2);
             } else {
-                alert(data.message || 'Mã PIN không chính xác');
+                alert(data.message || 'PIN Code không chính xác');
             }
         } catch (error) {
-            alert('Lỗi kết nối xác thực PIN');
+            alert('Error kết nối xác thực PIN');
         } finally {
             setLoading(false);
         }
@@ -70,7 +70,7 @@ function GuestJoin({ show, tableNumber, onJoined }) {
         // Validate phone number (Vietnamese format: 10 digits starting with 0)
         const phoneRegex = /^(0[3|5|7|8|9])[0-9]{8}$/;
         if (!phoneCode || !phoneRegex.test(phoneCode)) {
-            alert('Vui lòng nhập số điện thoại hợp lệ (10 chữ số, ví dụ: 0912345678)');
+            alert('Please enter số phone hợp lệ (10 chữ số, ví dụ: 0912345678)');
             return;
         }
 
@@ -94,7 +94,7 @@ function GuestJoin({ show, tableNumber, onJoined }) {
 
             if (data.success) {
                 if (data.needName) {
-                    // Cần nhập tên vì số điện thoại này mới toanh
+                    // Cần nhập tên vì số phone này mới toanh
                     setStep(2);
                     setLoading(false);
                     return;
@@ -104,7 +104,7 @@ function GuestJoin({ show, tableNumber, onJoined }) {
                     // Tìm thấy tên cũ, hỏi khách có muốn dùng không
                     if (window.confirm(`Chào mừng bạn quay lại! Bạn có phải là ${data.suggestedName} không?`)) {
                         setNewUsername(data.suggestedName);
-                        // Gọi lại handleJoin với tên đã chọn
+                        // Gọi lại handleJoin với tên VNDã chọn
                         setLoading(false);
                         // Trigger join lại với tên vừa confirm
                         const retryPayload = { ...payload, username: data.suggestedName };
@@ -119,7 +119,7 @@ function GuestJoin({ show, tableNumber, onJoined }) {
                         }
                         return;
                     } else {
-                        // Khách muốn dùng tên khác
+                        // Guest muốn dùng tên khác
                         setStep(2);
                         setLoading(false);
                         return;
@@ -128,11 +128,11 @@ function GuestJoin({ show, tableNumber, onJoined }) {
 
                 finalizeJoin(data);
             } else {
-                alert(data.message || 'Lỗi xác thực');
+                alert(data.message || 'Error xác thực');
             }
         } catch (error) {
             console.error(error);
-            alert('Lỗi kết nối !');
+            alert('Error kết nối !');
         } finally {
             setLoading(false);
         }
@@ -146,10 +146,10 @@ function GuestJoin({ show, tableNumber, onJoined }) {
             sessionId: data.sessionId 
         };
         
-        // Nếu backend trả về tên khác với tên khách vừa nhập (do trùng số điện thoại)
+        // Nếu backend trả về tên khác với tên khách vừa nhập (do trùng số phone)
         let nameToUse = selectedGuest || newUsername;
         if (nameToUse && data.username !== nameToUse) {
-            alert(`Số điện thoại này đã được đăng ký với tên "${data.username}". Hệ thống sẽ tiếp tục dùng tên này.`);
+            alert(`Phone Number này has been VNDăng ký với tên "${data.username}". System sẽ tiếp tục dùng tên này.`);
         }
 
         sessionStorage.setItem('guest_session', JSON.stringify(sessionObj));
@@ -248,13 +248,13 @@ function GuestJoin({ show, tableNumber, onJoined }) {
             <Modal.Body>
                 <div className="brand-header">
                     <h4>Healthy Food</h4>
-                    <span className="table-badge">Bàn số {tableNumber}</span>
+                    <span className="table-badge">Table số {tableNumber}</span>
                 </div>
 
                 {step === 1 ? (
                     <div className="step-container animate-fade">
                         <Form.Group className="mb-4 text-center">
-                            <Form.Label className="d-block mb-3" style={{ fontSize: '1.1rem' }}>Nhập Mã PIN của bàn</Form.Label>
+                            <Form.Label className="d-block mb-3" style={{ fontSize: '1.1rem' }}>Enter PIN Code của bàn</Form.Label>
                             <Form.Control
                                 type="text"
                                 maxLength={4}
@@ -265,7 +265,7 @@ function GuestJoin({ show, tableNumber, onJoined }) {
                                 autoFocus
                             />
                             <div className="mt-3">
-                                <small className="text-muted">Nhân viên sẽ cung cấp mã PIN khi bạn vào bàn.</small>
+                                <small className="text-muted">Staff sẽ cung cấp mã PIN khi bạn vào bàn.</small>
                             </div>
                         </Form.Group>
 
@@ -275,7 +275,7 @@ function GuestJoin({ show, tableNumber, onJoined }) {
                             disabled={pin.length < 4 || loading}
                             className="w-100 fw-bold btn-join shadow"
                         >
-                            {loading ? 'Đang xác thực...' : 'Tiếp tục'}
+                            {loading ? 'Đang xác thực...' : 'Continue'}
                         </Button>
                     </div>
                 ) : (
@@ -294,22 +294,22 @@ function GuestJoin({ show, tableNumber, onJoined }) {
 
                         {!selectedGuest && (
                             <Form.Group className="mb-3 animate__animated animate__fadeInDown">
-                                <Form.Label>Tên của bạn là gì?</Form.Label>
-                                <Form.Control type="text" value={newUsername} onChange={(e) => setNewUsername(e.target.value)} placeholder="Nhập tên của bạn..." />
+                                <Form.Label>Name của bạn là gì?</Form.Label>
+                                <Form.Control type="text" value={newUsername} onChange={(e) => setNewUsername(e.target.value)} placeholder="Enter tên của bạn..." />
                             </Form.Group>
                         )}
 
                         <Form.Group className="mb-4">
-                            <Form.Label>{selectedGuest ? 'Số điện thoại của bạn (để xác thực):' : 'Số điện thoại'}</Form.Label>
+                            <Form.Label>{selectedGuest ? 'Phone Number của bạn (to xác thực):' : 'Phone Number'}</Form.Label>
                             <Form.Control type="text" value={phoneCode} onChange={(e) => setPhoneCode(e.target.value)} placeholder="09xxxxxxx" />
                         </Form.Group>
 
                         <div className="d-flex gap-2">
                             <Button variant="outline-secondary" onClick={() => setStep(1)} className="w-50 px-4" style={{ borderRadius: '12px' }}>
-                                Quay lại
+                                Back
                             </Button>
                             <Button variant="success" onClick={handleJoin} disabled={loading} className="w-100 fw-bold btn-join shadow">
-                                {loading ? 'Đang xử lý...' : 'Bắt đầu gọi món'}
+                                {loading ? 'Đang xử lý...' : 'Bắt VNDầu gọi món'}
                             </Button>
                         </div>
                     </div>
@@ -317,7 +317,7 @@ function GuestJoin({ show, tableNumber, onJoined }) {
 
                 {!user && step === 1 && (
                     <div className="text-center mt-4">
-                        <small className="text-muted">Chào mừng bạn đến với không gian ẩm thực lành mạnh!</small>
+                        <small className="text-muted">Chào mừng bạn to với không gian ẩm thực lành mạnh!</small>
                     </div>
                 )}
             </Modal.Body>

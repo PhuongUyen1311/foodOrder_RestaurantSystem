@@ -8,19 +8,21 @@
   gap: $space-sm;
   padding: 8px $space-md;
   font-size: $font-size-base;
-  font-weight: $font-weight-medium;
+  font-weight: $font-weight-bold;
   border-radius: $radius-md;
   cursor: pointer;
   transition: $transition-base;
   outline: none;
   font-family: $font-family;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 
   // Icon inside button
   svg, i {
     font-size: 16px;
   }
 
-  // Khác biệt size (ví dụ: btn nhỏ trong table)
+  // Size variants
   &--sm {
     padding: 4px $space-sm;
     font-size: $font-size-sm;
@@ -36,36 +38,41 @@
     border-radius: $radius-lg;
   }
 
-  // --- Nút Primary (Thêm mới, Lưu) ---
+  // --- Primary (Gold) ---
   &--primary {
-    @include button-variant($primary, $white, $primary-hover, $primary-active);
+    @include button-variant($primary, $black, $primary-hover, $primary-active);
   }
 
-  // --- Nút Danger (Xóa, Hủy) ---
+  // --- Danger (Wine) ---
   &--danger {
-    @include button-variant($danger, $white, $danger-hover, $red-700);
+    @include button-variant($danger, $white, $danger-hover, darken($danger, 10%));
   }
 
-  // --- Nút Details/Info ---
+  // --- Info (Gold/Secondary) ---
   &--info {
-    @include button-variant($info, $white, $blue-400, $blue-600);
+    @include button-variant($info, $black, lighten($info, 10%), darken($info, 10%));
   }
 
-  // --- Nút Secondary / Trạng thái ---
+  // --- Warning (Gold/Accent) ---
   &--warning {
-    @include button-variant($warning, $white, $orange-400, $orange-600);
+    @include button-variant($warning, $black, lighten($warning, 10%), darken($warning, 10%));
   }
 
-  // --- Nút Outline / Default (Hủy form, Quay lại) ---
+  // --- Success (Beige) ---
+  &--success {
+    @include button-variant($success, $black, lighten($success, 10%), darken($success, 10%));
+  }
+
+  // --- Outline / Default ---
   &--default {
     background-color: transparent;
     color: $text-primary;
-    border: 1px solid $gray-300;
+    border: 1px solid $border-color;
 
     &:hover {
-      border-color: $primary;
-      color: $primary;
-      background-color: var(--blue-50);
+      border-color: $gold;
+      color: $gold;
+      background-color: rgba($gold, 0.05);
     }
 
     &:active {
@@ -73,9 +80,9 @@
     }
     
     &:disabled {
-      background-color: $gray-100;
+      background-color: rgba($text-muted, 0.1);
       color: $text-disabled;
-      border-color: $gray-200;
+      border-color: $border-color;
       cursor: not-allowed;
     }
   }

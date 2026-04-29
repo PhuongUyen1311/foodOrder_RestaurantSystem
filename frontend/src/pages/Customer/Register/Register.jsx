@@ -44,7 +44,7 @@ function Register(props) {
                 toast.error(data.message);
             }
         } else {
-            toast.error('Mật khẩu phải ít nhất là 6 ký tự');
+            toast.error('Password phải ít nhất là 6 ký tự');
         }
     }
 
@@ -64,7 +64,7 @@ function Register(props) {
             />
             <Container className='block-register'>
                 <h2>Đăng ký</h2>
-                <span>Tạo tài khoản để trải nghiệm ẩm thực tuyệt vời!</span>
+                <span>Tạo tài khoản to trải nghiệm ẩm thực tuyệt vời!</span>
 
                 <form className='register-form' onSubmit={handleSubmit}>
                     <div className='form-group name-group'>
@@ -74,7 +74,7 @@ function Register(props) {
                                 name='last_name' 
                                 value={formData.last_name} 
                                 onChange={handleChange} 
-                                placeholder='Họ' 
+                                placeholder='Surname' 
                                 required
                             />
                         </div>
@@ -85,7 +85,7 @@ function Register(props) {
                                 name='first_name' 
                                 value={formData.first_name} 
                                 onChange={handleChange} 
-                                placeholder='Tên' 
+                                placeholder='Name' 
                                 required
                             />
                         </div>
@@ -108,7 +108,7 @@ function Register(props) {
                             name='password' 
                             value={formData.password} 
                             onChange={handleChange} 
-                            placeholder='Mật khẩu' 
+                            placeholder='Password' 
                             required
                         />
                     </div>
@@ -119,7 +119,7 @@ function Register(props) {
                             name='confirm_password' 
                             value={formData.confirm_password} 
                             onChange={handleChange} 
-                            placeholder='Xác nhận mật khẩu' 
+                            placeholder='Confirm Password' 
                             required
                         />
                     </div>
@@ -131,7 +131,7 @@ function Register(props) {
                                 name='phone' 
                                 value={formData.phone} 
                                 onChange={handleChange} 
-                                placeholder='Số điện thoại'
+                                placeholder='Phone Number'
                             />
                         </div>
 
@@ -140,7 +140,7 @@ function Register(props) {
                             value={formData.gender} 
                             onChange={handleChange}
                         >
-                            <option value="">Chọn giới tính</option>
+                            <option value="">Select giới tính</option>
                             <option value="male">Nam</option>
                             <option value="female">Nữ</option>
                         </select>

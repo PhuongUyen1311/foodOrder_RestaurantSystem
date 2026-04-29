@@ -8,21 +8,23 @@
 
     .nav-btn {
         background: none;
-        border: 1px solid $color-primary;
-        color: $color-primary;
+        border: 1px solid $gold;
+        color: $gold;
         font-size: 16px;
         padding: 8px 12px;
         cursor: pointer;
         border-radius: 6px;
-        transition: all 0.3s ease;
+        transition: $transition;
 
         &:hover {
-            background-color: rgba($color-primary, 0.1);
+            background-color: rgba($gold, 0.1);
         }
 
         &:disabled {
             opacity: 0.4;
             cursor: not-allowed;
+            border-color: $text-muted;
+            color: $text-muted;
         }
     }
 
@@ -43,16 +45,20 @@
     }
 
     .category-item {
-        flex: 0 0 160px; // ✅ tất cả ô bằng nhau
+        flex: 0 0 160px;
         text-align: center;
-        border: 1px solid $color-primary;
+        border: 1px solid $border;
         border-right: none;
         padding: 13px 0;
-        font-size: 16px;
-        color: $color-text-secondary;
+        font-size: 14px;
+        font-weight: 600;
+        color: $text-muted;
         cursor: pointer;
         white-space: nowrap;
-        transition: all 0.3s ease;
+        transition: $transition;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: $surface;
 
         &:first-child {
             border-top-left-radius: 10px;
@@ -60,18 +66,20 @@
         }
 
         &:last-child {
-            border-right: 1px solid $color-primary;
+            border-right: 1px solid $border;
             border-top-right-radius: 10px;
             border-bottom-right-radius: 10px;
         }
 
         &:hover {
-            background-color: rgba($color-primary, 0.1);
+            background-color: rgba($gold, 0.05);
+            color: $text;
         }
 
         &.active {
-            background-color: $color-primary;
-            color: $color-text-light;
+            background-color: $gold;
+            color: black;
+            border-color: $gold;
         }
     }
 }

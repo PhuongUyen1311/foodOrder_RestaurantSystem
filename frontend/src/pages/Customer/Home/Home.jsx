@@ -48,7 +48,7 @@ function Home(props) {
 
     useEffect(() => {
         if (isToast) {
-            toast.success('Đã thêm vào giỏ hàng');
+            toast.success('Added to cart');
             dispatch(setDisplayToast(!isToast));
             return;
         }
@@ -65,7 +65,7 @@ function Home(props) {
                 {
                     accessToken && (
                         <>
-                            <h2>Gợi ý cho bạn</h2>
+                            <h2>Recommended for You</h2>
                             <ProductRecommender accessToken={accessToken} />
                         </>
                     )

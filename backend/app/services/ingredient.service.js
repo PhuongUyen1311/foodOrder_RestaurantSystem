@@ -50,7 +50,7 @@ const update = async (id, data) => {
         throw { status: 404, message: "Ingredient not found" };
     }
 
-    // Luôn quét lại toàn bộ sản phẩm để đồng bộ trạng thái 'Đã hết'
+    // Luôn quét lại toàn bộ sản phẩm to VND bộ trạng thái 'Đã hết'
     await checkAllProductsAvailability();
 
     return updated;

@@ -4,27 +4,31 @@
     margin: 40px auto;
     max-width: 920px;
     padding: 20px;
-    background: $color-background-light;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    background: $surface;
+    border-radius: 16px;
+    box-shadow: $shadow;
+    border: 1px solid $border;
 
     h2 {
-        font-weight: 400;
+        font-weight: 700;
         font-size: 36px;
         line-height: 42px;
         margin-bottom: 15px;
-        color: $color-primary;
+        color: $gold;
         text-align: center;
+        font-family: $font-heading;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
 
     span {
-        font-weight: 400;
+        font-weight: 500;
         font-size: 14px;
-        line-height: 17px;
+        line-height: 1.5;
         text-align: center;
-        color: $color-text-secondary;
+        color: $text-muted;
         display: block;
-        margin-bottom: 20px;
+        margin-bottom: 30px;
     }
 
     .register-form {
@@ -43,18 +47,24 @@
                     margin-bottom: 0;
                     
                     input {
-                        background-color: $color-text-light;
-                        border: 2px solid transparent;
+                        background-color: $bg;
+                        border: 1px solid $border;
                         height: 50px;
                         width: 100%;
                         padding: 0 15px;
                         font-size: 16px;
                         border-radius: 8px;
+                        color: $text;
+                        transition: $transition;
                         
                         &:focus {
-                            border-color: $color-primary;
-                            box-shadow: 0 0 0 3px rgba($color-primary, 0.1);
-                            background-color: lighten-color($color-text-light, 2%);
+                            border-color: $gold;
+                            box-shadow: 0 0 0 2px rgba($gold, 0.2);
+                            outline: none;
+                        }
+
+                        &::placeholder {
+                            color: $text-muted;
                         }
                     }
                 }
@@ -66,61 +76,69 @@
             position: relative;
 
             input {
-                background-color: $color-text-light;
-                border: 2px solid transparent;
+                background-color: $bg;
+                border: 1px solid $border;
                 height: 50px;
                 width: 100%;
                 padding: 0 15px;
-                transition: all 0.3s ease;
+                transition: $transition;
                 font-size: 16px;
                 border-radius: 8px;
-                color: $color-text-primary;
+                color: $text;
 
                 &::placeholder {
-                    color: $color-text-secondary;
+                    color: $text-muted;
                 }
 
                 &:focus {
-                    border-color: $color-primary;
-                    box-shadow: 0 0 0 3px rgba($color-primary, 0.1);
+                    border-color: $gold;
+                    box-shadow: 0 0 0 2px rgba($gold, 0.2);
+                    outline: none;
                 }
             }
         }
 
         select {
-            background-color: $color-text-light;
-            border: 2px solid transparent;
+            background-color: $bg;
+            border: 1px solid $border;
             height: 50px;
             width: 100%;
             padding: 0 15px;
             font-size: 16px;
             border-radius: 8px;
-            color: $color-text-primary;
-            transition: all 0.3s ease;
+            color: $text;
+            transition: $transition;
+            cursor: pointer;
 
             &:focus {
-                border-color: $color-primary;
-                box-shadow: 0 0 0 3px rgba($color-primary, 0.1);
+                border-color: $gold;
+                box-shadow: 0 0 0 2px rgba($gold, 0.2);
+                outline: none;
             }
         }
 
         &-btn {
-            margin-top: 20px;
+            margin-top: 30px;
 
             input {
-                background: linear-gradient(45deg, $color-primary, $color-secondary);
-                border-radius: 10px;
+                background: $gold;
+                border-radius: 8px;
                 border: none;
-                height: 50px;
+                height: 55px;
                 width: 100%;
-                font-weight: 600;
+                font-weight: 700;
                 font-size: 16px;
-                color: $color-text-light;
-                transition: all 0.3s ease;
+                color: black;
+                transition: $transition;
+                cursor: pointer;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                box-shadow: 0 5px 15px rgba($gold, 0.2);
 
                 &:hover {
                     transform: translateY(-2px);
-                    box-shadow: 0 4px 15px rgba($color-primary, 0.3);
+                    box-shadow: 0 8px 20px rgba($gold, 0.4);
+                    background: lighten($gold, 10%);
                 }
 
                 &:active {
@@ -134,8 +152,8 @@
 @media (min-width: 768px) {
     .block-register {
         max-width: 700px;
-        margin: 40px auto;
-        padding: 30px;
+        margin: 60px auto;
+        padding: 40px;
 
         h2 {
             font-size: 42px;

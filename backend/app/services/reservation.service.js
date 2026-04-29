@@ -24,12 +24,12 @@ const verifyEmailConfig = async () => {
 
 const sendConfirmationEmail = async (email, code, name) => {
     const isValid = await verifyEmailConfig();
-    if (!isValid) throw new Error("Cấu hình email không hợp lệ");
+    if (!isValid) throw new Error("Configuration email không hợp lệ");
 
     const mailOptions = {
         from: `"Nhà hàng" HeathyFood`,
         to: email,
-        subject: "Xác nhận đặt bàn",
+        subject: "Confirm book table",
         html: `
       <h2>Xin chào ${name},</h2>
       <p>Mã xác nhận của bạn là: <strong>${code}</strong></p>
@@ -43,14 +43,14 @@ exports.createReservation = async (auth, data) => {
     const { tableId, specialRequests, use_date, use_time } = data;
 
     if (!tableId || !use_date || !use_time) {
-        throw { status: 400, message: "Thiếu thông tin đặt bàn" };
+        throw { status: 400, message: "Thiếu thông tin book table" };
     }
 
     const table = await Table.findById(tableId);
-    if (!table) throw { status: 404, message: "Bàn không tồn tại" };
+    if (!table) throw { status: 404, message: "Table không tồn tại" };
 
     if (!table.isAvailable) {
-        throw { status: 400, message: "Bàn hiện không khả dụng" };
+        throw { status: 400, message: "Table hiện không khả dụng" };
     }
 
     const existing = await Reservation.findOne({
@@ -60,7 +60,7 @@ exports.createReservation = async (auth, data) => {
     });
 
     if (existing) {
-        throw { status: 400, message: "Bàn đã được đặt vào thời gian này" };
+        throw { status: 400, message: "Table has been VNDặt vào thời gian này" };
     }
 
     const code = Reservation.generateConfirmationCode();
@@ -76,13 +76,13 @@ exports.createReservation = async (auth, data) => {
         use_time,
         reservationTime: new Date(`${use_date}T${use_time}`),
         confirmationCode: code,
-        status: "Đã đặt",
+        status: "Reserved",
     });
 
     const saved = await reservation.save();
 
     table.isAvailable = false;
-    table.status = "Đã đặt";
+    table.status = "Reserved";
     await table.save();
 
     try {
@@ -92,7 +92,7 @@ exports.createReservation = async (auth, data) => {
             `${auth.first_name} ${auth.last_name}`
         );
     } catch (e) {
-        console.log("⚠ Không gửi được email:", e.message);
+        console.log("⚠ Không gửi VNDược email:", e.message);
     }
 
     return saved;
@@ -101,7 +101,7 @@ exports.createReservation = async (auth, data) => {
 exports.completeReservation = async (tableId) => {
     const table = await Table.findById(tableId);
     table.isAvailable = true;
-    table.status = "Trống";
+    table.status = "Empty";
     await table.save();
 
     await Reservation.findOneAndDelete({ tableId });
@@ -120,21 +120,21 @@ exports.checkinReservation = async (tableId, confirmationCode) => {
     const reservation = await Reservation.findOne({
         tableId,
         confirmationCode,
-        status: "Đã đặt",
+        status: "Reserved",
     });
 
     if (!reservation) {
         throw {
             status: 404,
-            message: "Mã xác nhận không đúng",
+            message: "Mã xác nhận không VNDúng",
         };
     }
 
-    reservation.status = "Đang sử dụng";
+    reservation.status = "In Use";
     await reservation.save();
 
     await Table.findByIdAndUpdate(tableId, {
-        status: "Đang sử dụng",
+        status: "In Use",
         isAvailable: false,
     });
 
@@ -147,15 +147,15 @@ exports.checkTableAvailability = async (tableNumber) => {
 
     const pending = await Reservation.findOne({
         tableId: table._id,
-        status: "Đã đặt",
+        status: "Reserved",
     });
 
     if (pending) {
-        throw { status: 400, message: "Bàn đã được đặt trước", table };
+        throw { status: 400, message: "Table has been VNDặt trước", table };
     }
 
     if (!table.isAvailable) {
-        throw { status: 400, message: "Bàn đang được sử dụng", table };
+        throw { status: 400, message: "Table VNDang VNDược sử dụng", table };
     }
 
     return table;
@@ -163,18 +163,18 @@ exports.checkTableAvailability = async (tableNumber) => {
 
 exports.cancelReservation = async (reservationId) => {
     const reservation = await Reservation.findById(reservationId);
-    if (!reservation) throw { status: 404, message: "Không tìm thấy đặt bàn" };
+    if (!reservation) throw { status: 404, message: "Không tìm thấy book table" };
 
-    if (reservation.status === "Đang sử dụng") {
-        throw { status: 400, message: "Không thể hủy bàn đang sử dụng" };
+    if (reservation.status === "In Use") {
+        throw { status: 400, message: "Không thể hủy bàn in use" };
     }
 
-    reservation.status = "Đã hủy";
+    reservation.status = "Cancelled";
     await reservation.save();
 
     await Table.findByIdAndUpdate(reservation.tableId, {
         isAvailable: true,
-        status: "Trống",
+        status: "Empty",
     });
 
     return true;

@@ -68,7 +68,7 @@ function HistoryOrder(props) {
     }, [accessToken, orderSocket]);
 
     const handleCancelOrder = async (orderId) => {
-        const isConfirm = window.confirm("Bạn có chắc chắn muốn hủy đơn hàng này không?");
+        const isConfirm = window.confirm("Bạn có chắc chắn muốn hủy order này không?");
         if (!isConfirm) return;
 
         if (orderId && accessToken) {
@@ -83,7 +83,7 @@ function HistoryOrder(props) {
 
                 if (result) {
 
-                    toast.success("Đã hủy đơn thành công");
+                    toast.success("Cancelled order thành công");
 
                     await fetchOrderUser(accessToken);
 
@@ -92,7 +92,7 @@ function HistoryOrder(props) {
             } catch (error) {
 
                 console.error(error);
-                toast.error("Hủy đơn thất bại");
+                toast.error("Cancel order thất bại");
 
             }
 
@@ -103,7 +103,7 @@ function HistoryOrder(props) {
             <Cart accessToken={accessToken} />
             <div className='block__history-order'>
                 <Container>
-                    <h2>Lịch sử đơn hàng</h2>
+                    <h2>Lịch sử order</h2>
                     <div className='history-order-list'>
                         {
                             orderList && (
@@ -118,8 +118,8 @@ function HistoryOrder(props) {
                                     return (
                                         <div className="history-order-item completed" key={index}>
                                             <div className="history-order-head">
-                                                <label>Mã đơn hàng: <span>#{id}</span> </label>
-                                                <label>Ngày đặt hàng: <span className='order-time'>{moment(updatedAt).format('DD-MM-YYYY')}</span> </label>
+                                                <label>Mã order: <span>#{id}</span> </label>
+                                                <label>Date VNDặt hàng: <span className='order-time'>{moment(updatedAt).format('DD-MM-YYYY')}</span> </label>
                                             </div>
                                             <div className="history-order-processing">
                                                 <div className="row">
@@ -129,7 +129,7 @@ function HistoryOrder(props) {
                                                         <span>
                                                             <span className="number">1</span>
                                                         </span>
-                                                        <span>Chờ nhận đơn</span>
+                                                        <span>Chờ nhận order</span>
                                                     </div>
                                                     <div className={`col-3 ${status === statusOrder.CONFIRMED ? 'active' :
                                                         (status === statusOrder.PROCESSING || status === statusOrder.COMPLETED) ?
@@ -137,7 +137,7 @@ function HistoryOrder(props) {
                                                         <span>
                                                             <span className="number">2</span>
                                                         </span>
-                                                        <span>Đã nhận đơn</span>
+                                                        <span>Đã nhận order</span>
                                                     </div>
                                                     <div className={`col-3 ${status === statusOrder.PROCESSING ? 'active' :
                                                         (status === statusOrder.COMPLETED) ? 'step-success'
@@ -145,13 +145,13 @@ function HistoryOrder(props) {
                                                         <span>
                                                             <span className="number">3</span>
                                                         </span>
-                                                        <span>Đơn hàng đã hoàn tất</span>
+                                                        <span>Orders VNDã hoàn tất</span>
                                                     </div>
                                                     <div className={`col-3 ${status === statusOrder.COMPLETED ? 'active' : ''}`}>
                                                         <span>
                                                             <span className="number">4</span>
                                                         </span>
-                                                        <span>Hoàn thành</span>
+                                                        <span>Completed</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -178,7 +178,7 @@ function HistoryOrder(props) {
                                                                             <div className="d-flex justify-content-between align-items-start">
                                                                                 <span className="product-name fw-bold">{product_name}</span>
                                                                                 <span className={`item-status-badge ${itemStatus?.toLowerCase() || 'new'}`}>
-                                                                                    {itemStatus === 'SERVED' ? 'Đã lên món' : itemStatus === 'CANCELED' ? 'Đã hủy' : itemStatus === 'CONFIRMED' ? 'Đã nhận' : 'Đang chờ'}
+                                                                                    {itemStatus === 'SERVED' ? 'Đã lên món' : itemStatus === 'CANCELED' ? 'Cancelled' : itemStatus === 'CONFIRMED' ? 'Đã nhận' : 'Đang chờ'}
                                                                                 </span>
                                                                             </div>
                                                                             <div className="product-item-details d-flex justify-content-between mt-1">
@@ -198,7 +198,7 @@ function HistoryOrder(props) {
                                             </div>
                                             <div className="history-order-footer">
                                                 <div className="footer-left-info">
-                                                    <label>Tổng cộng: <span>
+                                                    <label>Total: <span>
                                                         {total_price.toLocaleString('vi', { style: 'currency', currency: 'VND' })}
                                                     </span></label>
                                                     <label className="mt-2 d-block" style={{ fontSize: '15px' }}>
@@ -210,16 +210,16 @@ function HistoryOrder(props) {
 
                                                 <div className="history-order-status">
                                                     {status === statusOrder.NEW && (
-                                                        <button onClick={() => handleCancelOrder(id)} className='btn btn-cancel'>Hủy đơn</button>
+                                                        <button onClick={() => handleCancelOrder(id)} className='btn btn-cancel'>Cancel order</button>
                                                     )}
                                                     <span className={`order-status ${status === statusOrder.CANCELED ? 'canceled' :
                                                         (status === statusOrder.CONFIRMED) ? 'confirmed' :
                                                             (status === statusOrder.COMPLETED) ? 'completed' :
                                                                 (status === statusOrder.PROCESSING) ? 'processing' : 'new'}`}>
 
-                                                        {status === statusOrder.CANCELED ? 'Đơn đã hủy' : (status === statusOrder.CONFIRMED) ? 'Đã nhận đơn' :
-                                                            (status === statusOrder.COMPLETED ? 'Hoàn thành' :
-                                                                (status === statusOrder.PROCESSING) ? 'Đơn hàng đã hoàn tất' : 'Chờ nhận đơn')}
+                                                        {status === statusOrder.CANCELED ? 'Đơn cancelled' : (status === statusOrder.CONFIRMED) ? 'Đã nhận order' :
+                                                            (status === statusOrder.COMPLETED ? 'Completed' :
+                                                                (status === statusOrder.PROCESSING) ? 'Orders VNDã hoàn tất' : 'Chờ nhận order')}
 
                                                     </span>
                                                 </div>

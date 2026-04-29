@@ -32,7 +32,7 @@ const fileFilter = (req, file, cb) => {
     if (mimetype && extname) {
         return cb(null, true);
     } else {
-        cb(new Error("Chỉ chấp nhận các định dạng ảnh: .jpg, .jpeg, .png"));
+        cb(new Error("Only .jpg, .jpeg, .png formats are accepted"));
     }
 };
 
@@ -56,7 +56,7 @@ exports.getAllStaffs = async (req, res) => {
             query.role = { $in: ['ADMIN', 'STAFF'] };
         }
 
-        // Tìm kiếm theo tên, email hoặc số điện thoại
+        // Searching...eo tên, email hoặc số phone
         if (search) {
             const searchRegex = { $regex: search, $options: 'i' };
             query.$or = [
@@ -104,7 +104,7 @@ exports.getAllStaffs = async (req, res) => {
             totalItems
         });
     } catch (error) {
-        res.status(500).json({ message: error.message || "Lỗi server" });
+        res.status(500).json({ message: error.message || "Error server" });
     }
 };
 
@@ -118,12 +118,12 @@ exports.createStaff = [
             const exist = await Admin.findOne({ email: data.email });
             if (exist) {
                 if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-                return res.status(401).json({ message: `Tài khoản đã tồn tại với email ${data.email}.` });
+                return res.status(401).json({ message: `Account VNDã tồn tại với email ${data.email}.` });
             }
 
             if (data.password !== data.confirm_password) {
                 if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-                return res.status(400).json({ message: "Xác nhận mật khẩu không khớp!" });
+                return res.status(400).json({ message: "Confirm password does not match!" });
             }
 
             const hashPassword = bcrypt.hashSync(data.password, SALT_ROUNDS);
@@ -145,12 +145,12 @@ exports.createStaff = [
             res.status(201).json({ message: "Tạo tài khoản thành công!", staff: newStaff });
         } catch (error) {
             if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-            res.status(500).json({ message: error.message || "Lỗi server" });
+            res.status(500).json({ message: error.message || "Error server" });
         }
     }
 ];
 
-// PUT: Cập nhật
+// PUT: Update
 exports.updateStaff = [
     upload.single("avatar"),
     async (req, res) => {
@@ -168,7 +168,7 @@ exports.updateStaff = [
             if (data.password && data.password.trim() !== '') {
                 if (data.password !== data.confirm_password) {
                     if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-                    return res.status(400).json({ message: "Xác nhận mật khẩu không khớp!" });
+                    return res.status(400).json({ message: "Confirm password does not match!" });
                 }
                 staff.hash_password = bcrypt.hashSync(data.password, SALT_ROUNDS);
             }
@@ -197,7 +197,7 @@ exports.updateStaff = [
             }
 
             const updated = await staff.save();
-            res.json({ message: "Cập nhật thành công!", staff: updated });
+            res.json({ message: "Update thành công!", staff: updated });
         } catch (error) {
             if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
             res.status(500).json({ message: error.message });
@@ -205,7 +205,7 @@ exports.updateStaff = [
     }
 ];
 
-// DELETE: Xóa
+// DELETE: Delete
 exports.deleteStaff = async (req, res) => {
     try {
         const { id } = req.params;

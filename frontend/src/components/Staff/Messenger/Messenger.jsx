@@ -32,7 +32,7 @@ const Messenger = () => {
         const handleToggle = () => setIsOpen(prev => !prev);
         const handleShareOrder = (e) => {
             if (!selectedContact) {
-                alert("Hãy chọn nhân viên hoặc khách hàng để gửi!");
+                alert("Hãy chọn nhân viên hoặc khách hàng to gửi!");
                 return;
             }
             const orderData = e.detail;
@@ -41,7 +41,7 @@ const Messenger = () => {
             
             // Only share if we have a contact (already checked)
             sendOrderMessage(orderData);
-            toast.success("Đã gửi thông tin đơn hàng!");
+            toast.success("Sent thông tin order!");
         };
         const handleShareContent = (e) => {
             setIsOpen(true);
@@ -274,7 +274,7 @@ const Messenger = () => {
             sender: user.id || user._id, senderModel: 'admin',
             receiver: selectedContact.id, receiverModel: selectedContact.model,
             type: 'order', orderId: orderData.id || orderData._id,
-            content: `Đơn hàng #${orderData.id || orderData._id}`,
+            content: `Orders #${orderData.id || orderData._id}`,
             conversationType: activeTab === 'colleague' ? 'internal' : 'customer'
         };
         socket.emit("sendMessage", msgData);
@@ -313,7 +313,7 @@ const Messenger = () => {
                                 {conversations.some(c => activeTab !== 'colleague' && c.unreadCount > 0 && c.otherModel === 'admin') && <span className="tab-badge-dot"></span>}
                             </div>
                             <div className={`tab ${activeTab === 'customer' ? 'active' : ''}`} onClick={() => { setActiveTab('customer'); setSelectedContact(null); }}>
-                                Khách hàng
+                                Customers
                                 {conversations.some(c => activeTab !== 'customer' && c.unreadCount > 0 && c.otherModel === 'customer') && <span className="tab-badge-dot"></span>}
                             </div>
                         </div>
@@ -324,17 +324,17 @@ const Messenger = () => {
                                     <div className="search-bar-staff">
                                         <div className="search-box">
                                             <FaSearch />
-                                            <input type="text" placeholder="Tìm kiếm..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                                            <input type="text" placeholder="Searching..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                                         </div>
-                                        <button className="add-plus-btn" onClick={() => setShowAddEmail(!showAddEmail)} title="Thêm cuộc hội thoại">
+                                        <button className="add-plus-btn" onClick={() => setShowAddEmail(!showAddEmail)} title="Add cuộc hội thoại">
                                             <FaPlus />
                                         </button>
                                     </div>
 
                                     {showAddEmail && (
                                         <form className="add-email-form" onSubmit={handleAddByEmail}>
-                                            <input type="email" placeholder="Nhập email..." value={emailInput} onChange={(e) => setEmailInput(e.target.value)} required />
-                                            <button type="submit">Thêm</button>
+                                            <input type="email" placeholder="Enter email..." value={emailInput} onChange={(e) => setEmailInput(e.target.value)} required />
+                                            <button type="submit">Add</button>
                                         </form>
                                     )}
 
@@ -357,9 +357,9 @@ const Messenger = () => {
                                                     <div className="contact-info">
                                                         <div className="name-row">
                                                             <div className="name">{conv.otherParticipant.first_name} {conv.otherParticipant.last_name}</div>
-                                                            {otherStaffTyping[otherId] && <span className="typing-hint">@{otherStaffTyping[otherId]} đang trả lời...</span>}
+                                                            {otherStaffTyping[otherId] && <span className="typing-hint">@{otherStaffTyping[otherId]} VNDang trả lời...</span>}
                                                         </div>
-                                                        <div className="last-msg">{conv.lastMessage?.content || "[Tệp đính kèm]"}</div>
+                                                        <div className="last-msg">{conv.lastMessage?.content || "[Tệp VNDính kèm]"}</div>
                                                     </div>
                                                 </div>
                                             );
@@ -373,7 +373,7 @@ const Messenger = () => {
                                         <div className="name-wrapper">
                                             <span className="name">{selectedContact.name}</span>
                                             {otherStaffTyping[selectedContact.id] && (
-                                                <span className="staff-typing-overlay">(@{otherStaffTyping[selectedContact.id]} đang gõ...)</span>
+                                                <span className="staff-typing-overlay">(@{otherStaffTyping[selectedContact.id]} VNDang gõ...)</span>
                                             )}
                                         </div>
                                     </div>
@@ -386,10 +386,10 @@ const Messenger = () => {
                                             let label = null;
                                             if (!isSentByMe && activeTab === 'customer') {
                                                 if (msg.senderModel === 'admin') {
-                                                    const sName = msg.sender?.first_name ? `${msg.sender.first_name} ${msg.sender.last_name}` : "Nhân viên";
+                                                    const sName = msg.sender?.first_name ? `${msg.sender.first_name} ${msg.sender.last_name}` : "Staff";
                                                     label = `@${sName}`;
                                                 } else if (msg.senderModel === 'customer') {
-                                                    label = "Khách hàng";
+                                                    label = "Customers";
                                                 }
                                             }
 
@@ -402,7 +402,7 @@ const Messenger = () => {
                                                     {msg.type === 'order' && msg.orderId && (
                                                         <div className="order-card">
                                                             <div className="order-id">Đơn: #{msg.orderId._id || msg.orderId.id || msg.orderId}</div>
-                                                            <a href={`/staff/order/detail/${msg.orderId._id || msg.orderId.id}`} className="order-link">Xem chi tiết</a>
+                                                            <a href={`/staff/order/detail/${msg.orderId._id || msg.orderId.id}`} className="order-link">View chi tiết</a>
                                                         </div>
                                                     )}
                                                 </div>
@@ -420,7 +420,7 @@ const Messenger = () => {
                                         <div className="input-wrapper">
                                             <input 
                                                 type="text" 
-                                                placeholder="Nhập tin nhắn..." 
+                                                placeholder="Enter tin nhắn..." 
                                                 value={newMessage} 
                                                 onChange={handleTyping} 
                                             />

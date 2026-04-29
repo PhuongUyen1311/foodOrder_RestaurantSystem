@@ -73,7 +73,7 @@ exports.initGuest = async (req, res) => {
         if (!customer || !customer.is_guest) {
             const shortId = (guestId && guestId.length >= 4) ? guestId.toString().slice(-4).toUpperCase() : Math.random().toString(36).substring(2, 6).toUpperCase();
             customer = new Customer({
-                first_name: "Khách vãng lai",
+                first_name: "Guest walk-in",
                 last_name: `#${shortId}`,
                 email: `guest_${Date.now()}@example.com`,
                 is_guest: true

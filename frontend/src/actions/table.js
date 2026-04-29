@@ -4,7 +4,7 @@ export const getAllTables = async () => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Lỗi khi lấy danh sách bàn:", error);
+    console.error("Error khi lấy danh sách bàn:", error);
     throw error;
   }
 };
@@ -23,7 +23,7 @@ export const createReservation = async (accessToken, data) => {
     if (!response.ok) throw new Error(result.message || "Đặt bàn thất bại");
     return result;
   } catch (error) {
-    console.error("Lỗi khi đặt bàn:", error);
+    console.error("Error khi book table:", error);
     throw error;
   }
 };
@@ -34,7 +34,7 @@ export const getTableByQRCode = async (qrCode) => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Lỗi khi quét mã QR:", error);
+    console.error("Error khi quét mã QR:", error);
     throw error;
   }
 };
@@ -47,7 +47,7 @@ export const getReservationByTableId = async (accessToken, tableId) => {
     });
     return await response.json();
   } catch (error) {
-    console.error("Lỗi khi lấy thông tin đặt bàn:", error);
+    console.error("Error khi lấy thông tin book table:", error);
     throw error;
   }
 };
@@ -63,7 +63,7 @@ export const completeReservation = async (accessToken, tableId) => {
     });
     return await response.json();
   } catch (error) {
-    console.error("Lỗi khi hoàn tất đặt bàn:", error);
+    console.error("Error khi hoàn tất book table:", error);
     throw error;
   }
 };
@@ -80,7 +80,7 @@ export const addTable = async (accessToken, tableData) => {
     });
     return await response.json();
   } catch (error) {
-    console.error("Lỗi khi thêm bàn mới:", error);
+    console.error("Error khi thêm bàn mới:", error);
     throw error;
   }
 };
@@ -97,7 +97,7 @@ export const updateTable = async (accessToken, tableId, tableData) => {
     });
     return await response.json();
   } catch (error) {
-    console.error("Lỗi khi cập nhật thông tin bàn:", error);
+    console.error("Error khi cập nhật thông tin bàn:", error);
     throw error;
   }
 };
@@ -110,7 +110,7 @@ export const deleteTable = async (accessToken, tableId) => {
     });
     return await response.json();
   } catch (error) {
-    console.error("Lỗi khi xóa bàn:", error);
+    console.error("Error khi xóa bàn:", error);
     throw error;
   }
 };
@@ -123,7 +123,7 @@ export const getUserReservations = async (accessToken) => {
     });
     return await response.json();
   } catch (error) {
-    console.error("Lỗi khi lấy lịch sử đặt bàn:", error);
+    console.error("Error khi lấy lịch sử book table:", error);
     throw error;
   }
 };
@@ -137,7 +137,7 @@ export const checkinReservation = async (tableId, confirmationCode) => {
     });
     return await response.json();
   } catch (error) {
-    console.error("Lỗi khi checkin bàn:", error);
+    console.error("Error khi checkin bàn:", error);
     throw error;
   }
 };
@@ -147,7 +147,7 @@ export const checkTableAvailability = async (tableId) => {
     const response = await fetch(`/api/tables/${tableId}/availability`, { method: "get" });
     return await response.json();
   } catch (error) {
-    console.error("Lỗi khi kiểm tra trạng thái bàn:", error);
+    console.error("Error khi kiểm tra trạng thái bàn:", error);
     throw error;
   }
 };
@@ -159,10 +159,10 @@ export const cancelReservation = async (accessToken, reservationId) => {
       headers: { Authorization: `Bearer ${accessToken}` }
     });
     const data = await response.json();
-    if (!response.ok) throw new Error(data.message || "Hủy đặt bàn thất bại");
+    if (!response.ok) throw new Error(data.message || "Cancel book table thất bại");
     return data;
   } catch (error) {
-    console.error("Lỗi khi hủy đặt bàn:", error);
+    console.error("Error khi hủy book table:", error);
     throw error;
   }
 };
@@ -178,10 +178,10 @@ export const mergeTable = async (accessToken, data) => {
       body: JSON.stringify(data)
     });
     const result = await response.json();
-    if (!response.ok) throw new Error(result.message || "Gộp bàn thất bại");
+    if (!response.ok) throw new Error(result.message || "Merge Table thất bại");
     return result;
   } catch (error) {
-    console.error("Lỗi khi gộp bàn:", error);
+    console.error("Error khi gộp bàn:", error);
     throw error;
   }
 };
@@ -191,7 +191,7 @@ export const getAvailableTables = async () => {
     const response = await fetch("/api/tables/available", { method: "get" });
     return await response.json();
   } catch (error) {
-    console.error("Lỗi khi lấy danh sách bàn trống:", error);
+    console.error("Error khi lấy danh sách bàn trống:", error);
     throw error;
   }
 };
@@ -207,10 +207,10 @@ export const unmergeTable = async (accessToken, tableNumber) => {
       body: JSON.stringify({ tableNumber })
     });
     const result = await response.json();
-    if (!response.ok) throw new Error(result.message || "Tách bàn thất bại");
+    if (!response.ok) throw new Error(result.message || "Split Table thất bại");
     return result;
   } catch (error) {
-    console.error("Lỗi khi tách bàn:", error);
+    console.error("Error khi tách bàn:", error);
     throw error;
   }
 };
@@ -229,7 +229,7 @@ export const unmergeAllSlaves = async (accessToken, masterTableNumber) => {
     if (!response.ok) throw new Error(result.message || "Phân rã bàn thất bại");
     return result;
   } catch (error) {
-    console.error("Lỗi khi phân rã bàn:", error);
+    console.error("Error khi phân rã bàn:", error);
     throw error;
   }
 };

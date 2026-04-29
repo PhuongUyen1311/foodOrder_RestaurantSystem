@@ -57,8 +57,8 @@ module.exports = mongoose => {
       },
       status: {
         type: String,
-        enum: ['Đã đặt', 'Đang sử dụng', 'Đã hủy', 'Hoàn thành'],
-        default: 'Đã đặt'
+        enum: ['Reserved', 'In Use', 'Cancelled', 'Completed'],
+        default: 'Reserved'
       }
     }
   );
@@ -68,11 +68,11 @@ module.exports = mongoose => {
       const table = await Table.findById(this.tableId);
 
       if (!table) {
-        throw new Error('Bàn không tồn tại');
+        throw new Error('Table không tồn tại');
       }
 
       // if (!table.isAvailable) {
-      //   throw new Error('Bàn đã được đặt');
+      //   throw new Error('Table has been VNDặt');
       // }
 
       next();
@@ -87,15 +87,15 @@ module.exports = mongoose => {
       const reservation = await this.findOne({ tableId: tableId });
 
       if (!reservation) {
-        throw new Error('Không tìm thấy thông tin đặt bàn');
+        throw new Error('Không tìm thấy thông tin book table');
       }
 
-      // Cập nhật trạng thái bàn thành available
+      // Update trạng thái bàn thành available
       await Table.findByIdAndUpdate(reservation.tableId, {
         isAvailable: true,
-        status: 'Trống'
+        status: 'Empty'
       });
-      // Xóa thông tin đặt bàn
+      // Delete thông tin book table
       await this.deleteOne({ tableId: tableId });
 
       return { message: 'Đã hoàn tất và giải phóng bàn thành công' };

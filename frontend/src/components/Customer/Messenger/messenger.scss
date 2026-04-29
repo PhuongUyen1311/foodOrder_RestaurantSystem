@@ -1,26 +1,30 @@
+@use '../../../scss/' as *;
+
 .messenger-customer {
     position: fixed;
     bottom: 20px;
     right: 20px;
     z-index: 1000;
-    font-family: 'Inter', sans-serif;
+    font-family: $font-body;
 
     .messenger-bubble {
         width: 60px;
         height: 60px;
-        background: #f3ba00;
+        background: $gold;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
+        color: black;
         font-size: 28px;
         cursor: pointer;
-        box-shadow: 0 4px 15px rgba(243, 186, 0, 0.4);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
         transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 2px solid $surface;
 
         &:hover {
-            transform: scale(1.1);
+            transform: scale(1.1) rotate(5deg);
+            background: lighten($gold, 10%);
         }
     }
 
@@ -30,13 +34,13 @@
         right: 0;
         width: 360px;
         height: 500px;
-        background: white;
+        background: $surface;
         border-radius: 16px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        box-shadow: $shadow;
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        border: 1px solid #f0f0f0;
+        border: 1px solid $border;
         transform-origin: bottom right;
         transition: all 0.3s ease;
 
@@ -47,9 +51,9 @@
         }
 
         .window-header {
-            padding: 16px;
-            background: #f3ba00;
-            color: white;
+            padding: 16px 20px;
+            background: $gold;
+            color: black;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -57,36 +61,56 @@
             .brand {
                 display: flex;
                 align-items: center;
-                gap: 10px;
+                gap: 12px;
                 font-weight: 700;
                 font-size: 16px;
+                font-family: $font-heading;
+                text-transform: uppercase;
+                letter-spacing: 1px;
                 
-                img { width: 30px; height: 30px; border-radius: 50%; }
+                img { 
+                    width: 30px; 
+                    height: 30px; 
+                    border-radius: 50%; 
+                    border: 1px solid rgba(0,0,0,0.1);
+                }
             }
 
-            .close-btn { cursor: pointer; opacity: 0.8; &:hover { opacity: 1; }}
+            .close-btn { 
+                cursor: pointer; 
+                opacity: 0.8; 
+                transition: $transition;
+                &:hover { opacity: 1; transform: scale(1.1); }
+            }
         }
 
         .window-tabs {
             display: flex;
-            background: #fff;
-            border-bottom: 1px solid #f0f0f0;
+            background: $bg;
+            border-bottom: 1px solid $border;
 
             .tab {
                 flex: 1;
                 padding: 12px;
                 text-align: center;
-                font-size: 14px;
-                font-weight: 600;
-                color: #888;
+                font-size: 13px;
+                font-weight: 700;
+                color: $text-muted;
                 cursor: pointer;
                 border-bottom: 2px solid transparent;
                 transition: all 0.2s;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
 
                 &.active {
-                    color: #f3ba00;
-                    border-bottom-color: #f3ba00;
-                    background: #fff9e6;
+                    color: $gold;
+                    border-bottom-color: $gold;
+                    background: rgba($gold, 0.05);
+                }
+
+                &:hover:not(.active) {
+                    color: $text;
+                    background: rgba(255,255,255,0.02);
                 }
             }
         }
@@ -96,108 +120,124 @@
             overflow-y: auto;
             display: flex;
             flex-direction: column;
+            background: $bg;
 
             .message-list {
                 flex: 1;
-                padding: 16px;
+                padding: 20px;
                 overflow-y: auto;
                 display: flex;
                 flex-direction: column;
-                gap: 10px;
+                gap: 12px;
 
                 .msg {
                     max-width: 85%;
-                    padding: 10px 14px;
+                    padding: 10px 15px;
                     border-radius: 18px;
                     font-size: 14px;
                     line-height: 1.5;
 
                     &.bot, &.received {
                         align-self: flex-start;
-                        background: #f0f2f5;
-                        color: #1c1e21;
+                        background: $surface;
+                        color: $text;
                         border-bottom-left-radius: 4px;
+                        border: 1px solid $border;
                     }
 
                     &.user, &.sent {
                         align-self: flex-end;
-                        background: #f3ba00;
-                        color: white;
+                        background: $gold;
+                        color: black;
                         border-bottom-right-radius: 4px;
+                        font-weight: 500;
                     }
 
                     .msg-img { 
                         max-width: 100%; 
                         border-radius: 8px; 
-                        margin-top: 5px; 
+                        margin-top: 8px; 
                         cursor: pointer;
-                        &:hover { filter: brightness(0.9); }
+                        border: 1px solid rgba(255,255,255,0.1);
+                        transition: $transition;
+                        &:hover { filter: brightness(1.1); }
                     }
 
                     .chat-cart-card {
-                        background: white;
-                        border: 1px solid #eee;
+                        background: $bg;
+                        border: 1px solid $border;
                         border-radius: 12px;
-                        padding: 12px;
+                        padding: 15px;
                         margin-top: 10px;
                         display: flex;
                         flex-direction: column;
-                        gap: 8px;
-                        color: #333;
+                        gap: 10px;
+                        color: $text;
 
                         .ccc-info {
                             display: flex;
                             flex-direction: column;
-                            .ccc-name { font-weight: 700; font-size: 14px; }
-                            .ccc-price { color: #f3ba00; font-weight: 600; font-size: 13px; }
+                            gap: 4px;
+                            .ccc-name { font-weight: 700; font-size: 14px; color: $text; }
+                            .ccc-price { color: $gold; font-weight: 700; font-size: 13px; }
                         }
 
                         .ccc-btn {
-                            background: #f3ba00;
-                            color: white;
+                            background: $gold;
+                            color: black;
                             border: none;
-                            padding: 6px;
+                            padding: 8px;
                             border-radius: 8px;
                             font-size: 12px;
-                            font-weight: 600;
+                            font-weight: 700;
                             display: flex;
                             align-items: center;
                             justify-content: center;
-                            gap: 5px;
-                            &:hover { background: #d4a300; }
+                            gap: 8px;
+                            text-transform: uppercase;
+                            transition: $transition;
+                            &:hover { background: lighten($gold, 10%); }
                         }
                     }
                 }
             }
 
             .chat-input-area {
-                padding: 12px;
-                border-top: 1px solid #f0f0f0;
+                padding: 15px;
+                background: $surface;
+                border-top: 1px solid $border;
                 display: flex;
                 align-items: center;
-                gap: 8px;
+                gap: 12px;
 
                 input {
                     flex: 1;
-                    padding: 8px 16px;
-                    background: #f0f2f5;
-                    border: none;
-                    border-radius: 20px;
+                    padding: 10px 16px;
+                    background: $bg;
+                    border: 1px solid $border;
+                    border-radius: 25px;
                     outline: none;
                     font-size: 14px;
+                    color: $text;
+                    transition: $transition;
+                    &:focus { border-color: $gold; }
+                    &::placeholder { color: $text-muted; }
                 }
 
                 .send-btn {
-                    color: #f3ba00;
+                    color: $gold;
                     cursor: pointer;
-                    font-size: 20px;
+                    font-size: 22px;
+                    transition: $transition;
+                    &:hover { color: lighten($gold, 10%); transform: scale(1.1); }
                 }
 
                 .action-icon {
-                    color: #999;
+                    color: $text-muted;
                     cursor: pointer;
                     font-size: 18px;
-                    &:hover { color: #f3ba00; }
+                    transition: $transition;
+                    &:hover { color: $gold; }
                 }
             }
         }
@@ -207,7 +247,7 @@
 .light-box-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.9);
+    background: rgba(0,0,0,0.95);
     z-index: 9999;
     display: flex;
     align-items: center;
@@ -218,6 +258,7 @@
         max-width: 90%;
         max-height: 90%;
         object-fit: contain;
-        box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        box-shadow: 0 0 100px rgba(0,0,0,0.8);
+        border: 2px solid $gold;
     }
 }

@@ -17,7 +17,7 @@ function PopupOrderSuccess(props) {
                 >
                 <Modal.Header>
                     <Modal.Title id="contained-modal-title-vcenter">
-                        Thông báo
+                        Notification
                     </Modal.Title>
 
                 </Modal.Header>
@@ -40,12 +40,12 @@ function PopupOrderSuccess(props) {
                         </defs>
                     </svg>
 
-                    <h4 className='success-title'>Đặt Bàn thành công</h4>
+                    <h4 className='success-title'>Đặt Table thành công</h4>
 
                 </Modal.Body>
                 <Modal.Footer>
-                    <Link to='/history-reservation' className='btn-success-follow'>Xem chi tiết bàn đặt</Link>
-                    <Link to='/' className='btn-success-continue'>Tiếp tục mua hàng</Link>
+                    <Link to='/history-reservation' className='btn-success-follow'>View chi tiết bàn VNDặt</Link>
+                    <Link to='/' className='btn-success-continue'>Continue mua hàng</Link>
                 </Modal.Footer>
             </Modal>
         </>

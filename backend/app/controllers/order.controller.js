@@ -39,7 +39,7 @@ async function canDeductIngredients(orderItems) {
     for (const [ingIdStr, requiredQty] of Object.entries(requiredQtyMap)) {
         const ingredient = ingredientMap.get(ingIdStr);
         if (!ingredient || ingredient.qty < requiredQty) {
-            return { success: false, message: `Nguyên liệu ${ingredient ? ingredient.name : 'không xác định'} không đủ.` };
+            return { success: false, message: `Ingredients ${ingredient ? ingredient.name : 'không xác VNDịnh'} không VNDủ.` };
         }
     }
     return { success: true };
@@ -69,15 +69,16 @@ async function deductIngredients(orderId) {
     }));
     if (updates.length > 0) await Ingredient.bulkWrite(updates);
 
-    // Quét và cập nhật trạng thái cho TOÀN BỘ sản phẩm trong hệ thống để đảm bảo đồng bộ 100%
+    // Quét và cập nhật trạng thái cho TOÀN BỘ sản phẩm trong hệ thống to VNDảm bảo VND bộ 100%
     await checkAllProductsAvailability();
 }
 
 /**
- * Helper function to restore ingredients when order is canceled
+ * Helper function to restore ingredients for specific items
  */
-async function restoreIngredients(orderId) {
-    const orderItems = await OrderItem.find({ order_id: orderId });
+async function restoreIngredientsForItems(orderItems) {
+    if (!orderItems || orderItems.length === 0) return;
+    
     const productIds = orderItems.map(item => new mongoose.Types.ObjectId(item.product_id));
     const allBoms = await ProductBOM.find({ product_id: { $in: productIds } });
 
@@ -98,10 +99,19 @@ async function restoreIngredients(orderId) {
             update: { $inc: { qty: qty } }
         }
     }));
+    
     if (updates.length > 0) await Ingredient.bulkWrite(updates);
 
-    // Quét và cập nhật trạng thái cho TOÀN BỘ sản phẩm trong hệ thống để đảm bảo đồng bộ 100%
+    // Quét và cập nhật trạng thái cho TOÀN BỘ sản phẩm trong hệ thống to VNDảm bảo VND bộ 100%
     await checkAllProductsAvailability();
+}
+
+/**
+ * Helper function to restore ingredients when order is canceled
+ */
+async function restoreIngredients(orderId) {
+    const orderItems = await OrderItem.find({ order_id: orderId });
+    await restoreIngredientsForItems(orderItems);
 }
 
 exports.deductIngredients = deductIngredients;
@@ -123,7 +133,7 @@ exports.createCashOrder = async (req, res) => {
             }
         }
 
-        // Kiểm tra tồn kho trước khi tạo đơn
+        // Kiểm tra tồn kho trước khi tạo order
         const cartItems = await CartItem.find({ cart_id: cartId });
         const itemsToCheck = selectedItemIds && selectedItemIds.length > 0
             ? cartItems.filter(i => selectedItemIds.includes(i.id))
@@ -152,8 +162,8 @@ exports.createCashOrder = async (req, res) => {
             const admins = await Admin.find({ socket_id: { $exists: true, $ne: null } });
 
             const messageStr = typeOrder === 'chia bill'
-                ? `Khách yêu cầu chia bill mới!`
-                : (tableNumber ? `Có đơn hàng mới từ bàn ${tableNumber}!` : `Có đơn hàng online mới!`);
+                ? `Guest yêu cầu chia bill mới!`
+                : (tableNumber ? `Có order mới từ bàn ${tableNumber}!` : `Có order online mới!`);
 
             for (const ad of admins) {
                 listSocket.updateOrder.to(ad.socket_id).emit('notification', {
@@ -192,14 +202,14 @@ exports.createGuestOrder = async (req, res) => {
             }
         }
 
-        // Kiểm tra tồn kho trước khi tạo đơn
+        // Kiểm tra tồn kho trước khi tạo order
         const check = await canDeductIngredients(items);
         if (!check.success) {
             return res.status(400).send({ success: false, message: check.message });
         }
 
         let order;
-        // Kiểm tra xem khách này đã có order chưa thanh toán ở bàn này chưa
+        // Kiểm tra xem khách này VNDã có order chưa thanh toán ở bàn này chưa
         if (session_id) {
             order = await Order.findOne({
                 session_id: session_id,
@@ -283,8 +293,8 @@ exports.createGuestOrder = async (req, res) => {
             const admins = await Admin.find({ socket_id: { $exists: true, $ne: null } });
 
             const messageStr = typeOrder === 'chia bill'
-                ? `Khách yêu cầu chia bill mới!`
-                : (tableNumber ? `Đơn đặt món mới BÀN ${tableNumber}!` : `Có đơn đặt món khách ẩn danh mới!`);
+                ? `Guest yêu cầu chia bill mới!`
+                : (tableNumber ? `Đơn VNDặt món mới BÀN ${tableNumber}!` : `Có order VNDặt món khách ẩn danh mới!`);
 
             for (const ad of admins) {
                 listSocket.updateOrder.to(ad.socket_id).emit('notification', {
@@ -426,7 +436,7 @@ exports.updateStatusOrder = async (req, res) => {
         }
 
         if (req.body.status === "canceled" && order.status === "NEW") {
-            // Hoàn lại nguyên liệu nếu đơn hàng bị hủy ở trạng thái mới (chưa xác nhận)
+            // Hoàn lại nguyên liệu nếu order bị hủy ở trạng thái mới (chưa xác nhận)
             await restoreIngredients(order.id);
         }
 
@@ -465,7 +475,7 @@ exports.getGuestOrdersByTable = async (req, res) => {
         const Table = db.table;
         const table = await Table.findOne({ tableNumber: tableNumber });
         if (!table) {
-            return res.status(404).json({ success: false, message: "Bàn không tồn tại." });
+            return res.status(404).json({ success: false, message: "Table không tồn tại." });
         }
 
         // We can optionally verify the session here if needed, 
@@ -508,12 +518,12 @@ exports.payGuestOrdersByTable = async (req, res) => {
         }
 
         const updateData = {
-            payment_method: paymentMethod || "tiền mặt"
+            payment_method: paymentMethod || "cash"
         };
 
-        // Nếu là chuyển khoản, ta có thể đánh dấu là đã thanh toán luôn 
+        // Nếu là transfer, ta có thể VNDánh dấu là paid luôn 
         // (thường gọi sau khi VNPAY thành công hoặc nhân viên xác nhận)
-        if (paymentMethod === "chuyển khoản") {
+        if (paymentMethod === "transfer") {
             updateData.is_payment = true;
         }
 
@@ -534,9 +544,9 @@ exports.payGuestOrdersByTable = async (req, res) => {
         const listOrder = await Order.find({ status: { $ne: 'COMPLETED' }, is_payment: false });
         const admin = await Admin.find({ socket_id: { $exists: true, $ne: null } });
         for (const ad of admin) {
-            if (paymentMethod === "tiền mặt") {
+            if (paymentMethod === "cash") {
                 listSocket.updateOrder.to(ad.socket_id).emit('notification', {
-                    message: `Bàn ${tableNumber} yêu cầu thu bằng tiền mặt tổng đơn!`,
+                    message: `Table ${tableNumber} yêu cầu thu bằng cash tổng order!`,
                     time: "Vừa xong",
                     tableNumber: tableNumber,
                     type: "warning"
@@ -577,12 +587,12 @@ exports.updateIsPayment = async (req, res) => {
 
         order.is_payment = isPayment;
 
-        // Cập nhật phương thức thanh toán nếu có hoặc mặc định là tiền mặt
+        // Update phương thức thanh toán nếu có hoặc mặc VNDịnh là cash
         if (isPayment) {
             if (paymentMethod) {
                 order.payment_method = paymentMethod;
             } else if (!order.payment_method) {
-                order.payment_method = 'tiền mặt';
+                order.payment_method = 'cash';
             }
         }
 
@@ -602,14 +612,14 @@ exports.updateIsPayment = async (req, res) => {
             */
         }
 
-        // Gửi socket update list cho admin
+        // Send socket update list cho admin
         const listOrder = await Order.find({ status: { $ne: 'COMPLETED' }, is_payment: false });
         const admin = await Admin.find({ socket_id: { $exists: true, $ne: null } });
         for (const ad of admin) {
             listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', listOrder);
         }
 
-        res.status(200).json({ success: true, message: "Cập nhật thanh toán thành công!" });
+        res.status(200).json({ success: true, message: "Update thanh toán thành công!" });
 
     } catch (error) {
         console.error(error);
@@ -621,12 +631,12 @@ exports.callStaff = async (req, res) => {
     try {
         const { tableNumber, message, orderId } = req.body;
 
-        // Gửi socket cho toàn bộ admin/staff
+        // Send socket cho toàn bộ admin/staff
         const admins = await Admin.find({});
         for (const ad of admins) {
             if (ad.socket_id) {
                 listSocket.updateOrder.to(ad.socket_id).emit('notification', {
-                    message: message || `Bàn số ${tableNumber} yêu cầu hỗ trợ thanh toán!`,
+                    message: message || `Table số ${tableNumber} yêu cầu hỗ trợ thanh toán!`,
                     time: "Vừa xong",
                     tableNumber,
                     orderId,
@@ -636,10 +646,10 @@ exports.callStaff = async (req, res) => {
             }
         }
 
-        res.status(200).json({ success: true, message: "Đã gửi yêu cầu hỗ trợ tới nhân viên." });
+        res.status(200).json({ success: true, message: "Sent yêu cầu hỗ trợ tới nhân viên." });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ success: false, message: "Lỗi gửi yêu cầu hỗ trợ." });
+        res.status(500).json({ success: false, message: "Error gửi yêu cầu hỗ trợ." });
     }
 };
 
@@ -657,7 +667,7 @@ exports.getActiveGuests = async (req, res) => {
 
         res.status(200).json({ success: true, guests: guests });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Lỗi lấy danh sách khách' });
+        res.status(500).json({ success: false, message: 'Error lấy danh sách khách' });
     }
 };
 
@@ -665,30 +675,30 @@ exports.joinGuestSession = async (req, res) => {
     try {
         const { tableNumber, username, phoneCode, pin } = req.body;
         if (!phoneCode) {
-            return res.status(400).json({ success: false, message: "Vui lòng cung cấp số điện thoại." });
+            return res.status(400).json({ success: false, message: "Please cung cấp số phone." });
         }
 
         // Validate phone number format
         const phoneRegex = /^(0[3|5|7|8|9])[0-9]{8}$/;
         if (!phoneRegex.test(phoneCode)) {
-            return res.status(400).json({ success: false, message: 'Số điện thoại không đúng định dạng (10 chữ số, ví dụ: 0912345678).' });
+            return res.status(400).json({ success: false, message: 'Phone Number không VNDúng VNDịnh dạng (10 chữ số, ví dụ: 0912345678).' });
         }
 
         const Table = db.table;
         const table = await Table.findOne({ tableNumber: tableNumber });
         if (!table) {
-            return res.status(404).json({ success: false, message: "Bàn không tồn tại." });
+            return res.status(404).json({ success: false, message: "Table không tồn tại." });
         }
 
         if (table.session_pin && table.session_pin !== pin) {
-            return res.status(403).json({ success: false, message: "Mã PIN không chính xác. Vui lòng liên hệ nhân viên để lấy mã." });
+            return res.status(403).json({ success: false, message: "PIN Code không chính xác. Please liên hệ nhân viên to lấy mã." });
         }
 
-        // 1. Tìm tên khách hàng gần nhất đã dùng số điện thoại này
+        // 1. Tìm tên khách hàng gần nhất VNDã dùng số phone này
         const lastOrderWithPhone = await Order.findOne({ phone: phoneCode }).sort({ createdAt: -1 });
         const suggestedName = lastOrderWithPhone ? lastOrderWithPhone.guest_name : null;
 
-        // 2. Nếu khách chưa nhập tên nhưng ta tìm thấy tên cũ -> Trả về gợi ý
+        // 2. Nếu khách chưa nhập tên nhưng ta tìm thấy tên cũ -> Return về gợi ý
         if (!username && suggestedName) {
             return res.status(200).json({ 
                 success: true, 
@@ -698,7 +708,7 @@ exports.joinGuestSession = async (req, res) => {
             });
         }
 
-        // 3. Kiểm tra tính xác thực của tên đã chọn (nếu có)
+        // 3. Kiểm tra tính xác thực của tên VNDã chọn (nếu có)
         if (username) {
             const orderByName = await Order.findOne({ 
                 table_number: tableNumber, 
@@ -708,15 +718,15 @@ exports.joinGuestSession = async (req, res) => {
             });
 
             if (orderByName) {
-                // Nếu đơn hàng này đã được gắn với một số điện thoại khác -> Yêu cầu xác thực đúng
+                // Nếu order này has been gắn với một số phone khác -> Request xác thực VNDúng
                 if (orderByName.phone && orderByName.phone !== phoneCode) {
                     return res.status(401).json({ 
                         success: false, 
-                        message: "Tên này đã được đăng ký bởi một số điện thoại khác. Vui lòng nhập đúng số điện thoại của bạn hoặc chọn tên khác." 
+                        message: "Name này has been VNDăng ký bởi một số phone khác. Please enter VNDúng số phone của bạn hoặc chọn tên khác." 
                     });
                 }
                 
-                // Trả về sessionId cũ để khách tiếp tục phiên
+                // Return về sessionId cũ to khách tiếp tục phiên
                 return res.status(200).json({ 
                     success: true, 
                     username: orderByName.guest_name, 
@@ -726,7 +736,7 @@ exports.joinGuestSession = async (req, res) => {
             }
         }
 
-        // 4. Kiểm tra xem số điện thoại này đã có phiên ở bàn này chưa (phòng trường hợp khách dùng tên khác nhưng cùng phone)
+        // 4. Kiểm tra xem số phone này VNDã có phiên ở bàn này chưa (phòng trường hợp khách dùng tên khác nhưng cùng phone)
         const orderByPhone = await Order.findOne({ 
             table_number: tableNumber, 
             phone: phoneCode,
@@ -743,17 +753,17 @@ exports.joinGuestSession = async (req, res) => {
             });
         }
 
-        // 5. Nếu chưa có phiên nào và cũng chưa có username -> Yêu cầu nhập tên
+        // 5. Nếu chưa có phiên nào và cũng chưa có username -> Request nhập tên
         if (!username) {
             return res.status(200).json({ success: true, needName: true });
         }
 
-        // 6. Khách mới hoàn toàn cho bàn này -> Tạo ID ngẫu nhiên
+        // 6. Guest mới hoàn toàn cho bàn này -> Tạo ID ngẫu nhiên
         const randomId = Math.random().toString(36).substring(2, 8);
         return res.status(200).json({ success: true, username: username, code: phoneCode, sessionId: randomId });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ success: false, message: 'Lỗi xác thực định danh' });
+        res.status(500).json({ success: false, message: 'Error xác thực VNDịnh danh' });
     }
 };
 
@@ -764,18 +774,20 @@ exports.updateOrderItemStatus = async (req, res) => {
 
         const item = await OrderItem.findOne({ _id: itemId, order_id: id });
         if (!item) {
-            return res.status(404).json({ success: false, message: "Không tìm thấy món trong đơn." });
+            return res.status(404).json({ success: false, message: "Không tìm thấy món trong order." });
         }
 
         if (status === 'CANCELED' && item.status !== 'CANCELED') {
             const Order = db.order;
             const orderDoc = await Order.findById(id);
             if (orderDoc) {
-                // Giảm tiền và số lượng của đơn hàng
+                // Giảm tiền và số lượng của order
                 orderDoc.total_price = Math.max(0, orderDoc.total_price - item.total_price);
                 orderDoc.total_item = Math.max(0, orderDoc.total_item - item.qty);
                 await orderDoc.save();
             }
+            // Hoàn lại nguyên liệu cho món bị hủy
+            await restoreIngredientsForItems([item]);
         }
 
         item.status = status;
@@ -812,7 +824,7 @@ exports.updateOrderItemStatus = async (req, res) => {
         res.status(200).json({ success: true, message: "Đã cập nhật trạng thái món", item });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ success: false, message: "Lỗi cập nhật món." });
+        res.status(500).json({ success: false, message: "Error cập nhật món." });
     }
 };
 
@@ -820,12 +832,12 @@ exports.mergeOrders = async (req, res) => {
     try {
         const { orderIds } = req.body;
         if (!orderIds || !Array.isArray(orderIds) || orderIds.length < 2) {
-            return res.status(400).json({ success: false, message: "Cần truyền ít nhất 2 orderId để gộp." });
+            return res.status(400).json({ success: false, message: "Cần truyền ít nhất 2 orderId to gộp." });
         }
 
         const orders = await Order.find({ _id: { $in: orderIds }, is_payment: false });
         if (orders.length !== orderIds.length) {
-            return res.status(400).json({ success: false, message: "Có order không hợp lệ hoặc đã thanh toán." });
+            return res.status(400).json({ success: false, message: "Có order không hợp lệ hoặc paid." });
         }
 
         const mainOrder = orders[0];
@@ -855,10 +867,10 @@ exports.mergeOrders = async (req, res) => {
 
         await Order.deleteMany({ _id: { $in: idsToDelete } });
 
-        res.status(200).json({ success: true, message: "Đã gộp đơn hàng", newOrderId: mainOrder._id });
+        res.status(200).json({ success: true, message: "Đã gộp order", newOrderId: mainOrder._id });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ success: false, message: "Lỗi gộp đơn hàng." });
+        res.status(500).json({ success: false, message: "Error gộp order." });
     }
 };
 
@@ -878,7 +890,7 @@ exports.getOrdersByMultiTables = async (req, res) => {
         }).sort({ createdAt: -1 });
         
         if (!orders || orders.length === 0) {
-            return res.status(404).send({ success: false, message: "Không tìm thấy đơn hàng nào cho các bàn này" });
+            return res.status(404).send({ success: false, message: "Không tìm thấy order nào cho các bàn này" });
         }
         
         const orderIds = orders.map(o => o._id);
@@ -899,7 +911,7 @@ exports.getOrdersByMultiTables = async (req, res) => {
             if (!groupedMap[pId]) {
                 groupedMap[pId] = {
                     product_id: pId,
-                    product_name: item.product_name || 'Không xác định',
+                    product_name: item.product_name || 'Không xác VNDịnh',
                     total_qty: 0,
                     unit_price: item.price,
                     byTable: {}
@@ -925,7 +937,7 @@ exports.getOrdersByMultiTables = async (req, res) => {
             tableNumbers: tableNumbers
         });
     } catch (err) {
-        console.error("Lỗi getOrdersByMultiTables:", err);
-        res.status(500).send({ success: false, message: "Lỗi server." });
+        console.error("Error getOrdersByMultiTables:", err);
+        res.status(500).send({ success: false, message: "Error server." });
     }
 };

@@ -1,12 +1,13 @@
 @use './scss/' as *;
 
-// Import Google Fonts hỗ trợ tiếng Việt
-@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+// Import Luxury Fonts
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap');
 @import 'bootstrap/dist/css/bootstrap.min.css';
 
 // Reset CSS
-*, *::before, *::after {
+*,
+*::before,
+*::after {
     padding: 0;
     margin: 0;
     box-sizing: border-box;
@@ -14,27 +15,33 @@
 
 // Base styles
 body {
-    font-family: 'Be Vietnam Pro', sans-serif;
+    font-family: $font-body;
     font-size: 16px;
     line-height: 1.5;
-    color: $color-text-primary;
-    background-color: $color-background-light;
+    color: $text;
+    background-color: $bg;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: $transition;
 }
 
 // Typography
-h1, h2, h3, h4, h5, h6 {
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 600;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: $font-heading;
+    font-weight: 700;
     line-height: 1.2;
-    color: $color-text-primary;
+    color: $gold;
     margin-bottom: 1rem;
 }
 
 h1 {
     font-size: 2.5rem;
-    
+
     @media (max-width: 768px) {
         font-size: 2rem;
     }
@@ -42,7 +49,7 @@ h1 {
 
 h2 {
     font-size: 2rem;
-    
+
     @media (max-width: 768px) {
         font-size: 1.75rem;
     }
@@ -50,7 +57,7 @@ h2 {
 
 h3 {
     font-size: 1.75rem;
-    
+
     @media (max-width: 768px) {
         font-size: 1.5rem;
     }
@@ -58,7 +65,7 @@ h3 {
 
 p {
     margin-bottom: 1rem;
-    color: $color-text-secondary;
+    color: $text-muted;
 }
 
 // Container
@@ -78,17 +85,18 @@ p {
 .main-content {
     margin-left: 250px;
     min-height: 100vh;
-    transition: all 0.4s ease;
-    background-color: $color-background-light;
+    transition: $transition;
+    background-color: $bg;
     flex: 1;
 
     // Hide scrollbar by default for staff area
     scrollbar-width: none !important;
     -ms-overflow-style: none !important;
+
     &::-webkit-scrollbar {
         display: none !important;
     }
-    
+
     @media (max-width: 992px) {
         margin-left: 0;
     }
@@ -98,6 +106,7 @@ p {
 .show-staff-scrollbar {
     scrollbar-width: auto !important;
     -ms-overflow-style: auto !important;
+
     &::-webkit-scrollbar {
         display: block !important;
         width: 0.5rem;
@@ -108,6 +117,7 @@ p {
 .hide-scrollbar {
     scrollbar-width: none !important;
     -ms-overflow-style: none !important;
+
     &::-webkit-scrollbar {
         display: none !important;
     }
@@ -117,11 +127,12 @@ p {
     flex: 1;
     display: flex;
     flex-direction: column;
+    background-color: $bg;
 }
 
 .block-content {
-    padding: 2rem;
-    
+    padding: 1rem 2rem 0rem 2rem;
+
     @media (max-width: 768px) {
         padding: 1rem;
     }
@@ -140,23 +151,26 @@ p {
 
 // Common Components
 .background-radius {
-    background-color: $color-text-light;
-    border-radius: 1.25rem;
-    box-shadow: 0 0.5rem 1rem rgba($color-text-primary, 0.08);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    
+    background-color: $surface;
+    border: 1px solid $border;
+    border-radius: $radius;
+    box-shadow: $shadow;
+    transition: $transition;
+
     &:hover {
         transform: translateY(-2px);
-        box-shadow: 0 0.75rem 1.5rem rgba($color-text-primary, 0.12);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+        border-color: rgba($gold, 0.3);
     }
 }
 
 .title-admin {
     font-size: 1.5rem;
-    color: $color-text-primary;
+    color: $gold;
     margin: 0 0 1.25rem 1.25rem;
     position: relative;
-    
+    font-family: $font-heading;
+
     &::after {
         content: '';
         position: absolute;
@@ -164,39 +178,83 @@ p {
         left: 0;
         width: 3rem;
         height: 0.25rem;
-        background-color: $color-primary;
+        background-color: $gold;
         border-radius: 0.125rem;
+        box-shadow: 0 0 10px rgba($gold, 0.5);
     }
 }
 
 // Scrollbar Styling
 ::-webkit-scrollbar {
-    width: 0.5rem;
+    width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-    background: $color-background-light;
+    background: $bg;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: $color-primary;
-    border-radius: 0.25rem;
-    
+    background: $border;
+    border-radius: 10px;
+
     &:hover {
-        background: darken-color($color-primary, 10%);
+        background: $gold;
     }
 }
 
 // Selection Styling
 ::selection {
-    background-color: $color-primary;
-    color: $color-text-light;
+    background-color: $gold;
+    color: black;
 }
 
 // Focus Styling
 :focus {
     outline: none;
-    box-shadow: 0 0 0 2px rgba($color-primary, 0.5);
+    box-shadow: 0 0 0 2px rgba($gold, 0.5);
+}
+
+// Buttons
+.btn-primary {
+    background-color: $gold !important;
+    border-color: $gold !important;
+    color: black !important;
+    font-weight: 600;
+    transition: $transition;
+
+    &:hover {
+        background-color: darken($gold, 5%) !important;
+        border-color: darken($gold, 5%) !important;
+        transform: scale(1.02);
+        box-shadow: 0 0 15px rgba($gold, 0.3);
+    }
+}
+
+.btn-secondary {
+    background-color: transparent !important;
+    border-color: $gold !important;
+    color: $gold !important;
+    font-weight: 600;
+    transition: $transition;
+
+    &:hover {
+        background-color: rgba($gold, 0.1) !important;
+        transform: scale(1.02);
+    }
+}
+
+// Inputs
+input, textarea, select {
+    background-color: $surface !important;
+    border: 1px solid $border !important;
+    color: $text !important;
+    border-radius: 8px !important;
+    transition: $transition;
+
+    &:focus {
+        border-color: $gold !important;
+        box-shadow: 0 0 0 2px rgba($gold, 0.2) !important;
+    }
 }
 
 // Animation Classes
@@ -219,14 +277,26 @@ p {
 }
 
 // Utility Classes
-.text-primary { color: $color-primary !important; }
-.text-secondary { color: $color-secondary !important; }
-.text-success { color: $color-success !important; }
-.text-warning { color: $color-warning !important; }
-.text-error { color: $color-error !important; }
+.text-primary {
+    color: $gold !important;
+}
 
-.bg-primary { background-color: $color-primary !important; }
-.bg-secondary { background-color: $color-secondary !important; }
-.bg-success { background-color: $color-success !important; }
-.bg-warning { background-color: $color-warning !important; }
-.bg-error { background-color: $color-error !important; }
+.text-gold {
+    color: $gold !important;
+}
+
+.text-wine {
+    color: $wine !important;
+}
+
+.text-beige {
+    color: $beige !important;
+}
+
+.bg-surface {
+    background-color: $surface !important;
+}
+
+.bg-gold {
+    background-color: $gold !important;
+}

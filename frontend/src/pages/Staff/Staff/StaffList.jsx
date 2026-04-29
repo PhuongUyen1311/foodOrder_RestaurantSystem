@@ -3,518 +3,518 @@ import { Form, Button, Table, Modal, InputGroup } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
 import { FaUser, FaEye, FaEyeSlash, FaSearch, FaRegEdit } from 'react-icons/fa';
 import { MdDelete } from 'react-icons/md';
-import { IoMdClose } from "react-icons/io";
+import { IoMdClose } from"react-icons/io";
 import 'react-toastify/dist/ReactToastify.css';
 import './stafflist.scss';
 
 const StaffList = () => {
-    const [staffs, setStaffs] = useState([]);
-    const [loading, setLoading] = useState(false);
+ const [staffs, setStaffs] = useState([]);
+ const [loading, setLoading] = useState(false);
 
-    const [searchTerm, setSearchTerm] = useState('');
-    const [debouncedSearch, setDebouncedSearch] = useState('');
-    const [selectedRole, setSelectedRole] = useState('All'); 
-    const [selectedGender, setSelectedGender] = useState('All'); 
+ const [searchTerm, setSearchTerm] = useState('');
+ const [debouncedSearch, setDebouncedSearch] = useState('');
+ const [selectedRole, setSelectedRole] = useState('All');
+ const [selectedGender, setSelectedGender] = useState('All');
 
-    // Pagination
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const itemsPerPage = import.meta.env.VITE_ITEMS_PER_PAGE || 6;
+ // Pagination
+ const [currentPage, setCurrentPage] = useState(1);
+ const [totalPages, setTotalPages] = useState(1);
+ const itemsPerPage = import.meta.env.VITE_ITEMS_PER_PAGE || 6;
 
-    // Modal state
-    const [showModal, setShowModal] = useState(false);
-    const [isEditMode, setIsEditMode] = useState(false);
-    const [selectedStaffId, setSelectedStaffId] = useState(null);
+ // Modal state
+ const [showModal, setShowModal] = useState(false);
+ const [isEditMode, setIsEditMode] = useState(false);
+ const [selectedStaffId, setSelectedStaffId] = useState(null);
 
-    // Form data
-    const [formData, setFormData] = useState({
-        first_name: '',
-        last_name: '',
-        email: '',
-        password: '',
-        confirm_password: '',
-        phone: '',
-        age: '',
-        gender: '',
-        role: 'STAFF' // Default when creating
-    });
+ // Form data
+ const [formData, setFormData] = useState({
+ first_name: '',
+ last_name: '',
+ email: '',
+ password: '',
+ confirm_password: '',
+ phone: '',
+ age: '',
+ gender: '',
+ role: 'STAFF' // Default when creating
+ });
 
-    const [selectedImage, setSelectedImage] = useState(null);
-    const [currentAvatarUrl, setCurrentAvatarUrl] = useState('');
-    const [showPassword, setShowPassword] = useState([false, false]);
-    const fileInputRef = useRef(null);
+ const [selectedImage, setSelectedImage] = useState(null);
+ const [currentAvatarUrl, setCurrentAvatarUrl] = useState('');
+ const [showPassword, setShowPassword] = useState([false, false]);
+ const fileInputRef = useRef(null);
 
-    const accessToken = sessionStorage.getItem("accessToken");
-    const API_URL = import.meta.env.VITE_API_URL || "";
+ const accessToken = sessionStorage.getItem("accessToken");
+ const API_URL = import.meta.env.VITE_API_URL ||"";
 
-    // Debounce search
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedSearch(searchTerm);
-        }, 300);
-        return () => clearTimeout(handler);
-    }, [searchTerm]);
+ // Debounce search
+ useEffect(() => {
+ const handler = setTimeout(() => {
+ setDebouncedSearch(searchTerm);
+ }, 300);
+ return () => clearTimeout(handler);
+ }, [searchTerm]);
 
-    // Fetch staffs on init, page change, role change, or search change
-    useEffect(() => {
-        fetchStaffs();
-    }, [currentPage, debouncedSearch, selectedRole, selectedGender]);
+ // Fetch staffs on init, page change, role change, or search change
+ useEffect(() => {
+ fetchStaffs();
+ }, [currentPage, debouncedSearch, selectedRole, selectedGender]);
 
-    // Reset pagination when search or filter changes
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [debouncedSearch, selectedRole, selectedGender]);
+ // Reset pagination when search or filter changes
+ useEffect(() => {
+ setCurrentPage(1);
+ }, [debouncedSearch, selectedRole, selectedGender]);
 
-    const fetchStaffs = async () => {
-        setLoading(true);
-        try {
-            const query = new URLSearchParams({
-                page: currentPage,
-                limit: itemsPerPage,
-                search: debouncedSearch,
-                role: selectedRole,
-                gender: selectedGender
-            }).toString();
+ const fetchStaffs = async () => {
+ setLoading(true);
+ try {
+ const query = new URLSearchParams({
+ page: currentPage,
+ limit: itemsPerPage,
+ search: debouncedSearch,
+ role: selectedRole,
+ gender: selectedGender
+ }).toString();
 
-            const response = await fetch(`/api/staff?${query}`, {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
-            });
+ const response = await fetch(`/api/staff?${query}`, {
+ headers: {
+ Authorization: `Bearer ${accessToken}`
+ }
+ });
 
-            if (!response.ok) {
-                const errData = await response.json();
-                throw new Error(errData.message || 'Lỗi tải danh sách người dùng');
-            }
+ if (!response.ok) {
+ const errData = await response.json();
+ throw new Error(errData.message || 'Error loading staff list');
+ }
 
-            const data = await response.json();
-            setStaffs(data.staffs);
-            setTotalPages(data.totalPages);
-            if (data.currentPage !== currentPage) {
-                setCurrentPage(data.currentPage);
-            }
-        } catch (error) {
-            toast.error(error.message);
-        } finally {
-            setLoading(false);
-        }
-    };
+ const data = await response.json();
+ setStaffs(data.staffs);
+ setTotalPages(data.totalPages);
+ if (data.currentPage !== currentPage) {
+ setCurrentPage(data.currentPage);
+ }
+ } catch (error) {
+ toast.error(error.message);
+ } finally {
+ setLoading(false);
+ }
+ };
 
-    const handleAvatarClick = () => {
-        if (fileInputRef.current) fileInputRef.current.click();
-    };
+ const handleAvatarClick = () => {
+ if (fileInputRef.current) fileInputRef.current.click();
+ };
 
-    const handleImageChange = (event) => {
-        const file = event.target.files[0];
-        if (file) setSelectedImage(file);
-    };
+ const handleImageChange = (event) => {
+ const file = event.target.files[0];
+ if (file) setSelectedImage(file);
+ };
 
-    const handleTogglePassword = (index) => {
-        setShowPassword((prev) => {
-            const updated = [...prev];
-            updated[index] = !updated[index];
-            return updated;
-        });
-    };
+ const handleTogglePassword = (index) => {
+ setShowPassword((prev) => {
+ const updated = [...prev];
+ updated[index] = !updated[index];
+ return updated;
+ });
+ };
 
-    const resetForm = () => {
-        setFormData({
-            first_name: '',
-            last_name: '',
-            email: '',
-            password: '',
-            confirm_password: '',
-            phone: '',
-            age: '',
-            gender: '',
-            role: 'STAFF'
-        });
-        setSelectedImage(null);
-        setCurrentAvatarUrl('');
-        setShowPassword([false, false]);
-        setSelectedStaffId(null);
-        setIsEditMode(false);
-    };
+ const resetForm = () => {
+ setFormData({
+ first_name: '',
+ last_name: '',
+ email: '',
+ password: '',
+ confirm_password: '',
+ phone: '',
+ age: '',
+ gender: '',
+ role: 'STAFF'
+ });
+ setSelectedImage(null);
+ setCurrentAvatarUrl('');
+ setShowPassword([false, false]);
+ setSelectedStaffId(null);
+ setIsEditMode(false);
+ };
 
-    const handleShowAddModal = () => {
-        resetForm();
-        setShowModal(true);
-    };
+ const handleShowAddModal = () => {
+ resetForm();
+ setShowModal(true);
+ };
 
-    const handleShowEditModal = (staff) => {
-        resetForm();
-        setIsEditMode(true);
-        setSelectedStaffId(staff._id || staff.id);
-        setCurrentAvatarUrl(staff.avatar || '');
-        setFormData({
-            first_name: staff.first_name || '',
-            last_name: staff.last_name || '',
-            email: staff.email || '',
-            password: '',
-            confirm_password: '',
-            phone: staff.phone || '',
-            age: staff.age || '',
-            gender: staff.gender || '',
-            role: staff.role || 'STAFF'
-        });
-        setShowModal(true);
-    };
+ const handleShowEditModal = (staff) => {
+ resetForm();
+ setIsEditMode(true);
+ setSelectedStaffId(staff._id || staff.id);
+ setCurrentAvatarUrl(staff.avatar || '');
+ setFormData({
+ first_name: staff.first_name || '',
+ last_name: staff.last_name || '',
+ email: staff.email || '',
+ password: '',
+ confirm_password: '',
+ phone: staff.phone || '',
+ age: staff.age || '',
+ gender: staff.gender || '',
+ role: staff.role || 'STAFF'
+ });
+ setShowModal(true);
+ };
 
-    const handleCloseModal = () => {
-        setShowModal(false);
-    };
+ const handleCloseModal = () => {
+ setShowModal(false);
+ };
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
+ const handleSubmit = async (event) => {
+ event.preventDefault();
 
-        if (!isEditMode || (formData.password || formData.confirm_password)) {
-            if (formData.password !== formData.confirm_password) {
-                return toast.error('Xác nhận mật khẩu không khớp!');
-            }
-            if (formData.password.length < 6) {
-                return toast.error('Mật khẩu phải ít nhất là 6 ký tự');
-            }
-        }
+ if (!isEditMode || (formData.password || formData.confirm_password)) {
+ if (formData.password !== formData.confirm_password) {
+ return toast.error('Confirm password does not match!');
+ }
+ if (formData.password.length < 6) {
+ return toast.error('Password must be at least 6 characters');
+ }
+ }
 
-        const data = new FormData();
-        Object.keys(formData).forEach(key => {
-            if (formData[key] !== null && formData[key] !== '') {
-                data.append(key, formData[key]);
-            }
-        });
+ const data = new FormData();
+ Object.keys(formData).forEach(key => {
+ if (formData[key] !== null && formData[key] !== '') {
+ data.append(key, formData[key]);
+ }
+ });
 
-        if (selectedImage) {
-            data.append('avatar', selectedImage);
-        }
+ if (selectedImage) {
+ data.append('avatar', selectedImage);
+ }
 
-        try {
-            const method = isEditMode ? 'PUT' : 'POST';
-            const endpoint = isEditMode ? `/api/staff/${selectedStaffId}` : '/api/staff';
+ try {
+ const method = isEditMode ? 'PUT' : 'POST';
+ const endpoint = isEditMode ? `/api/staff/${selectedStaffId}` : '/api/staff';
 
-            const response = await fetch(endpoint, {
-                method: method,
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                },
-                body: data
-            });
+ const response = await fetch(endpoint, {
+ method: method,
+ headers: {
+ Authorization: `Bearer ${accessToken}`
+ },
+ body: data
+ });
 
-            const result = await response.json();
+ const result = await response.json();
 
-            if (!response.ok) {
-                throw new Error(result.message || 'Thao tác thất bại');
-            }
+ if (!response.ok) {
+ throw new Error(result.message || 'Operation failed');
+ }
 
-            toast.success(result.message || 'Thành công!');
-            handleCloseModal();
-            fetchStaffs();
-        } catch (error) {
-            toast.error(error.message);
-        }
-    };
+ toast.success(result.message || 'Success!');
+ handleCloseModal();
+ fetchStaffs();
+ } catch (error) {
+ toast.error(error.message);
+ }
+ };
 
-    const handleDelete = async (id) => {
-        if (window.confirm("Bạn có chắc chắn muốn xóa nhân viên này?")) {
-            try {
-                const response = await fetch(`/api/staff/${id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        Authorization: `Bearer ${accessToken}`
-                    }
-                });
+ const handleDelete = async (id) => {
+ if (window.confirm("Are you sure you want to delete this staff?")) {
+ try {
+ const response = await fetch(`/api/staff/${id}`, {
+ method: 'DELETE',
+ headers: {
+ Authorization: `Bearer ${accessToken}`
+ }
+ });
 
-                const result = await response.json();
-                if (!response.ok) throw new Error(result.message || 'Xóa thất bại');
+ const result = await response.json();
+ if (!response.ok) throw new Error(result.message || 'Delete failed');
 
-                toast.success('Xóa tài khoản thành công!');
-                fetchStaffs();
-            } catch (error) {
-                toast.error(error.message);
-            }
-        }
-    };
+ toast.success('Account deleted successfully!');
+ fetchStaffs();
+ } catch (error) {
+ toast.error(error.message);
+ }
+ }
+ };
 
-    const getAvatarSrc = (staff) => {
-        if (staff.avatar) return `${API_URL}${staff.avatar}`;
-        return null;
-    };
+ const getAvatarSrc = (staff) => {
+ if (staff.avatar) return `${API_URL}${staff.avatar}`;
+ return null;
+ };
 
-    return (
-        <div className="staff-management block-staff ps-0 pt-0">
-            <ToastContainer position="top-right" autoClose={1500} />
-            <div className="staff-management__header d-flex justify-content-between align-items-center mb-4 mt-4 px-0">
-                <h2 className="title-admin mb-0" style={{ fontSize: '24px', fontWeight: '600', color: '#2d3748', marginLeft: '0', paddingLeft: '0' }}>Quản lý Nhân viên
-                    <style>{`.title-admin::after { display: none !important; }`}</style> </h2>
-                <div className="d-flex align-items-center gap-2">
-                    <Form.Select
-                        value={selectedGender}
-                        onChange={(e) => {
-                            setSelectedGender(e.target.value);
-                            setCurrentPage(1);
-                        }}
-                        style={{ width: '150px' }}
-                        className="bg-white border-secondary-subtle shadow-none"
-                    >
-                        <option value="All">Tất cả giới tính</option>
-                        <option value="male">Nam</option>
-                        <option value="female">Nữ</option>
-                    </Form.Select>
+ return (
+ <div className="staff-management block-staff ps-0 pt-0">
+ <ToastContainer position="top-right" autoClose={1500} />
+ <div className="staff-management__header d-flex justify-content-between align-items-center mb-4 px-0">
+ <h2 className="title-admin mb-0" style={{ fontSize: '24px', fontWeight: '600', color: '#c5a059', marginLeft: '0', paddingLeft: '0' }}>Staff Management
+ <style>{`.title-admin::after { display: none !important; }`}</style> </h2>
+ <div className="d-flex align-items-center gap-2">
+ <Form.Select
+ value={selectedGender}
+ onChange={(e) => {
+ setSelectedGender(e.target.value);
+ setCurrentPage(1);
+ }}
+ style={{ width: '150px' }}
+ className="bg-dark text-white border-secondary-subtle shadow-none"
+ >
+ <option value="All">All Genders</option>
+ <option value="male">Male</option>
+ <option value="female">Female</option>
+ </Form.Select>
 
-                    <Form.Select
-                        value={selectedRole}
-                        onChange={(e) => {
-                            setSelectedRole(e.target.value);
-                            setCurrentPage(1);
-                        }}
-                        style={{ width: '150px' }}
-                        className="bg-white border-secondary-subtle shadow-none"
-                    >
-                        <option value="All">Tất cả quyền</option>
-                        <option value="ADMIN">Quản lý (ADMIN)</option>
-                        <option value="STAFF">Nhân viên (STAFF)</option>
-                    </Form.Select>
+ <Form.Select
+ value={selectedRole}
+ onChange={(e) => {
+ setSelectedRole(e.target.value);
+ setCurrentPage(1);
+ }}
+ style={{ width: '150px' }}
+ className="bg-dark text-white border-secondary-subtle shadow-none"
+ >
+ <option value="All">All Roles</option>
+ <option value="ADMIN">Manager (ADMIN)</option>
+ <option value="STAFF">Staff (STAFF)</option>
+ </Form.Select>
 
-                    <div className="search-container" style={{ width: '380px' }}>
-                        <InputGroup>
-                            <InputGroup.Text className="bg-white border-end-0 border-secondary-subtle">
-                                <FaSearch className="text-muted" />
-                            </InputGroup.Text>
-                            <Form.Control
-                                type="text"
-                                placeholder="Tìm theo tên, email, SĐT..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="border-start-0 border-secondary-subtle ps-1 shadow-none"
-                            />
-                            {searchTerm && (
-                                <InputGroup.Text
-                                    className="bg-white border-start-0 cursor-pointer border-secondary-subtle"
-                                    onClick={() => {
-                                        setSearchTerm('');
-                                        setCurrentPage(1);
-                                    }}
-                                >
-                                    <IoMdClose className="text-secondary" />
-                                </InputGroup.Text>
-                            )}
-                        </InputGroup>
-                    </div>
-                    <Button className="btn btn-success ms-3 d-flex align-items-center gap-2" onClick={handleShowAddModal} style={{ padding: '10px 22px', borderRadius: '8px', fontWeight: '500' }}> + Thêm tài khoản</Button>
-                </div>
-            </div>
+ <div className="search-container" style={{ width: '380px' }}>
+ <InputGroup>
+ <InputGroup.Text className="bg-dark text-white border-end-0 border-secondary-subtle">
+ <FaSearch className="text-muted" />
+ </InputGroup.Text>
+ <Form.Control
+ type="text"
+ placeholder="Search by name, email, phone..."
+ value={searchTerm}
+ onChange={(e) => setSearchTerm(e.target.value)}
+ className="border-start-0 border-secondary-subtle ps-1 shadow-none"
+ />
+ {searchTerm && (
+ <InputGroup.Text
+ className="bg-dark text-white border-start-0 cursor-pointer border-secondary-subtle"
+ onClick={() => {
+ setSearchTerm('');
+ setCurrentPage(1);
+ }}
+ >
+ <IoMdClose className="text-secondary" />
+ </InputGroup.Text>
+ )}
+ </InputGroup>
+ </div>
+ <Button className="btn btn-success ms-3 d-flex align-items-center gap-2" onClick={handleShowAddModal} style={{ padding: '10px 22px', borderRadius: '8px', fontWeight: '500' }}> + Add Account</Button>
+ </div>
+ </div>
 
-            {loading ? (
-                <div className="text-center mt-4">
-                    <div className="spinner-border text-success" role="status">
-                        <span className="visually-hidden">Loading...</span>
-                    </div>
-                </div>
-            ) : staffs.length === 0 ? (
-                <div className="alert alert-info text-center mt-4">
-                    Không tìm thấy danh sách nào phù hợp.
-                </div>
-            ) : (
-                <>
-                    <Table striped bordered hover className="mt-3 text-center align-middle">
-                        <thead className="table-success">
-                            <tr>
-                                <th>Avatar</th>
-                                <th>Họ Tên</th>
-                                <th>Email</th>
-                                <th>Quyền</th>
-                                <th>SĐT</th>
-                                <th>Giới tính</th>
-                                <th>Hành động</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {staffs.map((staff) => (
-                                <tr key={staff.id || staff._id}>
-                                    <td>
-                                        {getAvatarSrc(staff) ? (
-                                            <img src={getAvatarSrc(staff)} alt="avatar" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
-                                        ) : (
-                                            <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#e9ecef', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
-                                                <FaUser color="#6c757d" />
-                                            </div>
-                                        )}
-                                    </td>
-                                    <td>{`${staff.first_name} ${staff.last_name}`}</td>
-                                    <td>{staff.email}</td>
-                                    <td>
-                                        <span className={`badge ${staff.role === 'ADMIN' ? 'bg-danger' : 'bg-primary'}`}>
-                                            {staff.role}
-                                        </span>
-                                    </td>
-                                    <td>{staff.phone}</td>
-                                    <td>{staff.gender === 'male' ? 'Nam' : staff.gender === 'female' ? 'Nữ' : staff.gender}</td>
-                                    <td>
-                                        <div className="d-flex align-items-center justify-content-center gap-1">
-                                            <button className="btn btn-sm btn-link p-1" title="Sửa thông tin" onClick={() => handleShowEditModal(staff)}>
-                                                <FaRegEdit className='icon-update fs-5 text-success' />
-                                            </button>
-                                            <button className="btn btn-sm btn-link p-1" title="Xóa tài khoản" onClick={() => handleDelete(staff.id || staff._id)}>
-                                                <MdDelete className='icon-delete fs-5 text-danger' />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </Table>
+ {loading ? (
+ <div className="text-center mt-4">
+ <div className="spinner-border text-success" role="status">
+ <span className="visually-hidden">Loading...</span>
+ </div>
+ </div>
+ ) : staffs.length === 0 ? (
+ <div className="alert alert-info text-center mt-4">
+ No matching staff records found.
+ </div>
+ ) : (
+ <>
+ <Table variant="dark" striped bordered hover className="mt-3 text-center align-middle">
+ <thead className="table-dark">
+ <tr>
+ <th>Avatar</th>
+ <th>Full Name</th>
+ <th>Email</th>
+ <th>Role</th>
+ <th>Phone</th>
+ <th>Gender</th>
+ <th>Actions</th>
+ </tr>
+ </thead>
+ <tbody>
+ {staffs.map((staff) => (
+ <tr key={staff.id || staff._id}>
+ <td>
+ {getAvatarSrc(staff) ? (
+ <img src={getAvatarSrc(staff)} alt="avatar" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
+ ) : (
+ <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#e9ecef', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
+ <FaUser color="#6c757d" />
+ </div>
+ )}
+ </td>
+ <td>{`${staff.first_name} ${staff.last_name}`}</td>
+ <td>{staff.email}</td>
+ <td>
+ <span className={`badge ${staff.role === 'ADMIN' ? 'bg-danger' : 'bg-primary'}`}>
+ {staff.role}
+ </span>
+ </td>
+ <td>{staff.phone}</td>
+ <td>{staff.gender === 'male' ? 'Male' : staff.gender === 'female' ? 'Female' : staff.gender}</td>
+ <td>
+ <div className="d-flex align-items-center justify-content-center gap-1">
+ <button className="btn btn-sm btn-link p-1" title="Edit info" onClick={() => handleShowEditModal(staff)}>
+ <FaRegEdit className='icon-update fs-5 text-success' />
+ </button>
+ <button className="btn btn-sm btn-link p-1" title="Delete account" onClick={() => handleDelete(staff.id || staff._id)}>
+ <MdDelete className='icon-delete fs-5 text-danger' />
+ </button>
+ </div>
+ </td>
+ </tr>
+ ))}
+ </tbody>
+ </Table>
 
-                    {totalPages > 1 && (
-                        <div className="admin-pagination">
-                            <button
-                                disabled={currentPage === 1}
-                                onClick={() => setCurrentPage(prev => prev - 1)}
-                            >
-                                Prev
-                            </button>
-                            {(() => {
-                                const maxVisiblePages = 5;
-                                const currentGroup = Math.ceil(currentPage / maxVisiblePages);
-                                const startPage = (currentGroup - 1) * maxVisiblePages + 1;
-                                const endPage = Math.min(startPage + maxVisiblePages - 1, totalPages);
-                                const pageNumbers = [];
-                                for (let i = startPage; i <= endPage; i++) {
-                                    pageNumbers.push(
-                                        <button
-                                            key={i}
-                                            className={currentPage === i ? 'active' : ''}
-                                            onClick={() => setCurrentPage(i)}
-                                        >
-                                            {i}
-                                        </button>
-                                    );
-                                }
-                                return pageNumbers;
-                            })()}
-                            <button
-                                disabled={currentPage >= totalPages || totalPages === 0}
-                                onClick={() => setCurrentPage(prev => prev + 1)}
-                            >
-                                Next
-                            </button>
-                        </div>
-                    )}
-                </>
-            )}
+ {totalPages > 1 && (
+ <div className="admin-pagination">
+ <button
+ disabled={currentPage === 1}
+ onClick={() => setCurrentPage(prev => prev - 1)}
+ >
+ Prev
+ </button>
+ {(() => {
+ const maxVisiblePages = 5;
+ const currentGroup = Math.ceil(currentPage / maxVisiblePages);
+ const startPage = (currentGroup - 1) * maxVisiblePages + 1;
+ const endPage = Math.min(startPage + maxVisiblePages - 1, totalPages);
+ const pageNumbers = [];
+ for (let i = startPage; i <= endPage; i++) {
+ pageNumbers.push(
+ <button
+ key={i}
+ className={currentPage === i ? 'active' : ''}
+ onClick={() => setCurrentPage(i)}
+ >
+ {i}
+ </button>
+ );
+ }
+ return pageNumbers;
+ })()}
+ <button
+ disabled={currentPage >= totalPages || totalPages === 0}
+ onClick={() => setCurrentPage(prev => prev + 1)}
+ >
+ Next
+ </button>
+ </div>
+ )}
+ </>
+ )}
 
-            <Modal show={showModal} onHide={handleCloseModal} size="lg" className="staff-modal">
-                <Modal.Header closeButton>
-                    <Modal.Title>{isEditMode ? 'Chỉnh sửa tài khoản' : 'Thêm tài khoản'}</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Form onSubmit={handleSubmit} className="staff-form">
-                        <div className="avatar-section text-center mb-4">
-                            <div
-                                className="avatar-preview-box"
-                                onClick={handleAvatarClick}
-                                style={{
-                                    cursor: 'pointer', margin: '0 auto', width: '120px', height: '120px',
-                                    borderRadius: '50%', backgroundColor: '#f8f9fa',
-                                    border: '1px solid #ced4da', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden'
-                                }}
-                            >
-                                {selectedImage || currentAvatarUrl ? (
-                                    <img
-                                        src={selectedImage ? URL.createObjectURL(selectedImage) : `${API_URL}${currentAvatarUrl}`}
-                                        alt="avatar"
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                    />
-                                ) : (
-                                    <FaUser size={60} color="#6c757d" />
-                                )}
-                            </div>
-                            <input
-                                type="file"
-                                accept="image/jpeg, image/png, image/jpg"
-                                onChange={handleImageChange}
-                                ref={fileInputRef}
-                                style={{ display: "none" }}
-                            />
-                            <p className="mt-2 text-muted" style={{ fontSize: '14px', cursor: 'pointer' }} onClick={handleAvatarClick}>
-                                Nhấn để tải ảnh lên
-                            </p>
-                        </div>
+ <Modal show={showModal} onHide={handleCloseModal} size="lg" className="staff-modal">
+ <Modal.Header closeButton>
+ <Modal.Title>{isEditMode ? 'Edit Account' : 'Add Account'}</Modal.Title>
+ </Modal.Header>
+ <Modal.Body>
+ <Form onSubmit={handleSubmit} className="staff-form">
+ <div className="avatar-section text-center mb-4">
+ <div
+ className="avatar-preview-box"
+ onClick={handleAvatarClick}
+ style={{
+ cursor: 'pointer', margin: '0 auto', width: '120px', height: '120px',
+ borderRadius: '50%', backgroundColor: '#f8f9fa',
+ border: '1px solid #ced4da', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden'
+ }}
+ >
+ {selectedImage || currentAvatarUrl ? (
+ <img
+ src={selectedImage ? URL.createObjectURL(selectedImage) : `${API_URL}${currentAvatarUrl}`}
+ alt="avatar"
+ style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+ />
+ ) : (
+ <FaUser size={60} color="#6c757d" />
+ )}
+ </div>
+ <input
+ type="file"
+ accept="image/jpeg, image/png, image/jpg"
+ onChange={handleImageChange}
+ ref={fileInputRef}
+ style={{ display:"none" }}
+ />
+ <p className="mt-2 text-muted" style={{ fontSize: '14px', cursor: 'pointer' }} onClick={handleAvatarClick}>
+ Click to upload photo
+ </p>
+ </div>
 
-                        <div className="row">
-                            <div className="col-md-6 mb-3">
-                                <Form.Control required type="text" value={formData.first_name}
-                                    onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                                    placeholder='Nhập họ' />
-                            </div>
-                            <div className="col-md-6 mb-3">
-                                <Form.Control required type="text" value={formData.last_name}
-                                    onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                                    placeholder='Nhập tên' />
-                            </div>
-                        </div>
+ <div className="row">
+ <div className="col-md-6 mb-3">
+ <Form.Control required type="text" value={formData.first_name}
+ onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+ placeholder='First Name' />
+ </div>
+ <div className="col-md-6 mb-3">
+ <Form.Control required type="text" value={formData.last_name}
+ onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+ placeholder='Last Name' />
+ </div>
+ </div>
 
-                        <div className="row">
-                            <div className="col-md-8 mb-3">
-                                <Form.Control required={!isEditMode} type="email" value={formData.email} disabled={isEditMode}
-                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                    placeholder='Nhập email (dùng để đăng nhập)' />
-                            </div>
-                            <div className="col-md-4 mb-3">
-                                <Form.Select value={formData.role}
-                                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}>
-                                    <option value="STAFF">Quyền: STAFF</option>
-                                    <option value="ADMIN">Quyền: ADMIN</option>
-                                </Form.Select>
-                            </div>
-                        </div>
+ <div className="row">
+ <div className="col-md-8 mb-3">
+ <Form.Control required={!isEditMode} type="email" value={formData.email} disabled={isEditMode}
+ onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+ placeholder='Email (used for login)' />
+ </div>
+ <div className="col-md-4 mb-3">
+ <Form.Select value={formData.role}
+ onChange={(e) => setFormData({ ...formData, role: e.target.value })}>
+ <option value="STAFF">Role: STAFF</option>
+ <option value="ADMIN">Role: ADMIN</option>
+ </Form.Select>
+ </div>
+ </div>
 
-                        <div className="position-relative mb-3 input-pwd-wrapper">
-                            <Form.Control required={!isEditMode} type={showPassword[0] ? 'text' : 'password'} value={formData.password}
-                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                placeholder={isEditMode ? 'Nhập mật khẩu mới (Bỏ trống nếu không đổi)' : 'Nhập mật khẩu'} />
-                            <div className="pwd-icon" onClick={() => handleTogglePassword(0)} style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer' }}>
-                                {showPassword[0] ? <FaEyeSlash /> : <FaEye />}
-                            </div>
-                        </div>
+ <div className="position-relative mb-3 input-pwd-wrapper">
+ <Form.Control required={!isEditMode} type={showPassword[0] ? 'text' : 'password'} value={formData.password}
+ onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+ placeholder={isEditMode ? 'New password (leave blank if unchanged)' : 'Password'} />
+ <div className="pwd-icon" onClick={() => handleTogglePassword(0)} style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer' }}>
+ {showPassword[0] ? <FaEyeSlash /> : <FaEye />}
+ </div>
+ </div>
 
-                        <div className="position-relative mb-3 input-pwd-wrapper">
-                            <Form.Control required={!isEditMode && formData.password.length > 0} type={showPassword[1] ? 'text' : 'password'} value={formData.confirm_password}
-                                onChange={(e) => setFormData({ ...formData, confirm_password: e.target.value })}
-                                placeholder={isEditMode ? 'Nhập lại mật khẩu mới' : 'Nhập lại mật khẩu'} />
-                            <div className="pwd-icon" onClick={() => handleTogglePassword(1)} style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer' }}>
-                                {showPassword[1] ? <FaEyeSlash /> : <FaEye />}
-                            </div>
-                        </div>
+ <div className="position-relative mb-3 input-pwd-wrapper">
+ <Form.Control required={!isEditMode && formData.password.length > 0} type={showPassword[1] ? 'text' : 'password'} value={formData.confirm_password}
+ onChange={(e) => setFormData({ ...formData, confirm_password: e.target.value })}
+ placeholder={isEditMode ? 'Confirm new password' : 'Confirm password'} />
+ <div className="pwd-icon" onClick={() => handleTogglePassword(1)} style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer' }}>
+ {showPassword[1] ? <FaEyeSlash /> : <FaEye />}
+ </div>
+ </div>
 
-                        <div className="row">
-                            <div className="col-md-4 mb-3">
-                                <Form.Control type="text" value={formData.phone}
-                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                    placeholder='Số điện thoại' />
-                            </div>
-                            <div className="col-md-4 mb-3">
-                                <Form.Control type="number" min="0" value={formData.age}
-                                    onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-                                    placeholder='Tuổi' />
-                            </div>
-                            <div className="col-md-4 mb-3">
-                                <Form.Select value={formData.gender}
-                                    onChange={(e) => setFormData({ ...formData, gender: e.target.value })}>
-                                    <option value="">Giới tính</option>
-                                    <option value="male">Nam</option>
-                                    <option value="female">Nữ</option>
-                                </Form.Select>
-                            </div>
-                        </div>
+ <div className="row">
+ <div className="col-md-4 mb-3">
+ <Form.Control type="text" value={formData.phone}
+ onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+ placeholder='Phone Number' />
+ </div>
+ <div className="col-md-4 mb-3">
+ <Form.Control type="number" min="0" value={formData.age}
+ onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+ placeholder='Age' />
+ </div>
+ <div className="col-md-4 mb-3">
+ <Form.Select value={formData.gender}
+ onChange={(e) => setFormData({ ...formData, gender: e.target.value })}>
+ <option value="">Gender</option>
+ <option value="male">Male</option>
+ <option value="female">Female</option>
+ </Form.Select>
+ </div>
+ </div>
 
-                        <div className="d-flex justify-content-end gap-2 mt-4">
-                            <Button variant="secondary" onClick={handleCloseModal}>Hủy bỏ</Button>
-                            <Button variant="success" type="submit">{isEditMode ? 'Lưu thay đổi' : 'Đăng ký'}</Button>
-                        </div>
-                    </Form>
-                </Modal.Body>
-            </Modal>
-        </div>
-    );
+ <div className="d-flex justify-content-end gap-2 mt-4">
+ <Button variant="secondary" onClick={handleCloseModal}>Cancel</Button>
+ <Button variant="success" type="submit">{isEditMode ? 'Save Changes' : 'Register'}</Button>
+ </div>
+ </Form>
+ </Modal.Body>
+ </Modal>
+ </div>
+ );
 };
 
 export default StaffList;

@@ -25,7 +25,7 @@ function Header() {
     };
 
     useEffect(() => {
-        // Cập nhật socket cho nhân viên
+        // Update socket cho nhân viên
         if (user && (user.id || user._id)) {
             socket.emit("adminConnect", user.id || user._id);
         }
@@ -44,7 +44,7 @@ function Header() {
             playNotificationSound();
             
             // Hiển thị Toast thông báo nhanh
-            const toastMessage = data.message || "Có thông báo mới từ hệ thống!";
+            const toastMessage = data.message || "New system notification!";
             if (data.type === 'support') {
                 toast.warning(toastMessage);
             } else {
@@ -54,14 +54,14 @@ function Header() {
             setNotifications(prev => {
                 const newList = [{ ...data, id: Date.now(), isRead: false }, ...prev];
                 localStorage.setItem("admin_notifications", JSON.stringify(newList));
-                // Thông báo cho các tab khác hoặc chính tab này về sự thay đổi
+                // Notification cho các tab khác hoặc chính tab này về sự thay VNDổi
                 window.dispatchEvent(new Event("storage"));
                 window.dispatchEvent(new CustomEvent("adminNotificationsUpdated", { detail: newList }));
                 return newList;
             });
         });
 
-        // Lắng nghe cập nhật trạng thái đợt gọi món
+        // Lắng nghe cập nhật trạng thái VNDợt gọi món
         socket.on("batchStatusUpdated", (data) => {
             const { orderId, batchNum, status } = data;
             setNotifications(prev => {
@@ -77,7 +77,7 @@ function Header() {
             });
         });
 
-        // Lắng nghe sự kiện thay đổi localStorage từ các tab khác
+        // Lắng nghe sự kiện thay VNDổi localStorage từ các tab khác
         const handleStorageChange = () => {
             const updated = JSON.parse(localStorage.getItem("admin_notifications") || "[]");
             setNotifications(updated);
@@ -113,7 +113,7 @@ function Header() {
             <div className="header-left">
                 <div className="header-search">
                     <FaSearch className="search-icon" />
-                    <input type="text" placeholder="Tìm kiếm..." />
+                    <input type="text" placeholder="Search..." />
                 </div>
             </div>
 
@@ -150,8 +150,8 @@ function Header() {
                             <div className="profile-name">
                                 {user?.firstName || user?.first_name}
                             </div>
-                            <Link to="/staff/profile" className="dropdown-item">Hồ sơ cá nhân</Link>
-                            <div className="dropdown-item logout" onClick={handleLogout}>Đăng xuất</div>
+                            <Link to="/staff/profile" className="dropdown-item">My Profile</Link>
+                            <div className="dropdown-item logout" onClick={handleLogout}>Logout</div>
                         </div>
                     )}
                 </div>

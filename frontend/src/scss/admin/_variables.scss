@@ -1,38 +1,16 @@
+@use '../variables' as luxury;
+
 // ==========================================
 // 1. RAW TOKENS (Base Palette)
 // ==========================================
-// Green (Thêm chút xu hướng tươi mát cho F&B)
-$green-50:  #f6ffed;
-$green-100: #d9f7be;
-$green-200: #b5f5ec;
-$green-500: #52c41a;
-$green-600: #389e0d;
-$green-700: #237804;
-
-// Blue (Thông tin / Info)
-$blue-50:  #e6f4ff;
-$blue-100: #bae0ff;
-$blue-200: #91caff;
-$blue-400: #40a9ff;
-$blue-500: #1677ff;
-$blue-600: #0958d9;
-$blue-700: #003eb3;
-
-// Red (Cảnh báo / Xoá)
-$red-50:  #fff2f0;
-$red-100: #ffccc7;
-$red-200: #ffa39e;
-$red-500: #f5222d;
-$red-600: #cf1322;
-$red-700: #a8071a;
-
-// Orange/Yellow (Cảnh báo nhẹ / Edit)
-$orange-50:  #fff7e6;
-$orange-100: #ffe8cc;
-$orange-200: #ffd591;
-$orange-400: #ffa940;
-$orange-500: #fa8c16;
-$orange-600: #d46b08;
+$gold: luxury.$gold;
+$wine: luxury.$wine;
+$beige: luxury.$beige;
+$bg: luxury.$bg;
+$surface: luxury.$surface;
+$text: luxury.$text;
+$text-muted: luxury.$text-muted;
+$border: luxury.$border;
 
 // Neutral Colors (Grays)
 $gray-50:  #f8fafc;
@@ -52,25 +30,25 @@ $black: #000000;
 // ==========================================
 // 2. SEMANTIC TOKENS
 // ==========================================
-$primary: $green-600;       // Xanh chủ đạo
-$primary-hover: $green-500;
-$primary-active: $green-700;
+$primary: $gold;       
+$primary-hover: lighten($gold, 5%);
+$primary-active: darken($gold, 5%);
 
-$success: $green-500;
-$info: $blue-500;
-$warning: $orange-500;
-$danger: $red-500;
-$danger-hover: $red-600;
+$success: $beige;
+$info: $gold;
+$warning: $gold;
+$danger: $wine;
+$danger-hover: lighten($wine, 5%);
 
-$bg-body: $gray-50;         // Màu nền app
-$bg-component: $white;      // Màu nền card/table
-$bg-hover: $gray-100;       // Trạng thái hover (table row)
+$bg-body: $bg;         
+$bg-component: $surface;      
+$bg-hover: lighten($surface, 5%);       
 
-$text-primary: $gray-800;   // Text chính (#1e293b)
-$text-secondary: $gray-500; // Text phụ (caption, icon)
-$text-disabled: $gray-400;
+$text-primary: $text;   
+$text-secondary: $text-muted; 
+$text-disabled: darken($text-muted, 20%);
 
-$border-color: $gray-200;   // Border input, table
+$border-color: $border;   
 
 // ==========================================
 // 3. SPACING & SIZING
@@ -84,12 +62,13 @@ $space-xl: 32px;
 $radius-sm: 4px;
 $radius-md: 8px;
 $radius-lg: 12px;
-$radius-xl: 16px;  // Card
+$radius-xl: 16px;  
 
 // ==========================================
 // 4. TYPOGRAPHY
 // ==========================================
-$font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+$font-family: luxury.$font-body;
+$font-heading: luxury.$font-heading;
 $font-size-sm: 13px;
 $font-size-base: 14px;
 $font-size-lg: 16px;
@@ -104,9 +83,9 @@ $font-weight-bold: 700;
 // ==========================================
 // 5. SHADOWS & EFFECTS
 // ==========================================
-$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-$shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+$shadow-base: luxury.$shadow;
+$shadow-md: luxury.$shadow;
+$shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.7);
 
-$transition-base: all 0.2s ease-in-out;
+$transition-base: luxury.$transition;

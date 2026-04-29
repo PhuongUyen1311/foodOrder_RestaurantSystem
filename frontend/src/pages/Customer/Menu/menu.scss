@@ -3,44 +3,55 @@
 .block-menu {
     padding-top: 100px;
     min-height: calc(100vh - 200px);
+    background-color: $bg;
 
     .menu-products {
         h2 {
-            color: $color-primary;
-            margin-bottom: 20px;
-            font-size: 32px;
+            color: $gold;
+            margin-bottom: 24px;
+            font-size: 2.2rem;
             font-weight: 700;
             text-align: center;
+            font-family: $font-heading;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .order-info {
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
 
             .table-info {
-                background: $color-secondary;
-                color: $color-text-light;
-                padding: 10px 20px;
-                border-radius: 8px;
+                background: $surface;
+                color: $gold;
+                padding: 12px 24px;
+                border-radius: 30px;
                 display: inline-block;
                 margin-bottom: 30px;
+                border: 1px solid $gold;
+                box-shadow: 0 0 15px rgba($gold, 0.2);
 
                 span {
                     font-size: 18px;
-                    font-weight: 500;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
                 }
             }
 
             .online-info {
-                background: $color-primary;
-                color: $color-text-light;
-                padding: 10px 20px;
-                border-radius: 8px;
+                background: $gold;
+                color: black;
+                padding: 12px 24px;
+                border-radius: 30px;
                 display: inline-block;
+                box-shadow: 0 0 15px rgba($gold, 0.3);
 
                 span {
                     font-size: 18px;
-                    font-weight: 500;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
                 }
             }
         }
@@ -48,15 +59,15 @@
 
     @media (max-width: 768px) {
         padding: 20px 0;
+        padding-top: 80px;
 
         .menu-products {
             h2 {
-                font-size: 24px;
+                font-size: 1.8rem;
                 margin-bottom: 20px;
             }
 
             .order-info {
-
                 .table-info span,
                 .online-info span {
                     font-size: 16px;
@@ -74,13 +85,11 @@
         .category-list-container {
             margin-bottom: 30px;
             padding-bottom: 5px;
-            /* Giúp border không bị dính sát */
         }
 
-        /* Đẩy Row xuống để tránh lề âm của Bootstrap Row đè lên trên */
+        /* Đẩy Row xuống to tránh lề âm của Bootstrap Row VNDè lên trên */
         .row {
             margin-top: 20px !important;
         }
     }
-
 }

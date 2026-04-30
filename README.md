@@ -1,197 +1,163 @@
-# From QR Ordering to Data-Driven Decisions: Optimizing F&B Operations with a Luxury POS System
+# SmartOrder POS: Enterprise-Grade F&B Ecosystem 🍽️
 
-## 🎯 Project Overview
+![SmartOrder POS Banner](assets/banner.png)
 
-This project is a sophisticated **Point of Sale (POS) System** designed for modern F&B businesses (Cafes and Restaurants). It moves beyond traditional order-taking by implementing a seamless **QR-based Ordering system** integrated with a **Data Analytics Dashboard**.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/badge/Node.js-v18+-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![React](https://img.shields.io/badge/React-v18-61DAFB?logo=react&logoColor=white)](https://reactjs.org/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Socket.io](https://img.shields.io/badge/Real--time-Socket.io-010101?logo=socket.io&logoColor=white)](https://socket.io/)
+[![Gemini AI](https://img.shields.io/badge/AI-Gemini_1.5_Flash-blueviolet?logo=google-gemini&logoColor=white)](https://deepmind.google/technologies/gemini/)
 
-The core philosophy of this system is: **"Optimize operations to capture high-quality data, then use that data to drive business growth."**
-
-*   **Operational Role (BA):** Automating the Order-to-Cash (O2C) flow to reduce human error and manual labor.
-*   **Analytical Role (DA):** Transforming every transaction into a structured data point for strategic decision-making.
-
-### 🛠 Tech Stack
-*   **Frontend:** React.js, Vite, Sass (Luxury Dark Theme), React-Bootstrap, Recharts.
-*   **Backend:** Node.js, Express.js.
-*   **Database:** MongoDB (Mongoose) for flexible, document-based transaction storage.
-*   **Payment Integration:** PayOS (Integrated QR Payment Flow).
-*   **Communication:** Socket.io for real-time order updates.
+**SmartOrder POS** is a sophisticated, full-stack restaurant management ecosystem designed to eliminate operational friction and transform raw transactions into actionable business intelligence. It features a hybrid ordering model (QR + Staff POS), an AI-driven customer assistant, and a real-time data aggregation engine.
 
 ---
 
-## 🧩 Business Case Study
-
-### 1. The Business Problem
-
-Before implementing this system, typical F&B operations faced two major bottlenecks:
-
-#### **A. Operational Inefficiency**
-*   **Manual Order Entry:** Waitstaff spending 30% of their time just taking orders and relaying them to the kitchen.
-*   **Payment Friction:** Manual cash handling and separate POS/Payment devices leading to reconciliation errors.
-*   **Information Silos:** Communication between the front-of-house and kitchen was prone to "lost orders" during peak hours.
-
-#### **B. The "Data Blindness" Problem**
-*   **Intuition-Based Decisions:** Owners often decided on menu changes or staffing based on "feeling" rather than actual performance metrics.
-*   **Wasted Customer Data:** Transactions happened, but no profile or behavior data was captured for future marketing.
-*   **Unclear Peak Performance:** Difficulty identifying exact bottleneck hours versus "busy-looking" hours.
+## 📖 Table of Contents
+- [✨ Core Capabilities](#-core-capabilities)
+- [🛠 Technical Architecture](#-technical-architecture)
+- [📂 Directory Structure](#-directory-structure)
+- [🗄️ Data Modeling (BOM Focus)](#️-data-modeling-bom-focus)
+- [📡 API & Real-time Integration](#-api--real-time-integration)
+- [🤖 AI Chatbot Engine](#-ai-chatbot-engine)
+- [💳 Payment & Billing Logic](#-payment--billing-logic)
+- [🚀 Deployment & Setup](#-deployment--setup)
 
 ---
 
-### 2. Solution Overview
+## ✨ Core Capabilities
 
-The system was designed as a dual-layer solution:
+### 📱 Guest Experience
+- **Autonomous QR Ordering:** Zero-app required. Customers scan a table-specific QR to access a dynamic, real-time menu.
+- **AI Concierge:** A Google Gemini-powered chatbot that analyzes menu context and nutritional data to provide personalized dish recommendations and direct "Add to Cart" functionality.
+- **Real-time Status Tracking:** Monitor order progress from "Pending" to "Preparing" and "Served".
 
-*   **Operational Layer (The POS):** A high-contrast, luxury dark-themed interface for staff and a mobile-friendly QR menu for customers. It handles the entire lifecycle of an order from scan to payment.
-*   **Data Layer (The Dashboard):** A centralized intelligence hub that aggregates real-time data to provide actionable insights into revenue, time-based performance, and customer retention.
+### 🧑‍🍳 Staff & Kitchen Operations
+- **Kitchen Display System (KDS):** A live, low-latency queue using Socket.io for instant order synchronization.
+- **Inventory & BOM Management:** Automatic ingredient deduction upon order confirmation. Real-time low-stock alerts based on Bill of Materials (BOM) logic.
+- **Table Orchestration:** Intuitive interface for merging tables, transferring sessions, and managing occupancy states.
+
+### 📊 Business Intelligence (Admin)
+- **Revenue Analytics:** Deep-dive into AOV (Average Order Value), peak-hour heatmaps, and category-wise margin analysis.
+- **Staff Performance:** Tracking serving latency and order accuracy metrics.
+- **CRM Lite:** Identifying returning customers and their consumption patterns.
 
 ---
 
-### 3. The Business Flow (Order-to-Cash)
+## 🛠 Technical Architecture
 
-Every interaction in the system is designed to generate a usable data trace:
+The system follows a **Modular Monolith** architecture with a clear separation of concerns, optimized for real-time responsiveness.
 
-```mermaid
-graph LR
-    A[Customer Scans QR] -->|Capture Entry Time| B[Digital Menu Selection]
-    B -->|Capture Basket Intent| C[Real-time Order Submission]
-    C -->|Kitchen Sync| D[Integrated Payment]
-    D -->|Capture Transaction Log| E[Data Aggregation]
-    E -->|Real-time Visualization| F[Dashboard]
-    F -->|Business Insight| G[Strategic Decision]
-    
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style D fill:#c5a059,stroke:#333,stroke-width:2px
-    style G fill:#00d2ff,stroke:#333,stroke-width:2px
+- **Frontend:** React 18 with Vite. State management via Redux Toolkit. UI components leverage Ant Design for the Admin/Staff portal and a custom mobile-first SCSS framework for the Guest Menu.
+- **Backend:** Node.js & Express.js. Implements a Service-Controller-Model pattern.
+- **Real-time:** Socket.io handles bi-directional events for order status, kitchen alerts, and payment confirmations.
+- **Database:** MongoDB Atlas. Utilizes Mongoose for schema validation and complex aggregations.
+
+---
+
+## 📂 Directory Structure
+
+```text
+SmartOrder_POS/
+├── backend/
+│   ├── app/
+│   │   ├── controllers/    # Business logic (Order, Payment, Chatbot, etc.)
+│   │   ├── models/         # Mongoose schemas (BOM, Ingredient, Order, etc.)
+│   │   ├── routes/         # RESTful API endpoints
+│   │   ├── services/       # Third-party integrations (PayOS, Gemini)
+│   │   └── socket/         # Socket.io event handlers
+│   ├── static/             # Public assets (avatars, product images)
+│   └── server.js           # Entry point & Middleware config
+├── frontend/
+│   ├── src/
+│   │   ├── components/     # Reusable UI units
+│   │   ├── pages/          # View components (Admin, Staff, Guest)
+│   │   ├── redux/          # State management logic
+│   │   ├── services/       # API calling modules
+│   │   └── styles/         # Global SCSS & Theme tokens
+│   └── vite.config.js
+└── assets/                 # Documentation assets
 ```
 
-1.  **Customer Scans QR:** Capture entry time and table location.
-2.  **Digital Menu Selection:** Capture interest/browsing data (even if items aren't ordered yet).
-3.  **Real-time Order (O2C Start):** Capture basket composition and modification preferences.
-4.  **Integrated Payment:** Capture payment method preference and exact transaction timestamp.
-5.  **Data Capture:** Structured JSON logs are stored in MongoDB, ready for the aggregation engine.
-6.  **Dashboard Visualization:** Real-time transformation of raw logs into KPI cards and trends.
-7.  **Strategic Decision:** Owner uses insights to adjust pricing, staffing, or inventory.
-
 ---
 
-### 4. System Design (BA Mindset)
+## 🗄️ Data Modeling (BOM Focus)
 
-Focusing on process optimization and reliability:
+A critical feature of the system is the **Bill of Materials (BOM)** logic, which ensures inventory integrity.
 
 ```mermaid
-graph TD
-    subgraph Operational Modules
-    OM[Order Management]
-    PM[Product Management]
-    PAY[Payment Integration]
-    end
+erDiagram
+    PRODUCT ||--o{ PRODUCT_BOM : "has"
+    INGREDIENT ||--o{ PRODUCT_BOM : "used in"
+    ORDER ||--o{ ORDER_ITEM : "contains"
+    ORDER_ITEM }|--|| PRODUCT : "refers"
     
-    subgraph Data Layer
-    DB[(MongoDB)]
-    AGG[Aggregation Engine]
-    end
-    
-    subgraph Business Intelligence
-    DASH[Analytics Dashboard]
-    end
-    
-    OM --> DB
-    PM --> DB
-    PAY --> DB
-    DB --> AGG
-    AGG --> DASH
+    PRODUCT_BOM {
+        ObjectId product_id
+        ObjectId ingredient_id
+        Number quantity
+        String unit
+    }
 ```
 
-*   **Order Management:** Real-time synchronization between Customer, Waiter, and Kitchen via Socket.io.
-*   **Dynamic Product Management:** Modular inventory control allowing for instant menu updates and price adjustments.
-*   **Integrated Payment Module:** Built-in QR payment generation (PayOS) to ensure the payment status is automatically tied to the order, eliminating manual verification.
-*   **Multi-Role Access:** Granular permissions for Admin (Full Analytics) and Staff (Order Fulfillment).
+- **Ingredient Deduction:** When an order status moves to `SERVED`, the system iterates through the `ProductBOM` for each item and decrements the `Ingredient.stock_quantity`.
+- **Validation:** Orders are blocked if any ingredient required for the requested items is below the safety threshold.
 
 ---
 
-### 5. Data Design (DA Mindset)
+## 🤖 AI Chatbot Engine
 
-The schema was designed for **Analytics-First** storage:
+The "Smart" in SmartOrder comes from a hybrid AI implementation:
 
-*   **Granular Timestamps:** Tracking `created_at`, `served_at`, and `paid_at` to calculate preparation times and turnover rates.
-*   **Categorization:** Every product belongs to a category and sub-category, enabling "Contribution %" analysis.
-*   **Customer ID Tracking:** Identifying returning customers vs. new customers to calculate Retention Rate (CRR).
-*   **State History:** Storing the "Life of an Order" to identify where cancellations or bottlenecks occur in the kitchen.
-
----
-
-### 6. Key Data Insights (Simulated Results)
-
-Based on the implemented aggregation logic, the system surfaced the following high-value insights:
-
-*   **Peak Time Heatmap:** 42% of total daily revenue occurs between **12:00 PM - 1:30 PM**, yet prep times increase by **15%** during this window, indicating a need for better kitchen prep-staging.
-*   **Customer Retention:** **28%** of customers are "Returning," and their **Average Order Value (AOV)** is **35% higher** than new customers.
-*   **Product Performance:** The "Vietnamese Pho" category accounts for only **20%** of order volume but contributes **45%** of the net margin.
-*   **Cross-sell Opportunity:** **65%** of diners order a main dish but no beverage, identifying a massive revenue gap for drinks/desserts.
-*   **Payment Preference:** **85%** of customers prefer QR Transfer over cash when offered a digital menu, reducing cash handling overhead by **2 hours/day**.
+1.  **Rule-based Interceptor:** Quickly handles common intents (Greetings, "Show Menu") with 0ms latency.
+2.  **Gemini AI Layer:** Uses `gemini-1.5-flash` for complex nutritional queries. 
+3.  **Function Calling:** The AI can directly execute `add_to_cart_ui` commands, allowing customers to add recommended items to their cart through natural conversation.
+4.  **Context Injection:** Every AI prompt is injected with a real-time, cached snapshot of the current menu and ingredient data.
 
 ---
 
-### 7. Business Recommendations
+## 💳 Payment & Billing Logic
 
-#### **A. Operational Optimization (BA-Driven)**
-*   **Peak-Staging:** Implement "Batch Prep" for top-selling items 15 minutes before the identified 12:00 PM peak.
-*   **Role Refinement:** Move one waiter from order-taking to "Order Runner" during peak hours, as the QR system handles 90% of order entry.
+The system implements a flexible billing engine integrated with **PayOS**:
 
-#### **B. Revenue Optimization (DA-Driven)**
-*   **Strategic Bundling:** Create a "Main + Signature Drink" bundle priced at 115% of the main dish to capture the identified 65% beverage gap.
-*   **Loyalty Push:** Launch a "Returning Customer" discount for the 3rd visit to push the 28% retention rate toward 35%.
+- **Split-Bill Patterns:**
+    - **By Item:** Specific guests pay for specific items.
+    - **By Percentage:** Equal or custom percentage split.
+    - **By Amount:** Fixed amount contribution.
+- **Table Merging:** Supports the "Master/Slave" table logic, allowing multiple physical tables to be unified into a single financial session.
+- **PayOS Webhooks:** Secure, signature-verified webhooks ensure that order statuses are updated instantly upon successful bank transfer.
 
 ---
 
-### 8. Dashboard Structure
+## 🚀 Deployment & Setup
 
-The Admin Dashboard is divided into 4 specialized views to support specific decision-making:
-
-#### **A. Sales Analysis (Product Performance)**
-```mermaid
-pie title Category Contribution %
-    "Vietnamese Pho" : 45
-    "Side Dishes" : 25
-    "Drinks" : 15
-    "Desserts" : 10
-    "Others" : 5
+### **Environment Configuration (.env)**
+```env
+MONGODB_URI=your_mongodb_connection_string
+PAYOS_CLIENT_ID=your_client_id
+PAYOS_API_KEY=your_api_key
+PAYOS_CHECKSUM_KEY=your_checksum_key
+GEMINI_API_KEY=your_google_ai_key
+JWT_SECRET=your_secure_secret
 ```
 
-*   **Overview Tab:** High-level KPIs (Total Rev, AOV, Growth Trends) for a quick "Business Health" check.
-*   **Sales Tab:** Product and Category performance metrics to decide which menu items to keep or cut.
-
-#### **B. Time-Based Insights (Operations)**
-```mermaid
-graph LR
-    A[08:00 - 11:00] -->|Morning Prep| B(Quiet: Low Staffing)
-    C[12:00 - 14:00] -->|Peak Lunch| D(High: Max Staffing)
-    E[15:00 - 17:00] -->|Afternoon Break| F(Moderate: Cleaning/Restock)
-    G[18:00 - 21:00] -->|Dinner Rush| H(High: Full Staffing)
-
-    style D fill:#ff4d4d,color:#fff
-    style H fill:#ff4d4d,color:#fff
-```
-
-*   **Time Tab:** Hourly Heatmaps and Daily Trends to optimize staffing schedules.
-*   **Customer Tab:** Retention and Behavior analytics to drive marketing and loyalty strategies.
-
+### **Installation**
+1. **Repository Setup**
+   ```bash
+   git clone https://github.com/your-username/SmartOrder_POS.git
+   cd SmartOrder_POS
+   ```
+2. **Backend Services**
+   ```bash
+   cd backend && npm install
+   npm start # Starts server on port 8080
+   ```
+3. **Frontend Application**
+   ```bash
+   cd ../frontend && npm install
+   npm run dev # Starts Vite dev server
+   ```
 
 ---
 
-### 9. Business Impact (Simulation)
-
-*   **+20% Revenue:** Driven by digital upselling and higher table turnover rates.
-*   **-30% Staff Cost:** Efficiency gains from QR ordering reduce the need for manual order takers.
-*   **100% Data Accuracy:** Elimination of manual entry errors and payment reconciliation issues.
-
----
-
-### 10. Future Roadmap
-
-1.  **Demand Forecasting:** Using historical time-data to predict stock needs for the following week.
-2.  **Customer Segmentation:** Automatically tagging customers as "High Spenders" or "Occasional Diners" for targeted promos.
-3.  **AI Recommendations:** Integrating an AI engine to suggest pairings to customers at the moment of QR checkout.
-
----
-
-**Developed with a focus on transforming F&B operations from a manual struggle into a data-driven competitive advantage.**
+**Built with precision to transform the F&B industry through technology.**

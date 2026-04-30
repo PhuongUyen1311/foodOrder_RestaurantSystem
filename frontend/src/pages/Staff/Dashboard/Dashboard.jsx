@@ -83,19 +83,19 @@ function Dashboard() {
       </h2>
 
       <Tabs defaultActiveKey="overview" id="dashboard-tabs" className="dashboard-tabs mb-4">
-        <Tab eventKey="overview" title="🟦 Overview">
+        <Tab eventKey="overview" title="Overview">
           <TabOverview stats={stats} revenueTrend={revenueTrend} topProducts={topProducts} />
         </Tab>
-        <Tab eventKey="sales" title="🟩 Sales">
+        <Tab eventKey="sales" title="Sales">
           <TabSales categorySales={categorySales} topProducts={topProducts} />
         </Tab>
-        <Tab eventKey="time" title="🟨 Time">
+        <Tab eventKey="time" title="Time">
           <TabTime hourlyHeatmap={hourlyHeatmap} revenueTrend={revenueTrend} />
         </Tab>
-        <Tab eventKey="customer" title="🟥 Customer">
+        <Tab eventKey="customer" title="Customer">
           <TabCustomer returningRate={returningRate} stats={stats} />
         </Tab>
-        <Tab eventKey="insights" title="🧠 Insights">
+        <Tab eventKey="insights" title="Insights">
           <TabInsights insightsData={insights} />
         </Tab>
       </Tabs>
